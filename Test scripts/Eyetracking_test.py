@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import mediapipe as mp
+import math
 displacement_eye = (0,0)
 left_eye_closed = False
 right_eye_closed = False
@@ -21,6 +22,21 @@ RIGHT_IRIS = [473, 474, 475, 476, 477]
 
 cap = cv2.VideoCapture(0)
 
+def calculate_roll_angle(landmarks):
+    left_ear_x = landmarks[234].x
+    left_ear_y = landmarks[234].y
+    right_ear_x = landmarks[454].x
+    right_ear_y = landmarks[454].y
+    angle_rad = math.atan2(right_ear_y - left_ear_y, right_ear_x - left_ear_x)
+    angle_deg = math.degrees(angle_rad)
+    return angle_deg
+
+def compensate_head_roll(frame, results_mesh, W, H):
+    roll_angle_deg = calculate_roll_angle(results_mesh.multi_face_landmarks[0].landmark)
+    M = cv2.getRotationMatrix2D((W/2, H/2), roll_angle_deg, 1)
+    frame = cv2.warpAffine(frame, M, (W, H))
+    return frame
+
 def fit_ellipse(points):
     ellipse = cv2.fitEllipse(points)
     center, axes = ellipse[0], ellipse[1]
@@ -33,11 +49,13 @@ def calculate_eye_displacement(eye_points, iris_points):
     displacement = (displacement[0]/(right_limit-left_limit), displacement[1]/(down_limit-up_limit))
     return displacement
 
-def eye_track(frame):
+def eye_track(frame, draw=True):
     global displacement_eye, left_eye_closed, right_eye_closed
     H, W, _ = frame.shape
-    rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results_mesh = face_mesh.process(rgb_image)
+    results_mesh = face_mesh.process(frame)
+    if results_mesh.multi_face_landmarks:
+        frame = compensate_head_roll(frame, results_mesh, W, H)
+        results_mesh = face_mesh.process(frame)
     if results_mesh.multi_face_landmarks:
         mesh_points = np.array([np.multiply([p.x, p.y], [W, H]).astype(int) for p in results_mesh.multi_face_landmarks[0].landmark])
         displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_EYE_EXTENDED], mesh_points[LEFT_IRIS])
@@ -59,20 +77,22 @@ def eye_track(frame):
             right_eye_closed = True
         else:
             right_eye_closed = False
-        for faceLms in results_mesh.multi_face_landmarks:
-            mp_drawing.draw_landmarks(frame, faceLms, mp_face_mesh.FACEMESH_CONTOURS,drawSpec,drawSpec)
-        ellipse_center_L, ellipse_axes_L = fit_ellipse(mesh_points[LEFT_IRIS])
-        ellipse_center_R, ellipse_axes_R = fit_ellipse(mesh_points[RIGHT_IRIS])
-        cv2.ellipse(frame, (int(ellipse_center_L[0]), int(ellipse_center_L[1])), (int(ellipse_axes_L[0]/2), int(ellipse_axes_L[1]/2)), 0, 0, 360, (0, 0, 255), 2)
-        cv2.ellipse(frame, (int(ellipse_center_R[0]), int(ellipse_center_R[1])), (int(ellipse_axes_R[0]/2), int(ellipse_axes_R[1]/2)), 0, 0, 360, (0, 0, 255), 2)
-        cv2.rectangle(frame, (lex1, ley1), (lex2, ley2), (0, 255, 0), 2)
-        cv2.rectangle(frame, (rex1, rey1), (rex2, rey2), (0, 255, 0), 2)
-        cv2.rectangle(frame, (lex1_ext, ley1_ext), (lex2_ext, ley2_ext), (0, 255, 0), 2)
-        cv2.rectangle(frame, (rex1_ext, rey1_ext), (rex2_ext, rey2_ext), (0, 255, 0), 2)
+        if draw:
+            for faceLms in results_mesh.multi_face_landmarks:
+                mp_drawing.draw_landmarks(frame, faceLms, mp_face_mesh.FACEMESH_CONTOURS,drawSpec,drawSpec)
+            ellipse_center_L, ellipse_axes_L = fit_ellipse(mesh_points[LEFT_IRIS])
+            ellipse_center_R, ellipse_axes_R = fit_ellipse(mesh_points[RIGHT_IRIS])
+            cv2.ellipse(frame, (int(ellipse_center_L[0]), int(ellipse_center_L[1])), (int(ellipse_axes_L[0]/2), int(ellipse_axes_L[1]/2)), 0, 0, 360, (0, 0, 255), 2)
+            cv2.ellipse(frame, (int(ellipse_center_R[0]), int(ellipse_center_R[1])), (int(ellipse_axes_R[0]/2), int(ellipse_axes_R[1]/2)), 0, 0, 360, (0, 0, 255), 2)
+            cv2.rectangle(frame, (lex1, ley1), (lex2, ley2), (0, 255, 0), 2)
+            cv2.rectangle(frame, (rex1, rey1), (rex2, rey2), (0, 255, 0), 2)
+            cv2.rectangle(frame, (lex1_ext, ley1_ext), (lex2_ext, ley2_ext), (0, 255, 0), 2)
+            cv2.rectangle(frame, (rex1_ext, rey1_ext), (rex2_ext, rey2_ext), (0, 255, 0), 2)
+    return frame
 
 while True:
     ret, frame = cap.read()
-    eye_track(frame)
+    frame = eye_track(frame)
     print(displacement_eye, left_eye_closed, right_eye_closed)
     cv2.imshow('frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):

@@ -69,11 +69,11 @@ def eye_track(frame, draw=True):
         lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
         rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
         rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-        if abs(lex1-lex2)/abs(ley1-ley2) > 4:
+        if abs(lex1-lex2)/abs(ley1-ley2) > 5:
             left_eye_closed = True
         else:
             left_eye_closed = False
-        if abs(rex1-rex2)/abs(rey1-rey2) > 4:
+        if abs(rex1-rex2)/abs(rey1-rey2) > 5:
             right_eye_closed = True
         else:
             right_eye_closed = False

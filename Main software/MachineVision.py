@@ -22,9 +22,9 @@ eye_left_limit = 0.4
 eye_right_limit = -0.4
 eye_up_limit = -0.1
 eye_down_limit = 0.15
-P_GAIN = 0.1
-D_GAIN = 0.1
-OSCILATION_FILTER = 0.1
+P_GAIN = 0.05
+D_GAIN = 0.05
+OSCILATION_FILTER = 0.2
 
 results_mesh = None
 mesh_points = None

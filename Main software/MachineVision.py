@@ -11,17 +11,20 @@ face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True, min_de
 emotion_model = pickle.load(open('resources/emotion_model.pkl', 'rb'))
 pca_model = joblib.load('resources/pca_model.pkl')
 cap = cv2.VideoCapture(0)
-
-eye_left_limit = 0.4
-eye_right_limit = -0.4
-eye_up_limit = -0.1
-eye_down_limit = 0.15
 RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
 LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
 RIGHT_EYE_EXTENDED = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 341, 256, 252, 253, 254, 339, 260, 259, 257, 258, 286, 414]
 LEFT_EYE_EXTENDED = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 110, 24, 23, 22, 26, 112, 190, 56, 28, 27, 29, 30]  
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
+
+eye_left_limit = 0.4
+eye_right_limit = -0.4
+eye_up_limit = -0.1
+eye_down_limit = 0.15
+P_GAIN = 0.1
+D_GAIN = 0.1
+OSCILATION_FILTER = 0.1
 
 results_mesh = None
 mesh_points = None
@@ -61,6 +64,15 @@ def transform_to_zero_one_numpy(arr):
     value_range = max_val - min_val
     transformed_arr = (arr - min_val) / value_range
     return transformed_arr
+
+def apply_pd_control(current_list, previous_list):
+    result = [0] * len(current_list)
+    for element_id in range(len(current_list)):
+        if abs(previous_list[element_id]) > 0 and abs(current_list[element_id] - previous_list[element_id])/abs(previous_list[element_id]) < OSCILATION_FILTER:
+            result[element_id] = previous_list[element_id]
+        else:
+            result[element_id] = (current_list[element_id]*P_GAIN + previous_list[element_id]*(1-P_GAIN)) + ((current_list[element_id]-previous_list[element_id])*D_GAIN)
+    return result
 
 def calculate_eye_displacement(eye_points, iris_points):
     center, axes = fit_ellipse(eye_points)
@@ -116,8 +128,7 @@ def predict_emotion(frame, draw=False):
     pred_index = np.argmax(pred)
     emotion_scores_noisy = transform_to_zero_one_numpy(pred)
     emotion_scores_noisy = np.multiply(emotion_scores_noisy, emotion_scores_noisy)
-    for score in range(len(emotion_scores)):
-        emotion_scores[score] = emotion_scores[score]*0.9 + emotion_scores_noisy[score]*0.1
+    emotion_scores = apply_pd_control(emotion_scores_noisy, emotion_scores)
     if draw:
         frame = draw_emotion(frame, emotion_labels[pred_index])
     return frame
@@ -130,7 +141,7 @@ def eye_track(frame, draw=False):
         displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_EYE_EXTENDED], mesh_points[RIGHT_IRIS])
         displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
         displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
-        displacement_eye = ((displacement_eye[0]*0.8+displacement_eye_noisy[0]*0.2), (displacement_eye[1]*0.8+displacement_eye_noisy[1]*0.2))
+        displacement_eye = apply_pd_control(displacement_eye_noisy, displacement_eye)
         lex1, ley1 = np.min(mesh_points[LEFT_EYE], axis=0)
         lex2, ley2 = np.max(mesh_points[LEFT_EYE], axis=0)
         rex1, rey1 = np.min(mesh_points[RIGHT_EYE], axis=0)

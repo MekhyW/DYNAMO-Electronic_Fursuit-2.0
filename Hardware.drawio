@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="746" dy="427" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="487" dy="427" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -26,7 +26,7 @@
                     <mxGeometry x="50" y="390" width="320" height="420" as="geometry"/>
                 </mxCell>
                 <mxCell id="16" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
-                    <mxGeometry x="510" y="425" width="280" height="255" as="geometry"/>
+                    <mxGeometry x="510" y="436" width="280" height="177" as="geometry"/>
                 </mxCell>
                 <mxCell id="31" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=none;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;" parent="1" source="33" target="19" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -92,9 +92,6 @@
                 </mxCell>
                 <mxCell id="22" value="&lt;font style=&quot;&quot;&gt;&lt;span style=&quot;font-size: 12px; color: rgba(232, 230, 227, 0.9); font-family: &amp;quot;Proxima Nova&amp;quot;, -apple-system, Roboto, Arial, sans-serif; text-align: left; background-color: rgb(30, 32, 33);&quot;&gt;3ATech&amp;nbsp;&lt;/span&gt;&lt;span style=&quot;color: rgba(232, 230, 227, 0.9); font-family: &amp;quot;Proxima Nova&amp;quot;, -apple-system, Roboto, Arial, sans-serif; text-align: left; background-color: rgb(24, 26, 27);&quot;&gt;V311&lt;/span&gt;&lt;span style=&quot;font-size: 12px; color: rgba(232, 230, 227, 0.9); font-family: &amp;quot;Proxima Nova&amp;quot;, -apple-system, Roboto, Arial, sans-serif; text-align: left; background-color: rgb(30, 32, 33);&quot;&gt;&lt;br&gt;&lt;/span&gt;Speaker&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="570" y="460" width="160" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="23" value="Samsung Galaxy Tab A8" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;" parent="1" vertex="1">
-                    <mxGeometry x="590" y="510" width="120" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="47" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="26" target="4" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -171,13 +168,13 @@
                     <mxGeometry x="440" y="116" width="120" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="73" value="NeoPixel LED Strips / circuits" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
-                    <mxGeometry x="570" y="590" width="160" height="50" as="geometry"/>
+                    <mxGeometry x="570" y="534" width="160" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="74" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="19" target="73" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="580" y="500" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="430" y="615"/>
+                            <mxPoint x="428" y="557"/>
                         </Array>
                         <mxPoint x="280" y="690" as="sourcePoint"/>
                     </mxGeometry>

@@ -9,10 +9,6 @@ mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 drawSpec = mp_drawing.DrawingSpec(thickness=1, circle_radius=2)
 face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5)
-left_limit = 0.4
-right_limit = -0.4
-up_limit = -0.1
-down_limit = 0.15
 RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
 LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
 RIGHT_EYE_EXTENDED = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 341, 256, 252, 253, 254, 339, 260, 259, 257, 258, 286, 414]
@@ -42,11 +38,16 @@ def fit_ellipse(points):
     center, axes = ellipse[0], ellipse[1]
     return center, axes
 
-def calculate_eye_displacement(eye_points, iris_points):
-    center, axes = fit_ellipse(eye_points)
+def calculate_proximity(lower, upper, x):
+    mid_point = (lower + upper) / 2
+    proximity = (x - mid_point) / (upper - mid_point)
+    return proximity
+
+def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     eye_center = np.mean(iris_points, axis=0)
-    displacement = (2*(center[0] - eye_center[0]) / (axes[0]), 2*(center[1] - eye_center[1]) / (axes[1]))
-    displacement = (displacement[0]/(right_limit-left_limit), displacement[1]/(down_limit-up_limit))
+    displacement_x = 2*calculate_proximity(ex1, ex2, eye_center[0])
+    displacement_y = -2*calculate_proximity(ey1, ey2, eye_center[1])
+    displacement = (displacement_x, displacement_y)
     return displacement
 
 def eye_track(frame, draw=True):
@@ -58,10 +59,6 @@ def eye_track(frame, draw=True):
         results_mesh = face_mesh.process(frame)
     if results_mesh.multi_face_landmarks:
         mesh_points = np.array([np.multiply([p.x, p.y], [W, H]).astype(int) for p in results_mesh.multi_face_landmarks[0].landmark])
-        displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_EYE_EXTENDED], mesh_points[LEFT_IRIS])
-        displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_EYE_EXTENDED], mesh_points[RIGHT_IRIS])
-        displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
-        displacement_eye = ((displacement_eye[0]*0.8+displacement_eye_noisy[0]*0.2), (displacement_eye[1]*0.8+displacement_eye_noisy[1]*0.2))
         lex1, ley1 = np.min(mesh_points[LEFT_EYE], axis=0)
         lex2, ley2 = np.max(mesh_points[LEFT_EYE], axis=0)
         rex1, rey1 = np.min(mesh_points[RIGHT_EYE], axis=0)
@@ -70,6 +67,10 @@ def eye_track(frame, draw=True):
         lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
         rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
         rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
+        displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
+        displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
+        displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
+        displacement_eye = ((displacement_eye[0]*0.8+displacement_eye_noisy[0]*0.2), (displacement_eye[1]*0.8+displacement_eye_noisy[1]*0.2))
         if abs(lex1-lex2)/abs(ley1-ley2) > 5:
             left_eye_closed = True
         else:

@@ -18,10 +18,6 @@ LEFT_EYE_EXTENDED = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 15
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
 
-eye_left_limit = 0.4
-eye_right_limit = -0.4
-eye_up_limit = -0.1
-eye_down_limit = 0.15
 P_GAIN = 0.05
 D_GAIN = 0.05
 OSCILATION_FILTER = 0.2
@@ -74,11 +70,16 @@ def apply_pd_control(current_list, previous_list):
             result[element_id] = (current_list[element_id]*P_GAIN + previous_list[element_id]*(1-P_GAIN)) + ((current_list[element_id]-previous_list[element_id])*D_GAIN)
     return result
 
-def calculate_eye_displacement(eye_points, iris_points):
-    center, axes = fit_ellipse(eye_points)
+def calculate_proximity(lower, upper, x):
+    mid_point = (lower + upper) / 2
+    proximity = (x - mid_point) / (upper - mid_point)
+    return proximity
+
+def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     eye_center = np.mean(iris_points, axis=0)
-    displacement = (2*(center[0] - eye_center[0]) / (axes[0]), 2*(center[1] - eye_center[1]) / (axes[1]))
-    displacement = (displacement[0]/(eye_right_limit-eye_left_limit), displacement[1]/(eye_down_limit-eye_up_limit))
+    displacement_x = 2*calculate_proximity(ex1, ex2, eye_center[0])
+    displacement_y = -2*calculate_proximity(ey1, ey2, eye_center[1])
+    displacement = (displacement_x, displacement_y)
     return displacement
 
 def update_mesh_points(frame):
@@ -137,11 +138,6 @@ def eye_track(frame, draw=False):
     global results_mesh, mesh_points, displacement_eye, left_eye_closed, right_eye_closed
     H, W, _ = frame.shape
     if mesh_points is not None:
-        displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_EYE_EXTENDED], mesh_points[LEFT_IRIS])
-        displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_EYE_EXTENDED], mesh_points[RIGHT_IRIS])
-        displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
-        displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
-        displacement_eye = apply_pd_control(displacement_eye_noisy, displacement_eye)
         lex1, ley1 = np.min(mesh_points[LEFT_EYE], axis=0)
         lex2, ley2 = np.max(mesh_points[LEFT_EYE], axis=0)
         rex1, rey1 = np.min(mesh_points[RIGHT_EYE], axis=0)
@@ -150,6 +146,11 @@ def eye_track(frame, draw=False):
         lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
         rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
         rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
+        displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
+        displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
+        displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
+        displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
+        displacement_eye = apply_pd_control(displacement_eye_noisy, displacement_eye)
         if abs(lex1-lex2)/abs(ley1-ley2) > 5:
             left_eye_closed = True
         else:

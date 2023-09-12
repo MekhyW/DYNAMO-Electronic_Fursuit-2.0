@@ -27,8 +27,8 @@ mesh_points = None
 displacement_eye = (0,0)
 left_eye_closed = False
 right_eye_closed = False
-emotion_labels = ['angry', 'disgusted', 'fear', 'happy', 'neutral', 'sad', 'surprised']
-emotion_scores = [0]*7
+emotion_labels = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
+emotion_scores = [0]*6
 
 def calculate_roll_angle(landmarks):
     left_ear_x = landmarks[234].x

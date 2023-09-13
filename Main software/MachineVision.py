@@ -19,10 +19,6 @@ LEFT_EYE_EXTENDED = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 15
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
 
-P_GAIN = 0.05
-D_GAIN = 0.05
-OSCILATION_FILTER = 0.2
-
 results_mesh = None
 mesh_points = None
 displacement_eye = (0,0)
@@ -62,15 +58,6 @@ def transform_to_zero_one_numpy(arr):
     transformed_arr = (arr - min_val) / value_range
     return transformed_arr
 
-def apply_pd_control(current_list, previous_list):
-    result = [0] * len(current_list)
-    for element_id in range(len(current_list)):
-        if abs(previous_list[element_id]) > 0 and abs(current_list[element_id] - previous_list[element_id])/abs(previous_list[element_id]) < OSCILATION_FILTER:
-            result[element_id] = previous_list[element_id]
-        else:
-            result[element_id] = (current_list[element_id]*P_GAIN + previous_list[element_id]*(1-P_GAIN)) + ((current_list[element_id]-previous_list[element_id])*D_GAIN)
-    return result
-
 def calculate_proximity(lower, upper, x):
     mid_point = (lower + upper) / 2
     proximity = (x - mid_point) / (upper - mid_point)
@@ -86,9 +73,9 @@ def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
 def update_mesh_points(frame):
     global results_mesh, mesh_points
     H, W, _ = frame.shape
-    results_mesh = face_mesh.process(frame)
-    if results_mesh.multi_face_landmarks:
-        frame = compensate_head_roll(frame, results_mesh, W, H)
+    results_mesh_local = face_mesh.process(frame)
+    if results_mesh_local.multi_face_landmarks:
+        frame = compensate_head_roll(frame, results_mesh_local, W, H)
         results_mesh = face_mesh.process(frame)
     if results_mesh.multi_face_landmarks:
         mesh_points = np.array([np.multiply([p.x, p.y], [W, H]).astype(int) for p in results_mesh.multi_face_landmarks[0].landmark])
@@ -152,7 +139,7 @@ def eye_track(frame, draw=False):
         displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
         displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
         displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
-        displacement_eye = apply_pd_control(displacement_eye_noisy, displacement_eye)
+        displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
         if abs(lex1-lex2)/abs(ley1-ley2) > 5:
             left_eye_closed = True
         else:
@@ -176,7 +163,7 @@ def main(draw=False):
 if __name__ == "__main__":
     while True:
         frame = main(draw=True)
-        print(displacement_eye, left_eye_closed, right_eye_closed)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
-        print(emotion_scores_rounded)
-        cv2.imshow('frame', frame)
+        print(displacement_eye, left_eye_closed, right_eye_closed, emotion_scores_rounded)
+        if frame is not None:
+            cv2.imshow('frame', frame)

@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import expit
 import cv2
 import mediapipe as mp
 import math
@@ -128,8 +129,9 @@ def predict_emotion(frame, draw=False):
     pred = emotion_model.predict_proba(landmarks_transformed)[0]
     pred_index = np.argmax(pred)
     emotion_scores_noisy = transform_to_zero_one_numpy(pred)
-    emotion_scores_noisy = np.multiply(emotion_scores_noisy, emotion_scores_noisy)
-    emotion_scores = apply_pd_control(emotion_scores_noisy, emotion_scores)
+    for score in range(len(emotion_scores)):
+        emotion_scores_noisy[score] = expit(10 * (emotion_scores_noisy[score] - 0.5))
+        emotion_scores[score] = emotion_scores[score]*0.9 + emotion_scores_noisy[score]*0.1
     if draw:
         frame = draw_emotion(frame, emotion_labels[pred_index])
     return frame
@@ -175,5 +177,6 @@ if __name__ == "__main__":
     while True:
         frame = main(draw=True)
         print(displacement_eye, left_eye_closed, right_eye_closed)
-        print(emotion_scores)
+        emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
+        print(emotion_scores_rounded)
         cv2.imshow('frame', frame)

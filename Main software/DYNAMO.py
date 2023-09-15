@@ -18,7 +18,6 @@ def main():
             Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
                        MachineVision.left_eye_closed, MachineVision.right_eye_closed, 
                        MachineVision.emotion_scores)
-            print('sent message to unity app')
             time.sleep(0.01)
         except Exception as e:
             print(e)

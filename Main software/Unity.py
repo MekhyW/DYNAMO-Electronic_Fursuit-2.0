@@ -10,6 +10,7 @@ def connect():
     while not connected:
         try:
             client_socket.connect((host, port))
+            print("Unity app connected!")
             connected = True
         except ConnectionRefusedError:
             print("Unity app connection refused. Retrying in 1 second...")

@@ -63,4 +63,4 @@ def play_audio(filename):
     p.terminate()
 
 if __name__ == "__main__":
-    play_audio('query.wav')
+    play_audio('Test scripts/query.wav')

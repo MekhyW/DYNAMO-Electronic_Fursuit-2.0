@@ -10,3 +10,5 @@ openai==0.27.1
 pvporcupine==2.1.4
 pvrecorder==1.1.1
 telepota==1.0
+psutil==5.9.4
+pycaw==20230407

@@ -9,6 +9,21 @@ Token = json.load(open('credentials.json'))['fursuitbot_token']
 ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
 fursuitbot = telepot.Bot(Token)
 
+main_menu_buttons = ['Media / Sound', 'Expression', 'Eye Tracking', 'Animatronic', 'LEDs', 'Voice', 'Cookiebot (Assistant AI)', 'Refsheet / Sticker Pack', 'Debugging', 'Shutdown']
+main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
+inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': 'Stop Media', 'callback_data': 'media stop'}, {'text': 'Pause Media', 'callback_data': 'media pause'}, {'text': 'Resume Media', 'callback_data': 'media resume'}], [{'text': 'Set Volume', 'callback_data': 'volume'}]]
+inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}, {'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}, {'text': 'Set to MANUAL', 'callback_data': 'expression manual'}]]
+inline_keyboard_eyetracking = [[{'text': 'Set to ON', 'callback_data': 'eyetracking on'}, {'text': 'Set to OFF', 'callback_data': 'eyetracking off'}]]
+inline_keyboard_animatronic = [[{'text': 'Set to ON', 'callback_data': 'animatronic on'}, {'text': 'Set to OFF', 'callback_data': 'animatronic off'}]]
+inline_keyboard_leds = [[{'text': 'Set Effect', 'callback_data': 'leds effect'}, {'text': 'Set Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Turn ON', 'callback_data': 'leds on'}, {'text': 'Turn OFF', 'callback_data': 'leds off'}]]
+inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}, {'text': 'Voice Changer ON/OFF', 'callback_data': 'voice changer toggle'}], [{'text': 'Mute / Unmute', 'callback_data': 'voice hear toggle'}], [{'text': 'Background ON/OFF', 'callback_data': 'voice bg toggle'}]]
+inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}]]
+inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}]]
+inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging resources'}, {'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}]]
+inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}]]
+
+last_message_chat = {}
+
 def DiscardPreviousUpdates():
     updates = fursuitbot.getUpdates()
     if updates:
@@ -16,10 +31,141 @@ def DiscardPreviousUpdates():
         fursuitbot.getUpdates(offset=last_update_id+1)
 
 def thread_function(msg):
-    pass
+    try:
+        content_type, chat_type, chat_id = telepot.glance(msg)
+        print(content_type, chat_type, chat_id, msg['message_id'])
+        last_message_chat[chat_id] = msg
+        if msg['text'] not in main_menu_buttons:
+            fursuitbot.sendChatAction(chat_id, 'typing')
+            fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
+        else:
+            fursuitbot.sendChatAction(chat_id, 'typing')
+            fursuitbot.deleteMessage((chat_id, msg['message_id']))
+            match msg['text']:
+                case 'Media / Sound':
+                    fursuitbot.sendMessage(chat_id, 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
+                case 'Expression':
+                    fursuitbot.sendMessage(chat_id, 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                case 'Eye Tracking':
+                    fursuitbot.sendMessage(chat_id, 'Eye Tracking', reply_markup={'inline_keyboard': inline_keyboard_eyetracking})
+                case 'Animatronic':
+                    fursuitbot.sendMessage(chat_id, 'Animatronic', reply_markup={'inline_keyboard': inline_keyboard_animatronic})
+                case 'LEDs':
+                    fursuitbot.sendMessage(chat_id, 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                case 'Voice':
+                    fursuitbot.sendMessage(chat_id, 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
+                case 'Cookiebot (Assistant AI)':
+                    fursuitbot.sendMessage(chat_id, 'Cookiebot', reply_markup={'inline_keyboard': inline_keyboard_cookiebot})
+                case 'Refsheet / Sticker Pack':
+                    fursuitbot.sendMessage(chat_id, 'Refsheet / Sticker Pack', reply_markup={'inline_keyboard': inline_keyboard_refsheet})
+                case 'Debugging':
+                    fursuitbot.sendMessage(chat_id, 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
+                case 'Shutdown':
+                    fursuitbot.sendMessage(chat_id, 'Shutdown', reply_markup={'inline_keyboard': inline_keyboard_shutdown})
+    except Exception as e:
+        print(e)
+        if 'ConnectionResetError' not in traceback.format_exc():
+            fursuitbot.sendMessage(ownerID, traceback.format_exc())
+            fursuitbot.sendMessage(ownerID, str(msg))
 
 def thread_function_query(msg):
-    pass
+    try:
+        query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
+        print('Callback Query:', query_id, from_id, query_data)
+        last_message_chat[from_id] = msg
+        persist_msg = False
+        match query_data.split()[0]:
+            case 'music':
+                pass
+            case 'sfx':
+                pass
+            case 'media':
+                match ' '.join(query_data.split()[1:]):
+                    case 'stop':
+                        pass
+                    case 'pause':
+                        pass
+                    case 'resume':
+                        pass
+            case 'volume':
+                pass
+            case 'expression':
+                match ' '.join(query_data.split()[1:]):
+                    case 'set':
+                        pass
+                    case 'auto':
+                        pass
+                    case 'manual':
+                        pass
+            case 'eyetracking':
+                match ' '.join(query_data.split()[1:]):
+                    case 'on':
+                        pass
+                    case 'off':
+                        pass
+            case 'animatronic':
+                match ' '.join(query_data.split()[1:]):
+                    case 'on':
+                        pass
+                    case 'off':
+                        pass
+            case 'leds':
+                match ' '.join(query_data.split()[1:]):
+                    case 'effect':
+                        pass
+                    case 'brightness':
+                        pass
+                    case 'on':
+                        pass
+                    case 'off':
+                        pass
+            case 'voice':
+                match ' '.join(query_data.split()[1:]):
+                    case 'change':
+                        pass
+                    case 'changer toggle':
+                        pass
+                    case 'hear toggle':
+                        pass
+                    case 'bg toggle':
+                        pass
+            case 'assistant':
+                match ' '.join(query_data.split()[1:]):
+                    case 'trigger':
+                        pass
+                    case 'hotword on':
+                        pass
+                    case 'hotword off':
+                        pass
+            case 'misc':
+                match ' '.join(query_data.split()[1:]):
+                    case 'refsheet':
+                        pass
+                    case 'stickerpack':
+                        pass
+            case 'debugging':
+                match ' '.join(query_data.split()[1:]):
+                    case 'resources':
+                        pass
+                    case 'python':
+                        pass
+                    case 'shell':
+                        pass
+            case 'shutdown':
+                match ' '.join(query_data.split()[1:]):
+                    case 'turnoff':
+                        pass
+                    case 'reboot':
+                        pass
+                    case 'kill':
+                        pass
+        if not persist_msg:
+            fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
+    except Exception as e:
+        print(e)
+        if 'ConnectionResetError' not in traceback.format_exc():
+            fursuitbot.sendMessage(ownerID, traceback.format_exc())
+            fursuitbot.sendMessage(ownerID, str(msg))
 
 def handle(msg):
     try:
@@ -46,3 +192,9 @@ def StartBot():
     except Exception as e:
         print(e)
         return False
+    
+
+if __name__ == '__main__':
+    StartBot()
+    while True:
+        pass

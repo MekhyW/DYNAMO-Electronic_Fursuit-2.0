@@ -8,7 +8,7 @@ from googletrans import Translator
 
 translator = Translator()
 p = pyaudio.PyAudio()
-chunk_size = 1024
+chunk_size = 4096
 
 is_paused = False
 audio_data = []

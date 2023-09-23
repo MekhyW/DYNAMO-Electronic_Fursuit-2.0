@@ -4,6 +4,7 @@ import Waveform
 import MachineVision
 import Unity
 import Assistant
+import ControlBot
 
 def machine_vision_thread():
     while True:
@@ -39,6 +40,7 @@ def main():
     threading.Thread(target=machine_vision_thread).start()
     threading.Thread(target=assistant_thread).start()
     Unity.connect()
+    ControlBot.StartBot()
     while True:
         try:
             Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 

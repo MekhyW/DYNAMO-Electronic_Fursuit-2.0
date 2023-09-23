@@ -1,9 +1,11 @@
+import Waveform
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 import traceback
 import threading
 import json
+import os
 
 Token = json.load(open('credentials.json'))['fursuitbot_token']
 ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
@@ -24,6 +26,21 @@ inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown tur
 
 last_message_chat = {}
 
+def PlayMusic(fursuitbot, chat_id, text):
+    for file in os.listdir('.'):
+        if file.endswith('.wav'):
+            os.remove(file)
+    fursuitbot.sendMessage(chat_id, '>>>Downloading song with query "{}"...'.format(text))
+    command = 'spotdl "{}" --format wav --preload --no-cache'.format(text)
+    os.system(command)
+    for file in os.listdir('.'):
+        if file.endswith('.wav'):
+            file_name = file
+            break
+    fursuitbot.sendMessage(chat_id, 'Done!\n>>>Playing now')
+    Waveform.play_audio(file_name)
+    os.remove(file_name)
+
 def DiscardPreviousUpdates():
     updates = fursuitbot.getUpdates()
     if updates:
@@ -34,13 +51,17 @@ def thread_function(msg):
     try:
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
-        last_message_chat[chat_id] = msg
+        if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] == 'music':
+            last_message_chat[chat_id] = msg
+            if msg['text'] == '/cancel':
+                fursuitbot.sendMessage(chat_id, 'Command was cancelled')
+            else:
+                PlayMusic(fursuitbot, chat_id, msg['text'])
         if msg['text'] not in main_menu_buttons:
             fursuitbot.sendChatAction(chat_id, 'typing')
             fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
         else:
             fursuitbot.sendChatAction(chat_id, 'typing')
-            fursuitbot.deleteMessage((chat_id, msg['message_id']))
             match msg['text']:
                 case 'Media / Sound':
                     fursuitbot.sendMessage(chat_id, 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
@@ -67,16 +88,17 @@ def thread_function(msg):
         if 'ConnectionResetError' not in traceback.format_exc():
             fursuitbot.sendMessage(ownerID, traceback.format_exc())
             fursuitbot.sendMessage(ownerID, str(msg))
+    finally:
+        last_message_chat[chat_id] = msg
 
 def thread_function_query(msg):
     try:
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
-        last_message_chat[from_id] = msg
         persist_msg = False
         match query_data.split()[0]:
             case 'music':
-                pass
+                fursuitbot.sendMessage(from_id, 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
             case 'sfx':
                 pass
             case 'media':
@@ -166,6 +188,8 @@ def thread_function_query(msg):
         if 'ConnectionResetError' not in traceback.format_exc():
             fursuitbot.sendMessage(ownerID, traceback.format_exc())
             fursuitbot.sendMessage(ownerID, str(msg))
+    finally:
+        last_message_chat[from_id] = msg
 
 def handle(msg):
     try:

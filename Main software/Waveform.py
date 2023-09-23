@@ -11,11 +11,12 @@ p = pyaudio.PyAudio()
 chunk_size = 4096
 
 is_paused = False
+stop_flag = False
 audio_data = []
 audio_data_max = 0
 
 def play_audio(filename):
-    global is_paused, audio_data, audio_data_max
+    global is_paused, stop_flag, audio_data, audio_data_max
     if filename[-4:] != ".wav":
         subprocess.call(["ffmpeg", "-i", filename, "-ar", "16000", filename[:-4] + ".wav", "-y"])
         filename = filename[:-4] + ".wav"
@@ -24,6 +25,8 @@ def play_audio(filename):
                     channels=wf.getnchannels(),
                     rate=wf.getframerate(),
                     output=True)
+    is_paused = False
+    stop_flag = False
     data = wf.readframes(chunk_size)
     while len(data) > 0:
         if not is_paused:
@@ -31,6 +34,9 @@ def play_audio(filename):
             audio_data_max = np.max(audio_data)
             stream.write(data)
             data = wf.readframes(chunk_size)
+        if stop_flag:
+            stop_flag = False
+            break
 
 def TTS(text):
     language = translator.detect(text).lang

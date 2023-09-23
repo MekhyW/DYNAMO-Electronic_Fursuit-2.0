@@ -99,16 +99,18 @@ def thread_function_query(msg):
         match query_data.split()[0]:
             case 'music':
                 fursuitbot.sendMessage(from_id, 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
+                fursuitbot.answerCallbackQuery(query_id, text='Input name or link to song')
             case 'sfx':
                 pass
             case 'media':
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
-                        pass
+                        Waveform.stop_flag = True
                     case 'pause':
-                        pass
+                        Waveform.is_paused = True
                     case 'resume':
-                        pass
+                        Waveform.is_paused = False
+                fursuitbot.answerCallbackQuery(query_id, text='Done!')
             case 'volume':
                 pass
             case 'expression':

@@ -8,6 +8,7 @@ import time
 
 p = pyaudio.PyAudio()
 is_paused = False
+stop_flag = False
 chunk_size = 1024
 
 def toggle_pause():
@@ -16,6 +17,7 @@ def toggle_pause():
     time.sleep(0.25)
 
 def play_audio(filename):
+    global is_paused, stop_flag
     wf = wave.open(filename, 'rb')
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                     channels=wf.getnchannels(),
@@ -25,6 +27,10 @@ def play_audio(filename):
     print("Sample width:", wf.getsampwidth())
     print("Number of channels:", wf.getnchannels())
     print("Frame rate:", wf.getframerate())
+
+    # Reset the flags
+    is_paused = False
+    stop_flag = False
 
     # Read first chunk of data
     data = wf.readframes(chunk_size)
@@ -55,6 +61,10 @@ def play_audio(filename):
             # Read the next chunk of data
             data = wf.readframes(chunk_size)
 
+        if stop_flag:
+            stop_flag = False
+            break
+
     ani = ArtistAnimation(fig, frames, interval=20, blit=True)
     plt.show()
 
@@ -63,4 +73,4 @@ def play_audio(filename):
     p.terminate()
 
 if __name__ == "__main__":
-    play_audio('Test scripts/query.wav')
+    play_audio('query.wav')

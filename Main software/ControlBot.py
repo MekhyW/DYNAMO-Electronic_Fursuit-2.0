@@ -269,15 +269,16 @@ def handle_query(msg):
 
 def StartBot():
     global bot_online
-    try:
-        DiscardPreviousUpdates()
-        MessageLoop(fursuitbot, {'chat': handle, 'callback_query': handle_query}).run_as_thread()
-        fursuitbot.sendMessage(ownerID, '>>> READY! <<<')
-        print("Control bot online!")
-        return True
-    except Exception as e:
-        print(e)
-        return False
+    while True:
+        try:
+            DiscardPreviousUpdates()
+            MessageLoop(fursuitbot, {'chat': handle, 'callback_query': handle_query}).run_as_thread()
+            fursuitbot.sendMessage(ownerID, '>>> READY! <<<')
+            print("Control bot online!")
+            return True
+        except Exception as e:
+            print(e)
+            time.sleep(1)
     
 
 if __name__ == '__main__':

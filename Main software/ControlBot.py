@@ -1,4 +1,5 @@
 import Waveform
+import MachineVision
 import Windows
 import telepot
 from telepot.loop import MessageLoop
@@ -56,6 +57,8 @@ def thread_function(msg):
     try:
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
+        if 'text' in msg:
+            fursuitbot.deleteMessage((chat_id, msg['message_id']))
         if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] == 'music':
             last_message_chat[chat_id] = msg
             if msg['text'] == '/cancel':
@@ -98,6 +101,7 @@ def thread_function(msg):
 
 
 def thread_function_query(msg):
+    global expression_manual_mode, expression_manual_id
     try:
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
@@ -105,7 +109,7 @@ def thread_function_query(msg):
         match query_data.split()[0]:
             case 'music':
                 fursuitbot.sendMessage(from_id, 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
-                fursuitbot.answerCallbackQuery(query_id, text='Input name or link to song')
+                fursuitbot.answerCallbackQuery(query_id, text='Type name or link')
             case 'sfx':
                 pass
             case 'media':
@@ -116,31 +120,58 @@ def thread_function_query(msg):
                         Waveform.is_paused = True
                     case 'resume':
                         Waveform.is_paused = False
-                fursuitbot.answerCallbackQuery(query_id, text='Done!')
+                fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'volume':
                 persist_msg = True
                 if len(query_data.split()) == 1:
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Volume', reply_markup={'inline_keyboard': [[{'text': '⬅️ Go back', 'callback_data': 'volume goback'}], [{'text': '0%', 'callback_data': 'volume 0'}], [{'text': '25%', 'callback_data': 'volume 25'}], [{'text': '50%', 'callback_data': 'volume 50'}], [{'text': '75%', 'callback_data': 'volume 75'}], [{'text': '100%', 'callback_data': 'volume 100'}]]})
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Volume', reply_markup={'inline_keyboard': 
+                        [[{'text': '⬅️ Go back', 'callback_data': 'volume goback'}], 
+                            [{'text': '0%', 'callback_data': 'volume 0'}], 
+                            [{'text': '25%', 'callback_data': 'volume 25'}], 
+                            [{'text': '50%', 'callback_data': 'volume 50'}], 
+                            [{'text': '75%', 'callback_data': 'volume 75'}], 
+                            [{'text': '100%', 'callback_data': 'volume 100'}]]})
                 elif query_data.split()[1] == 'goback':
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
                 else:
                     Windows.set_system_volume(int(query_data.split()[1]) / 100)
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Volume set to {}%'.format(query_data.split()[1]))
-                    fursuitbot.answerCallbackQuery(query_id, text='Done!')
+                    fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'expression':
-                match ' '.join(query_data.split()[1:]):
+                match query_data.split()[1]:
                     case 'set':
-                        pass
+                        if len(query_data.split()) == 2:
+                            persist_msg = True
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Expression', reply_markup={'inline_keyboard': 
+                                [[{'text': '⬅️ Go back', 'callback_data': 'expression set goback'}], 
+                                 [{'text': 'Neutral', 'callback_data': 'expression set 3'}], 
+                                 [{'text': 'Happy', 'callback_data': 'expression set 2'}], 
+                                 [{'text': 'Sad', 'callback_data': 'expression set 4'}], 
+                                 [{'text': 'Angry', 'callback_data': 'expression set 0'}], 
+                                 [{'text': 'Surprised', 'callback_data': 'expression set 5'}],
+                                 [{'text': 'Disgusted', 'callback_data': 'expression set 1'}],
+                                 [{'text': 'Hypno', 'callback_data': 'expression set 6'}]]})
+                        elif query_data.split()[2] == 'goback':
+                            persist_msg = True
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                        else:
+                            MachineVision.expression_manual_mode = True
+                            MachineVision.expression_manual_id = int(query_data.split()[2])
+                            fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'auto':
-                        pass
+                        MachineVision.expression_manual_mode = False
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'manual':
-                        pass
+                        MachineVision.expression_manual_mode = True
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'eyetracking':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
-                        pass
+                        MachineVision.eye_tracking_mode = True
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'off':
-                        pass
+                        MachineVision.eye_tracking_mode = False
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'animatronic':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
@@ -191,7 +222,7 @@ def thread_function_query(msg):
                         case 'shell':
                             pass
                 else:
-                    fursuitbot.answerCallbackQuery(query_id, text='This is only available to the user of this fursuit!')
+                    fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
             case 'shutdown':
                 if int(from_id) == int(ownerID):
                     fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
@@ -208,7 +239,7 @@ def thread_function_query(msg):
                             Windows.kill_process('VoicemodDesktop.exe') 
                             os._exit(0)
                 else:
-                    fursuitbot.answerCallbackQuery(query_id, text='This is only available to the user of this fursuit!')
+                    fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
         if not persist_msg:
             fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
     except Exception as e:

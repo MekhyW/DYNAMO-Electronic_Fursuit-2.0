@@ -27,6 +27,10 @@ right_eye_closed = False
 emotion_labels = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
 emotion_scores = [0]*6
 
+eye_tracking_mode = True
+expression_manual_mode = False
+expression_manual_id = 0
+
 def calculate_roll_angle(landmarks):
     left_ear_x = landmarks[234].x
     left_ear_y = landmarks[234].y
@@ -102,57 +106,69 @@ def draw_emotion(frame, emotion):
 
 def predict_emotion(frame, draw=False):
     global mesh_points, emotion_labels, emotion_scores
-    if mesh_points is None:
-        return None
-    nose_tip = mesh_points[4] 
-    forehead = mesh_points[151]
-    mesh_norm = mesh_points - nose_tip
-    scale_factor = np.linalg.norm(forehead - nose_tip)
-    if np.isclose(scale_factor, 0):
-        scale_factor = 1e-6
-    mesh_norm = np.divide(mesh_norm, scale_factor)
-    landmarks_flat = mesh_norm.flatten()
-    landmarks_transformed = pca_model.transform([landmarks_flat])
-    pred = emotion_model.predict_proba(landmarks_transformed)[0]
-    pred_index = np.argmax(pred)
-    emotion_scores_noisy = transform_to_zero_one_numpy(pred)
-    for score in range(len(emotion_scores)):
-        emotion_scores_noisy[score] = expit(10 * (emotion_scores_noisy[score] - 0.5))
-        emotion_scores[score] = emotion_scores[score]*0.9 + emotion_scores_noisy[score]*0.1
-    if draw:
-        frame = draw_emotion(frame, emotion_labels[pred_index])
+    if not expression_manual_mode:
+        if mesh_points is None:
+            return None
+        nose_tip = mesh_points[4] 
+        forehead = mesh_points[151]
+        mesh_norm = mesh_points - nose_tip
+        scale_factor = np.linalg.norm(forehead - nose_tip)
+        if np.isclose(scale_factor, 0):
+            scale_factor = 1e-6
+        mesh_norm = np.divide(mesh_norm, scale_factor)
+        landmarks_flat = mesh_norm.flatten()
+        landmarks_transformed = pca_model.transform([landmarks_flat])
+        pred = emotion_model.predict_proba(landmarks_transformed)[0]
+        pred_index = np.argmax(pred)
+        emotion_scores_noisy = transform_to_zero_one_numpy(pred)
+        for score in range(len(emotion_scores)):
+            emotion_scores_noisy[score] = expit(10 * (emotion_scores_noisy[score] - 0.5))
+            emotion_scores[score] = emotion_scores[score]*0.9 + emotion_scores_noisy[score]*0.1
+        if draw:
+            frame = draw_emotion(frame, emotion_labels[pred_index])
+    else:
+        emotion_scores = [0]*len(emotion_labels)
+        if expression_manual_id < len(emotion_labels):
+            emotion_scores[expression_manual_id] = 1
+        if draw:
+            frame = draw_emotion(frame, emotion_labels[expression_manual_id])
     return frame
 
 def eye_track(frame, draw=False):
     global results_mesh, mesh_points, displacement_eye, left_eye_closed, right_eye_closed
-    H, W, _ = frame.shape
-    if mesh_points is not None:
-        lex1, ley1 = np.min(mesh_points[LEFT_EYE], axis=0)
-        lex2, ley2 = np.max(mesh_points[LEFT_EYE], axis=0)
-        rex1, rey1 = np.min(mesh_points[RIGHT_EYE], axis=0)
-        rex2, rey2 = np.max(mesh_points[RIGHT_EYE], axis=0)
-        lex1_ext, ley1_ext = np.min(mesh_points[LEFT_EYE_EXTENDED], axis=0)
-        lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
-        rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-        rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-        if abs(lex1-lex2)/abs(ley1-ley2) > 5:
-            left_eye_closed = True
-        else:
-            left_eye_closed = False
-        if abs(rex1-rex2)/abs(rey1-rey2) > 5:
-            right_eye_closed = True
-        else:
-            right_eye_closed = False
-        displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
-        displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
-        if left_eye_closed or right_eye_closed:
-            displacement_eye_noisy = (0,0)
-        else:
-            displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
-        displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
-        displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
-        if draw:
-            frame = draw_tracking(frame, lex1, ley1, lex2, ley2, rex1, rey1, rex2, rey2, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
+    if eye_tracking_mode:
+        H, W, _ = frame.shape
+        if mesh_points is not None:
+            lex1, ley1 = np.min(mesh_points[LEFT_EYE], axis=0)
+            lex2, ley2 = np.max(mesh_points[LEFT_EYE], axis=0)
+            rex1, rey1 = np.min(mesh_points[RIGHT_EYE], axis=0)
+            rex2, rey2 = np.max(mesh_points[RIGHT_EYE], axis=0)
+            lex1_ext, ley1_ext = np.min(mesh_points[LEFT_EYE_EXTENDED], axis=0)
+            lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
+            rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
+            rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
+            if abs(lex1-lex2)/abs(ley1-ley2) > 5:
+                left_eye_closed = True
+            else:
+                left_eye_closed = False
+            if abs(rex1-rex2)/abs(rey1-rey2) > 5:
+                right_eye_closed = True
+            else:
+                right_eye_closed = False
+            displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
+            displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
+            if left_eye_closed or right_eye_closed:
+                displacement_eye_noisy = (0,0)
+            else:
+                displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
+            displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
+            displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
+            if draw:
+                frame = draw_tracking(frame, lex1, ley1, lex2, ley2, rex1, rey1, rex2, rey2, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
+    else:
+        displacement_eye = (0,0)
+        left_eye_closed = False
+        right_eye_closed = False
     return frame
 
 def main(draw=False):

@@ -1,6 +1,7 @@
 import Waveform
 import MachineVision
 import Windows
+import Assistant
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
@@ -201,11 +202,14 @@ def thread_function_query(msg):
             case 'assistant':
                 match ' '.join(query_data.split()[1:]):
                     case 'trigger':
-                        pass
+                        Assistant.trigger()
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'hotword on':
-                        pass
+                        Assistant.hotword_detection_enabled = True
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'hotword off':
-                        pass
+                        Assistant.hotword_detection_enabled = False
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'misc':
                 match ' '.join(query_data.split()[1:]):
                     case 'refsheet':
@@ -247,6 +251,7 @@ def thread_function_query(msg):
         if 'ConnectionResetError' not in traceback.format_exc():
             fursuitbot.sendMessage(ownerID, traceback.format_exc())
             fursuitbot.sendMessage(ownerID, str(msg))
+            fursuitbot.answerCallbackQuery(query_id, text='ERROR')
     finally:
         last_message_chat[from_id] = msg
 

@@ -15,6 +15,7 @@ previous_questions = ["Who won the world series in 2020?", "Você é fofo!"]
 previous_answers = ["The Los Angeles Dodgers", "Não, você que é fofo! UwU"]
 
 triggered = False
+hotword_detection_enabled = True
 
 def record_query():
     print("Recording")
@@ -64,7 +65,7 @@ def start():
 
 def refresh():
     keyword_index = porcupine.process(recorder.read())
-    if keyword_index >= 0:
+    if keyword_index >= 0 and hotword_detection_enabled:
         trigger()
 
 if __name__ == "__main__":

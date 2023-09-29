@@ -4,16 +4,32 @@ from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
-def get_cpu_usage():
-    return psutil.cpu_percent(interval=1)
+def get_cpu_info():
+    return {
+        "physical_cores": psutil.cpu_count(logical=False),
+        "total_cores": psutil.cpu_count(logical=True),
+        "max_frequency": psutil.cpu_freq().max,
+        "min_frequency": psutil.cpu_freq().min,
+        "current_frequency": psutil.cpu_freq().current,
+        "usage": psutil.cpu_percent(interval=1)
+    }
 
-def get_memory_usage():
+def get_memory_info():
     virtual_memory = psutil.virtual_memory()
     return {
         "total": virtual_memory.total,
         "available": virtual_memory.available,
         "used": virtual_memory.used,
         "percent": virtual_memory.percent
+    }
+
+def get_disk_info():
+    disk_usage = psutil.disk_usage('/')
+    return {
+        "total": disk_usage.total,
+        "used": disk_usage.used,
+        "free": disk_usage.free,
+        "percent": disk_usage.percent
     }
 
 def get_system_volume():

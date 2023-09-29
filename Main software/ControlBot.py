@@ -6,6 +6,9 @@ import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 import traceback
+from contextlib import redirect_stdout
+from io import StringIO
+import subprocess
 import threading
 import json
 import os
@@ -14,6 +17,10 @@ import time
 Token = json.load(open('credentials.json'))['fursuitbot_token']
 ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
 fursuitbot = telepot.Bot(Token)
+
+refsheet = open('resources/refsheet.png', 'rb')
+stickerpack = 'https://t.me/addstickers/MekhyW'
+stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgUWYjKWFS6B-MTAE'
 
 main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
@@ -58,14 +65,33 @@ def thread_function(msg):
     try:
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
-        if 'text' in msg:
-            fursuitbot.deleteMessage((chat_id, msg['message_id']))
-        if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] == 'music':
+        if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'debugging python', 'debugging shell']:
+            data = last_message_chat[chat_id]['data']
             last_message_chat[chat_id] = msg
             if msg['text'] == '/cancel':
                 fursuitbot.sendMessage(chat_id, 'Command was cancelled')
-            else:
+            elif data == 'music':
                 PlayMusic(fursuitbot, chat_id, msg['text'])
+            elif data == 'debugging python':
+                output_buffer = StringIO()
+                with redirect_stdout(output_buffer):
+                    try:
+                        exec(msg['text'])
+                        output = output_buffer.getvalue()
+                        if output:
+                            fursuitbot.sendMessage(chat_id, output)
+                        else:
+                            fursuitbot.sendMessage(chat_id, '(no output)')
+                    except:
+                        fursuitbot.sendMessage(chat_id, traceback.format_exc())
+            elif data == 'debugging shell':
+                result = subprocess.run(msg['text'], shell=True, capture_output=True)
+                if result.stderr:
+                    fursuitbot.sendMessage(chat_id, result.stderr.decode('utf-8', errors='ignore'))
+                elif result.stdout:
+                    fursuitbot.sendMessage(chat_id, result.stdout.decode('utf-8', errors='ignore'))
+                else:
+                    fursuitbot.sendMessage(chat_id, '(no output)')
         if msg['text'] not in main_menu_buttons:
             fursuitbot.sendChatAction(chat_id, 'typing')
             fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
@@ -106,24 +132,25 @@ def thread_function_query(msg):
     try:
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
-        persist_msg = False
         match query_data.split()[0]:
             case 'music':
-                fursuitbot.sendMessage(from_id, 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
-                fursuitbot.answerCallbackQuery(query_id, text='Type name or link')
+                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
+                fursuitbot.answerCallbackQuery(query_id, text='Enter name or link')
             case 'sfx':
                 pass
             case 'media':
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
                         Waveform.stop_flag = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Stopped')
                     case 'pause':
                         Waveform.is_paused = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Paused')
                     case 'resume':
                         Waveform.is_paused = False
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Resumed')
                 fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'volume':
-                persist_msg = True
                 if len(query_data.split()) == 1:
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Volume', reply_markup={'inline_keyboard': 
                         [[{'text': '⬅️ Go back', 'callback_data': 'volume goback'}], 
@@ -142,7 +169,6 @@ def thread_function_query(msg):
                 match query_data.split()[1]:
                     case 'set':
                         if len(query_data.split()) == 2:
-                            persist_msg = True
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Expression', reply_markup={'inline_keyboard': 
                                 [[{'text': '⬅️ Go back', 'callback_data': 'expression set goback'}], 
                                  [{'text': 'Neutral', 'callback_data': 'expression set 3'}], 
@@ -153,25 +179,29 @@ def thread_function_query(msg):
                                  [{'text': 'Disgusted', 'callback_data': 'expression set 1'}],
                                  [{'text': 'Hypno', 'callback_data': 'expression set 6'}]]})
                         elif query_data.split()[2] == 'goback':
-                            persist_msg = True
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
                         else:
                             MachineVision.expression_manual_mode = True
                             MachineVision.expression_manual_id = int(query_data.split()[2])
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression set to ID {}'.format(MachineVision.expression_manual_id))
                             fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'auto':
                         MachineVision.expression_manual_mode = False
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression set to AUTOMATIC')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'manual':
                         MachineVision.expression_manual_mode = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression set to MANUAL')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'eyetracking':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
                         MachineVision.eye_tracking_mode = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Eye Tracking set to ON')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'off':
                         MachineVision.eye_tracking_mode = False
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Eye Tracking set to OFF')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'animatronic':
                 match ' '.join(query_data.split()[1:]):
@@ -203,28 +233,45 @@ def thread_function_query(msg):
                 match ' '.join(query_data.split()[1:]):
                     case 'trigger':
                         Assistant.trigger()
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Triggered!')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'hotword on':
                         Assistant.hotword_detection_enabled = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Hotword Detection set to ON\n\nNOTE: If the voice changer is ON, hotword detection may not work depending on the effect.')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
                     case 'hotword off':
                         Assistant.hotword_detection_enabled = False
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Hotword Detection set to OFF')
                         fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'misc':
                 match ' '.join(query_data.split()[1:]):
                     case 'refsheet':
-                        pass
+                        while True:
+                            try:
+                                fursuitbot.sendPhoto(from_id, refsheet, caption='Refsheet')
+                                break
+                            except ConnectionResetError:
+                                pass
                     case 'stickerpack':
-                        pass
+                        fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
+                        fursuitbot.sendSticker(from_id, stickerexample)
+                        fursuitbot.sendMessage(from_id, 'Add the sticker pack to your Telegram here: {}'.format(stickerpack))
             case 'debugging':
                 if int(from_id) == int(ownerID):
                     match ' '.join(query_data.split()[1:]):
                         case 'resources':
-                            pass
+                            cpu_info = Windows.get_cpu_info()
+                            memory_info = Windows.get_memory_info()
+                            disk_info = Windows.get_disk_info()
+                            system_volume = Windows.get_system_volume()
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 
+                                f'CPU \n Physical cores: {cpu_info["physical_cores"]}\nTotal cores: {cpu_info["total_cores"]}\nMax frequency: {cpu_info["max_frequency"]}\nMin frequency: {cpu_info["min_frequency"]}\nCurrent frequency: {cpu_info["current_frequency"]}\nUsage: {cpu_info["usage"]}%\n\nRAM \n Total: {memory_info["total"]}\nAvailable: {memory_info["available"]}\nUsed: {memory_info["used"]}\nUsage: {memory_info["percent"]}%\n\nDisk \n Total: {disk_info["total"]}\nUsed: {disk_info["used"]}\nFree: {disk_info["free"]}\nUsage: {disk_info["percent"]}%\n\nVolume\nLevel: {100*system_volume}%')                  
                         case 'python':
-                            pass
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the Python command you want me to execute\nOr use /cancel to cancel the command.')
+                            fursuitbot.answerCallbackQuery(query_id, text='Enter Python command')
                         case 'shell':
-                            pass
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the Shell command you want me to execute\nOr use /cancel to cancel the command.')
+                            fursuitbot.answerCallbackQuery(query_id, text='Enter Shell command')
                 else:
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
             case 'shutdown':
@@ -244,8 +291,6 @@ def thread_function_query(msg):
                             os._exit(0)
                 else:
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
-        if not persist_msg:
-            fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
     except Exception as e:
         print(e)
         if 'ConnectionResetError' not in traceback.format_exc():

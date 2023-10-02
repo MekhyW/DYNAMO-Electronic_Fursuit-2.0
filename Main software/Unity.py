@@ -17,15 +17,17 @@ def connect():
             time.sleep(1)
     return client_socket
 
-def send(displacement_eye_x, displacement_eye_y, left_eye_closed, right_eye_closed, expression_scores_list):
+def send(displacement_eye_x, displacement_eye_y, left_eye_closeness, right_eye_closeness, expression_scores_list):
     displacement_eye_x = str(displacement_eye_x).replace(".", ",")
     displacement_eye_y = str(displacement_eye_y).replace(".", ",")
+    left_eye_closeness = str(left_eye_closeness).replace(".", ",")
+    right_eye_closeness = str(right_eye_closeness).replace(".", ",")
     expression_scores_string = ""
     for score in expression_scores_list:
         if score < 0.01:
             score = 0
         expression_scores_string += str(score).replace(".", ",") + " "
-    message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closed} {right_eye_closed} {expression_scores_string}"
+    message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closeness} {right_eye_closeness} {expression_scores_string}"
     client_socket.sendall(message.encode())
     response = client_socket.recv(1024).decode()
     if "Invalid message format!" in response:

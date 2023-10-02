@@ -11,6 +11,7 @@ drawSpec = mp_drawing.DrawingSpec(thickness=1, circle_radius=2)
 face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5)
 emotion_model = pickle.load(open('resources/emotion_model.pkl', 'rb'))
 pca_model = joblib.load('resources/pca_model.pkl')
+eye_closeness_model = pickle.load(open('resources/eyecloseness_model.pkl', 'rb'))
 cap = cv2.VideoCapture(0)
 RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
 LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
@@ -22,8 +23,8 @@ RIGHT_IRIS = [473, 474, 475, 476, 477]
 results_mesh = None
 mesh_points = None
 displacement_eye = (0,0)
-left_eye_closed = False
-right_eye_closed = False
+left_eye_closeness = 0
+right_eye_closeness = 0
 emotion_labels = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
 emotion_scores = [0]*6
 
@@ -135,7 +136,7 @@ def predict_emotion(frame, draw=False):
     return frame
 
 def eye_track(frame, draw=False):
-    global results_mesh, mesh_points, displacement_eye, left_eye_closed, right_eye_closed
+    global results_mesh, mesh_points, displacement_eye, left_eye_closeness, right_eye_closeness
     if eye_tracking_mode:
         H, W, _ = frame.shape
         if mesh_points is not None:
@@ -147,28 +148,21 @@ def eye_track(frame, draw=False):
             lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
             rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
             rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-            if abs(lex1-lex2)/abs(ley1-ley2) > 5:
-                left_eye_closed = True
-            else:
-                left_eye_closed = False
-            if abs(rex1-rex2)/abs(rey1-rey2) > 5:
-                right_eye_closed = True
-            else:
-                right_eye_closed = False
+            left_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(lex1-lex2)/abs(ley1-ley2)]])[0][1]
+            right_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(rex1-rex2)/abs(rey1-rey2)]])[0][1]
+            left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
+            right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
             displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
             displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
-            if left_eye_closed or right_eye_closed:
-                displacement_eye_noisy = (0,0)
-            else:
-                displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
+            displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
             displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
             displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
             if draw:
                 frame = draw_tracking(frame, lex1, ley1, lex2, ley2, rex1, rey1, rex2, rey2, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
     else:
         displacement_eye = (0,0)
-        left_eye_closed = False
-        right_eye_closed = False
+        left_eye_closeness = 0
+        right_eye_closeness = 0
     return frame
 
 def main(draw=False):
@@ -183,6 +177,6 @@ if __name__ == "__main__":
     while True:
         frame = main(draw=True)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
-        print(displacement_eye, left_eye_closed, right_eye_closed, emotion_scores_rounded)
+        print(displacement_eye, left_eye_closeness, right_eye_closeness, emotion_scores_rounded)
         if frame is not None:
             cv2.imshow('frame', frame)

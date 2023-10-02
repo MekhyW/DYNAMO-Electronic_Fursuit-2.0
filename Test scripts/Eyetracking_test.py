@@ -2,9 +2,11 @@ import numpy as np
 import cv2
 import mediapipe as mp
 import math
+import pickle
 displacement_eye = (0,0)
-left_eye_closed = False
-right_eye_closed = False
+left_eye_closeness = 0
+right_eye_closeness = 0
+eye_closeness_model = pickle.load(open('../Main software/resources/eyecloseness_model.pkl', 'rb'))
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 drawSpec = mp_drawing.DrawingSpec(thickness=1, circle_radius=2)
@@ -51,7 +53,7 @@ def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     return displacement
 
 def eye_track(frame, draw=True):
-    global displacement_eye, left_eye_closed, right_eye_closed
+    global displacement_eye, left_eye_closeness, right_eye_closeness
     H, W, _ = frame.shape
     results_mesh = face_mesh.process(frame)
     if results_mesh.multi_face_landmarks:
@@ -67,20 +69,13 @@ def eye_track(frame, draw=True):
         lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
         rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
         rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-        if abs(lex1-lex2)/abs(ley1-ley2) > 5:
-            left_eye_closed = True
-        else:
-            left_eye_closed = False
-        if abs(rex1-rex2)/abs(rey1-rey2) > 5:
-            right_eye_closed = True
-        else:
-            right_eye_closed = False
+        left_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(lex1-lex2)/abs(ley1-ley2)]])[0][1]
+        right_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(rex1-rex2)/abs(rey1-rey2)]])[0][1]
+        left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
+        right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
         displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
         displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
-        if left_eye_closed or right_eye_closed:
-            displacement_eye_noisy = (0,0)
-        else:
-            displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
+        displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
         displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
         displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
         if draw:
@@ -99,7 +94,7 @@ def eye_track(frame, draw=True):
 while True:
     ret, frame = cap.read()
     frame = eye_track(frame)
-    print(displacement_eye, left_eye_closed, right_eye_closed)
+    print(displacement_eye, left_eye_closeness, right_eye_closeness)
     cv2.imshow('frame', frame)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break

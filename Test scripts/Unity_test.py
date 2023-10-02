@@ -10,10 +10,10 @@ def send_and_receive():
     while True:
         displacement_eye_x = input("Enter eye x: ").replace(".", ",")
         displacement_eye_y = input("Enter eye y: ").replace(".", ",")
-        left_eye_closed = input("Enter left eye closed (True or False): ") == "True"
-        right_eye_closed = input("Enter right eye closed (True or False): ") == "True"
+        left_eye_closeness = input("Enter left eye closeness: ").replace(".", ",")
+        right_eye_closeness = input("Enter right eye closed: ").replace(".", ",")
         expression_scores = input("Enter the 6 expression scores (separated by spaces): ").replace(".", ",")
-        message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closed} {right_eye_closed} {expression_scores}"
+        message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closeness} {right_eye_closeness} {expression_scores}"
         client_socket.sendall(message.encode())
         response = client_socket.recv(1024).decode()
         print("Received response:", response)

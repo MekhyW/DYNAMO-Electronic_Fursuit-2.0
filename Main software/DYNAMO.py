@@ -44,7 +44,7 @@ def main():
     while True:
         try:
             Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
-                       MachineVision.left_eye_closed, MachineVision.right_eye_closed, 
+                       MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, 
                        MachineVision.emotion_scores)
             time.sleep(0.01)
         except Exception as e:

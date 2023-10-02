@@ -22,7 +22,7 @@ refsheet = open('resources/refsheet.png', 'rb')
 stickerpack = 'https://t.me/addstickers/MekhyW'
 stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgUWYjKWFS6B-MTAE'
 
-main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔧 Debugging', '🛑 Shutdown']
+main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
 inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': 'Stop Media', 'callback_data': 'media stop'}, {'text': 'Pause Media', 'callback_data': 'media pause'}, {'text': 'Resume Media', 'callback_data': 'media resume'}], [{'text': 'Set Volume', 'callback_data': 'volume'}]]
 inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}, {'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}, {'text': 'Set to MANUAL', 'callback_data': 'expression manual'}]]
@@ -36,6 +36,7 @@ inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging 
 inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}]]
 
 last_message_chat = {}
+lock_outsider_commands = False
 
 def PlayMusic(fursuitbot, chat_id, text):
     Waveform.stop_flag = True
@@ -54,6 +55,17 @@ def PlayMusic(fursuitbot, chat_id, text):
     Waveform.play_audio(file_name)
     os.remove(file_name)
 
+def ToggleOutsiderCommands(fursuitbot, chat_id):
+    global lock_outsider_commands
+    if int(chat_id) != int(ownerID):
+        fursuitbot.sendMessage(chat_id, 'You are not the owner of this suit!')
+        return
+    lock_outsider_commands = not lock_outsider_commands
+    if lock_outsider_commands:
+        fursuitbot.sendMessage(chat_id, 'Outsider commands are now LOCKED')
+    else:
+        fursuitbot.sendMessage(chat_id, 'Outsider commands are now UNLOCKED')
+
 def DiscardPreviousUpdates():
     updates = fursuitbot.getUpdates()
     if updates:
@@ -65,6 +77,9 @@ def thread_function(msg):
     try:
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
+        if lock_outsider_commands and int(chat_id) != int(ownerID):
+            fursuitbot.sendMessage(chat_id, 'Outsider commands are currently LOCKED')
+            return
         if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'debugging python', 'debugging shell']:
             data = last_message_chat[chat_id]['data']
             last_message_chat[chat_id] = msg
@@ -114,6 +129,8 @@ def thread_function(msg):
                     fursuitbot.sendMessage(chat_id, 'Cookiebot', reply_markup={'inline_keyboard': inline_keyboard_cookiebot})
                 case '🖼️ Refsheet / Sticker Pack':
                     fursuitbot.sendMessage(chat_id, 'Refsheet / Sticker Pack', reply_markup={'inline_keyboard': inline_keyboard_refsheet})
+                case '🔒 Lock/Unlock Outsiders':
+                    ToggleOutsiderCommands(fursuitbot, chat_id)
                 case '🔧 Debugging':
                     fursuitbot.sendMessage(chat_id, 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
                 case '🛑 Shutdown':
@@ -132,6 +149,9 @@ def thread_function_query(msg):
     try:
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
+        if lock_outsider_commands and int(from_id) != int(ownerID):
+            fursuitbot.answerCallbackQuery(query_id, text='Outsider commands are currently LOCKED')
+            return
         match query_data.split()[0]:
             case 'music':
                 fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')

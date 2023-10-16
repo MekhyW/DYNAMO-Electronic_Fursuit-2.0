@@ -17,17 +17,19 @@ async def send_message(websocket, message, only_once=False):
             await websocket.send(json.dumps(message))
             response = await asyncio.wait_for(websocket.recv(), timeout=1)
             response = json.loads(response)
+            print(response)
             if response_prev == response or only_once:
                 break
             response_prev = response
         except asyncio.TimeoutError:
+            print("Timeout")
             break
     return response
 
 async def main():
     url = "ws://localhost:59129/v1"
     try:
-        async with websockets.connect(url, ping_interval=10) as websocket_voicemod:
+        async with websockets.connect(url, ping_interval=5) as websocket_voicemod:
             register_message = {"action": "registerClient", "id": "ff7d7f15-0cbf-4c44-bc31-b56e0a6c9fa6",
                 "payload": {"clientKey": voicemod_key}
             }
@@ -50,12 +52,18 @@ async def main():
                             print("Error getting voices")
                     case "getMemes":
                         sounds = await send_message(websocket_voicemod, message)
-                        if sounds is not None and 'actionObject' in sounds:
+                        if sounds is not None and 'actionObject' in sounds and 'listOfMemes' in sounds['actionObject']:
                             sounds = sounds["actionObject"]["listOfMemes"]
                             for sound in sounds:
                                 print(sound["name"], sound["FileName"])
                         else:
                             print("Error getting sounds")
+                    case "getAllSoundboard":
+                        soundboards = await send_message(websocket_voicemod, message)
+                        if soundboards is not None and 'payload' in soundboards and 'soundboards' in soundboards['payload']:
+                            soundboards = soundboards["payload"]["soundboards"]
+                            for soundboard in soundboards:
+                                print(soundboard["name"])
                     case "getHearMyselfStatus" | "getVoiceChangerStatus" | "getBackgroundEffectStatus":
                         status = await send_message(websocket_voicemod, message)
                         if status is not None and 'actionObject' in status:

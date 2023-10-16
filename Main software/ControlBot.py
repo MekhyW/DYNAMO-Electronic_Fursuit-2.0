@@ -2,17 +2,15 @@ import Waveform
 import MachineVision
 import Windows
 import Assistant
+import Voicemod
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
 import traceback
 from contextlib import redirect_stdout
 from io import StringIO
-import subprocess
-import threading
-import json
-import os
-import time
+import subprocess, threading
+import json, os, time
 
 Token = json.load(open('credentials.json'))['fursuitbot_token']
 ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
@@ -108,10 +106,8 @@ def thread_function(msg):
                 else:
                     fursuitbot.sendMessage(chat_id, '(no output)')
         if msg['text'] not in main_menu_buttons:
-            fursuitbot.sendChatAction(chat_id, 'typing')
             fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
         else:
-            fursuitbot.sendChatAction(chat_id, 'typing')
             match msg['text']:
                 case '🎵 Media / Sound':
                     fursuitbot.sendMessage(chat_id, 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
@@ -145,7 +141,6 @@ def thread_function(msg):
 
 
 def thread_function_query(msg):
-    global expression_manual_mode, expression_manual_id
     try:
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
@@ -157,11 +152,32 @@ def thread_function_query(msg):
                 fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
                 fursuitbot.answerCallbackQuery(query_id, text='Enter name or link')
             case 'sfx':
-                pass
+                if len(query_data.split()) == 1:
+                    soundboard_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'sfx goback'}]]
+                    for soundboard in Voicemod.soundboards:
+                        soundboard_keyboard.append([{'text': soundboard['name'], 'callback_data': 'sfx soundboard {}'.format(soundboard['id'])}])
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'SFX Keyboards', reply_markup={'inline_keyboard': soundboard_keyboard})
+                elif query_data.split()[1] == 'soundboard':
+                    for soundboard in Voicemod.soundboards:
+                        if soundboard['id'] == query_data.split()[2]:
+                            sounds = soundboard['sounds']
+                            break
+                    sound_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'sfx'}]]
+                    for sound in sounds:
+                        sound_keyboard.append([{'text': sound['name'], 'callback_data': 'sfx play {}'.format(sound['id'])}])
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'SFX Keyboard', reply_markup={'inline_keyboard': sound_keyboard})
+                elif query_data.split()[1] == 'play':
+                    Voicemod.sfx_id = query_data.split()[2]
+                    Voicemod.play_sfx_flag = True
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Playing SFX ID {}'.format(Voicemod.sfx_id))
+                    fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                elif query_data.split()[1] == 'goback':
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
             case 'media':
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
                         Waveform.stop_flag = True
+                        Voicemod.stop_sfx_flag = True
                         fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Stopped')
                     case 'pause':
                         Waveform.is_paused = True
@@ -240,15 +256,32 @@ def thread_function_query(msg):
                     case 'off':
                         pass
             case 'voice':
-                match ' '.join(query_data.split()[1:]):
+                match query_data.split()[1]:
                     case 'change':
-                        pass
-                    case 'changer toggle':
-                        pass
-                    case 'hear toggle':
-                        pass
-                    case 'bg toggle':
-                        pass
+                        if len(query_data.split()) == 2:
+                            voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change goback'}]]
+                            for voice in Voicemod.voices:
+                                voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})
+                        elif query_data.split()[2] == 'load':
+                            Voicemod.voice_id = query_data.split()[3]
+                            Voicemod.load_voice_flag = True
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice loaded ID {}'.format(Voicemod.voice_id))
+                            fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        elif query_data.split()[2] == 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
+                    case 'changer':
+                        Voicemod.toggle_voice_changer_flag = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Changer Toggled')
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                    case 'hear':
+                        Voicemod.toggle_hear_my_voice_flag = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Hear My Voice Toggled')
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                    case 'bg':
+                        Voicemod.toggle_background_flag = True
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Background Toggled')
+                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
             case 'assistant':
                 match ' '.join(query_data.split()[1:]):
                     case 'trigger':

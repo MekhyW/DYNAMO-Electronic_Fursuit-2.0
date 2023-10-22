@@ -71,7 +71,7 @@ async def setVoice(voice_id):
     await send_message(voicemod_websocket, 'loadVoice', {"voiceId": voice_id}, only_once=True)
 
 async def playSFX(meme_id):
-    await send_message(voicemod_websocket, 'playMeme', {"memeId": meme_id, "IsKeyDown": True}, only_once=True)
+    await send_message(voicemod_websocket, 'playMeme', {"FileName": meme_id, "IsKeyDown": True}, only_once=True)
 
 async def stopSFX():
     await send_message(voicemod_websocket, 'stopAllMemeSounds', {}, only_once=True)

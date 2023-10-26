@@ -113,3 +113,5 @@ async def connect():
         except ConnectionRefusedError:
             print("Voicemod not running")
             time.sleep(1)
+        except Exception as e:
+            print(e)

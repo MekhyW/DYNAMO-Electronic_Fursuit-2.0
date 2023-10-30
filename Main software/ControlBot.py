@@ -1,8 +1,3 @@
-import Waveform
-import MachineVision
-import Windows
-import Assistant
-import Voicemod
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
@@ -11,6 +6,12 @@ from contextlib import redirect_stdout
 from io import StringIO
 import subprocess, threading
 import json, os, time
+import Waveform
+import MachineVision
+import Windows
+import Assistant
+import Voicemod
+import Serial
 
 Token = json.load(open('credentials.json'))['fursuitbot_token']
 ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
@@ -26,7 +27,7 @@ inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'},
 inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}, {'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}, {'text': 'Set to MANUAL', 'callback_data': 'expression manual'}]]
 inline_keyboard_eyetracking = [[{'text': 'Set to ON', 'callback_data': 'eyetracking on'}, {'text': 'Set to OFF', 'callback_data': 'eyetracking off'}]]
 inline_keyboard_animatronic = [[{'text': 'Set to ON', 'callback_data': 'animatronic on'}, {'text': 'Set to OFF', 'callback_data': 'animatronic off'}]]
-inline_keyboard_leds = [[{'text': 'Set Effect', 'callback_data': 'leds effect'}, {'text': 'Set Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Turn ON', 'callback_data': 'leds on'}, {'text': 'Turn OFF', 'callback_data': 'leds off'}]]
+inline_keyboard_leds = [[{'text': 'Set Effect', 'callback_data': 'leds effect'}, {'text': 'Set Color', 'callback_data': 'leds color'}], [{'text': 'Set Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Turn ON', 'callback_data': 'leds on'}, {'text': 'Turn OFF', 'callback_data': 'leds off'}]]
 inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}, {'text': 'Voice Changer ON/OFF', 'callback_data': 'voice changer toggle'}], [{'text': 'Mute / Unmute', 'callback_data': 'voice hear toggle'}], [{'text': 'Background ON/OFF', 'callback_data': 'voice bg toggle'}]]
 inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}]]
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}]]
@@ -65,10 +66,14 @@ def ToggleOutsiderCommands(fursuitbot, chat_id):
         fursuitbot.sendMessage(chat_id, 'Outsider commands are now UNLOCKED')
 
 def DiscardPreviousUpdates():
-    updates = fursuitbot.getUpdates()
+    updates = fursuitbot.getUpdates(timeout=-29)
     if updates:
         last_update_id = updates[-1]['update_id']
         fursuitbot.getUpdates(offset=last_update_id+1)
+
+def ConfirmSuccess(from_id, msg, edit_text, query_id):
+    fursuitbot.editMessageText((from_id, msg['message']['message_id']), edit_text)
+    fursuitbot.answerCallbackQuery(query_id, text='Success!')
 
 
 def thread_function(msg):
@@ -169,8 +174,7 @@ def thread_function_query(msg):
                 elif query_data.split()[1] == 'play':
                     Voicemod.sfx_id = query_data.split()[2]
                     Voicemod.play_sfx_flag = True
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Playing SFX ID {}'.format(Voicemod.sfx_id))
-                    fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                    ConfirmSuccess(from_id, msg, 'Playing SFX ID {}'.format(Voicemod.sfx_id), query_id)
                 elif query_data.split()[1] == 'goback':
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
             case 'media':
@@ -178,14 +182,13 @@ def thread_function_query(msg):
                     case 'stop':
                         Waveform.stop_flag = True
                         Voicemod.stop_sfx_flag = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Stopped')
+                        ConfirmSuccess(from_id, msg, 'Media Stopped', query_id)
                     case 'pause':
                         Waveform.is_paused = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Paused')
+                        ConfirmSuccess(from_id, msg, 'Media Paused', query_id)
                     case 'resume':
                         Waveform.is_paused = False
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media Resumed')
-                fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Media Resumed', query_id)
             case 'volume':
                 if len(query_data.split()) == 1:
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Volume', reply_markup={'inline_keyboard': 
@@ -199,8 +202,7 @@ def thread_function_query(msg):
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
                 else:
                     Windows.set_system_volume(int(query_data.split()[1]) / 100)
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Volume set to {}%'.format(query_data.split()[1]))
-                    fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                    ConfirmSuccess(from_id, msg, 'Volume set to {}%'.format(query_data.split()[1]), query_id)
             case 'expression':
                 match query_data.split()[1]:
                     case 'set':
@@ -219,42 +221,76 @@ def thread_function_query(msg):
                         else:
                             MachineVision.expression_manual_mode = True
                             MachineVision.expression_manual_id = int(query_data.split()[2])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression set to ID {}'.format(MachineVision.expression_manual_id))
-                            fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                            ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), query_id)
                     case 'auto':
                         MachineVision.expression_manual_mode = False
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression set to AUTOMATIC')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
                     case 'manual':
                         MachineVision.expression_manual_mode = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression set to MANUAL')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Expression set to MANUAL', query_id)
             case 'eyetracking':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
                         MachineVision.eye_tracking_mode = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Eye Tracking set to ON')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Eye Tracking set to ON', query_id)
                     case 'off':
                         MachineVision.eye_tracking_mode = False
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Eye Tracking set to OFF')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Eye Tracking set to OFF', query_id)
             case 'animatronic':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
-                        pass
+                        Serial.animatronics_on = 1
+                        ConfirmSuccess(from_id, msg, 'Animatronic set to ON', query_id)
                     case 'off':
-                        pass
+                        Serial.animatronics_on = 0
+                        ConfirmSuccess(from_id, msg, 'Animatronic set to OFF', query_id)
             case 'leds':
-                match ' '.join(query_data.split()[1:]):
+                match query_data.split()[1]:
                     case 'effect':
-                        pass
+                        if len(query_data.split()) == 2:
+                            options = []
+                            for effect_id in range(len(Serial.leds_effects_options)):
+                                options.append([{'text': Serial.leds_effects_options[effect_id], 'callback_data': 'leds effect {}'.format(effect_id)}])
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Effect', reply_markup={'inline_keyboard':
+                                [[{'text': '⬅️ Go back', 'callback_data': 'leds effect goback'}]] + options})
+                        elif query_data.split()[2] == 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                        else:
+                            Serial.leds_on = 1
+                            Serial.leds_effect = int(query_data.split()[2])
+                            ConfirmSuccess(from_id, msg, 'LEDs Effect set to {}'.format(Serial.leds_effects_options[Serial.leds_effect]), query_id)
+                    case 'color':
+                        if len(query_data.split()) == 2:
+                            options = []
+                            for color_id in range(len(Serial.leds_color_options)):
+                                options.append([{'text': Serial.leds_color_options[color_id], 'callback_data': 'leds color {}'.format(color_id)}])
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Color', reply_markup={'inline_keyboard':
+                                [[{'text': '⬅️ Go back', 'callback_data': 'leds color goback'}]] + options})
+                        elif query_data.split()[2] == 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                        else:
+                            Serial.leds_on = 1
+                            Serial.leds_color = int(query_data.split()[2])
+                            ConfirmSuccess(from_id, msg, 'LEDs Color set to {}'.format(Serial.leds_color_options[Serial.leds_color]), query_id)
                     case 'brightness':
-                        pass
+                        if len(query_data.split()) == 2:
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Brightness', reply_markup={'inline_keyboard':
+                                [[{'text': '⬅️ Go back', 'callback_data': 'leds brightness goback'}],
+                                 [{'text': 'Weak', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default/2)}'}],
+                                 [{'text': 'Medium (default)', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default)}'}],
+                                 [{'text': 'Strong', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default*2)}'}]]})
+                        elif query_data.split()[2] == 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                        else:
+                            Serial.leds_on = 1
+                            Serial.leds_brightness = int(query_data.split()[2])
+                            ConfirmSuccess(from_id, msg, 'LEDs Brightness set to {}'.format(Serial.leds_brightness), query_id)
                     case 'on':
-                        pass
+                        Serial.leds_on = 1
+                        ConfirmSuccess(from_id, msg, 'LEDs set to ON', query_id)
                     case 'off':
-                        pass
+                        Serial.leds_on = 0
+                        ConfirmSuccess(from_id, msg, 'LEDs set to OFF', query_id)
             case 'voice':
                 match query_data.split()[1]:
                     case 'change':
@@ -266,36 +302,29 @@ def thread_function_query(msg):
                         elif query_data.split()[2] == 'load':
                             Voicemod.voice_id = query_data.split()[3]
                             Voicemod.load_voice_flag = True
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice loaded ID {}'.format(Voicemod.voice_id))
-                            fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                            ConfirmSuccess(from_id, msg, 'Voice loaded ID {}'.format(Voicemod.voice_id), query_id)
                         elif query_data.split()[2] == 'goback':
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
                     case 'changer':
                         Voicemod.toggle_voice_changer_flag = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Changer Toggled')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Voice Changer Toggled', query_id)
                     case 'hear':
                         Voicemod.toggle_hear_my_voice_flag = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Hear My Voice Toggled')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Hear My Voice Toggled', query_id)
                     case 'bg':
                         Voicemod.toggle_background_flag = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Background Toggled')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Background FX Toggled', query_id)
             case 'assistant':
                 match ' '.join(query_data.split()[1:]):
                     case 'trigger':
                         Assistant.trigger()
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Triggered!')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Triggered!', query_id)
                     case 'hotword on':
                         Assistant.hotword_detection_enabled = True
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Hotword Detection set to ON\n\nNOTE: If the voice changer is ON, hotword detection may not work depending on the effect.')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Hotword Detection set to ON\n\nNOTE: If the voice changer is ON, hotword detection may not work depending on the effect.', query_id)
                     case 'hotword off':
                         Assistant.hotword_detection_enabled = False
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Hotword Detection set to OFF')
-                        fursuitbot.answerCallbackQuery(query_id, text='Success!')
+                        ConfirmSuccess(from_id, msg, 'Hotword Detection set to OFF', query_id)
             case 'misc':
                 match ' '.join(query_data.split()[1:]):
                     case 'refsheet':

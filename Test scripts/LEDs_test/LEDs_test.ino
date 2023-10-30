@@ -6,13 +6,13 @@ int Color_Brightness = 25;
 uint32_t black = GearsStrip.Color(0, 0, 0);
 uint32_t white = GearsStrip.Color(255, 255, 255);
 uint32_t red = GearsStrip.Color(255, 0, 0);
+uint32_t purple = GearsStrip.Color(115, 0, 255);
 uint32_t yellow = GearsStrip.Color(255, 255, 0);
 uint32_t pink = GearsStrip.Color(255, 0, 255);
 uint32_t deep_blue = GearsStrip.Color(0, 0, 255);
 uint32_t light_blue = GearsStrip.Color(0, 255, 255);
 uint32_t orange = GearsStrip.Color(255, 165, 0);
 uint32_t green = GearsStrip.Color(0, 255, 0);
-uint32_t purple = GearsStrip.Color(115, 0, 255);
 
 void colorStatic(uint32_t color) {
   GearsStrip.setBrightness(Color_Brightness/2);
@@ -92,13 +92,6 @@ void colorStrobe(uint32_t color){
  delay(1000);
 }
 
-void colorLevel(uint32_t color, int level){
-  GearsStrip.setBrightness(Color_Brightness);
-  GearsStrip.clear();
-  GearsStrip.fill(color, 0, level);
-  GearsStrip.show();
-}
-
 void colorMovingSubstrips(uint32_t color_a, uint32_t color_b, int substrip_size){
   GearsStrip.setBrightness(Color_Brightness*2);
   int numPixels = GearsStrip.numPixels();
@@ -118,6 +111,13 @@ void colorMovingSubstrips(uint32_t color_a, uint32_t color_b, int substrip_size)
 
 void off() {
   GearsStrip.clear();
+  GearsStrip.show();
+}
+
+void colorLevel(uint32_t color, int level){
+  GearsStrip.setBrightness(Color_Brightness);
+  GearsStrip.clear();
+  GearsStrip.fill(color, 0, level);
   GearsStrip.show();
 }
 

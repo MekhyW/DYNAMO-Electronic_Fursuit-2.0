@@ -85,7 +85,7 @@ def update_mesh_points(frame):
     if results_mesh.multi_face_landmarks:
         mesh_points = np.array([np.multiply([p.x, p.y], [W, H]).astype(int) for p in results_mesh.multi_face_landmarks[0].landmark])
 
-def draw_tracking(frame, lex1, ley1, lex2, ley2, rex1, rey1, rex2, rey2, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext):
+def draw_tracking(frame, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext):
     global results_mesh, mesh_points
     if results_mesh.multi_face_landmarks is not None:
         for faceLms in results_mesh.multi_face_landmarks:
@@ -94,8 +94,6 @@ def draw_tracking(frame, lex1, ley1, lex2, ley2, rex1, rey1, rex2, rey2, lex1_ex
         ellipse_center_R, ellipse_axes_R = fit_ellipse(mesh_points[RIGHT_IRIS])
         cv2.ellipse(frame, (int(ellipse_center_L[0]), int(ellipse_center_L[1])), (int(ellipse_axes_L[0]/2), int(ellipse_axes_L[1]/2)), 0, 0, 360, (0, 0, 255), 2)
         cv2.ellipse(frame, (int(ellipse_center_R[0]), int(ellipse_center_R[1])), (int(ellipse_axes_R[0]/2), int(ellipse_axes_R[1]/2)), 0, 0, 360, (0, 0, 255), 2)
-        cv2.rectangle(frame, (lex1, ley1), (lex2, ley2), (0, 255, 0), 2)
-        cv2.rectangle(frame, (rex1, rey1), (rex2, rey2), (0, 255, 0), 2)
         cv2.rectangle(frame, (lex1_ext, ley1_ext), (lex2_ext, ley2_ext), (0, 255, 0), 2)
         cv2.rectangle(frame, (rex1_ext, rey1_ext), (rex2_ext, rey2_ext), (0, 255, 0), 2)
     return frame
@@ -135,30 +133,39 @@ def predict_emotion(frame, draw=False):
             frame = draw_emotion(frame, emotion_labels[expression_manual_id])
     return frame
 
+def calculate_eye_closeness(mesh_points):
+    global left_eye_closeness, right_eye_closeness
+    lex1 = mesh_points[33][0]
+    lex2 = mesh_points[133][0]
+    rex1 = mesh_points[362][0]
+    rex2 = mesh_points[263][0]
+    ley1 = mesh_points[159][1]
+    ley2 = mesh_points[145][1]
+    rey1 = mesh_points[386][1]
+    rey2 = mesh_points[374][1]
+    left_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(lex1-lex2)/abs(ley1-ley2)]])[0][1]
+    right_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(rex1-rex2)/abs(rey1-rey2)]])[0][1]
+    left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
+    right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
+    return left_eye_closeness, right_eye_closeness
+
 def eye_track(frame, draw=False):
     global results_mesh, mesh_points, displacement_eye, left_eye_closeness, right_eye_closeness
     if eye_tracking_mode:
         H, W, _ = frame.shape
         if mesh_points is not None:
-            lex1, ley1 = np.min(mesh_points[LEFT_EYE], axis=0)
-            lex2, ley2 = np.max(mesh_points[LEFT_EYE], axis=0)
-            rex1, rey1 = np.min(mesh_points[RIGHT_EYE], axis=0)
-            rex2, rey2 = np.max(mesh_points[RIGHT_EYE], axis=0)
             lex1_ext, ley1_ext = np.min(mesh_points[LEFT_EYE_EXTENDED], axis=0)
             lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
             rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
             rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-            left_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(lex1-lex2)/abs(ley1-ley2)]])[0][1]
-            right_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(rex1-rex2)/abs(rey1-rey2)]])[0][1]
-            left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
-            right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
+            left_eye_closeness, right_eye_closeness = calculate_eye_closeness(mesh_points)
             displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
             displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
             displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
             displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
             displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
             if draw:
-                frame = draw_tracking(frame, lex1, ley1, lex2, ley2, rex1, rey1, rex2, rey2, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
+                frame = draw_tracking(frame, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
     else:
         displacement_eye = (0,0)
         left_eye_closeness = 0

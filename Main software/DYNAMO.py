@@ -51,14 +51,16 @@ def main():
     threading.Thread(target=assistant_thread).start()
     threading.Thread(target=voicemod_thread).start()
     Unity.connect()
-    Serial.connect()
     ControlBot.StartBot()
     while True:
         try:
             Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
                        MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, 
                        MachineVision.emotion_scores)
-            Serial.send(MachineVision.emotion_scores)
+            if Serial.ser is None:
+                Serial.connect()
+            else:
+                Serial.send(MachineVision.emotion_scores)
             time.sleep(0.01)
         except Exception as e:
             print(e)

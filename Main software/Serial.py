@@ -1,7 +1,7 @@
 import serial
 import time
 
-port = 'COM4'
+port = 'COM3'
 baud = 9600
 ser = None
 
@@ -18,12 +18,12 @@ leds_level = 0
 
 def connect():
     global ser
+    ser = None
     try:
         ser = serial.Serial(port, baud, timeout=1)
         print(f"Connected to {port} at {baud} baud.")
     except serial.SerialException:
-        print("Serial connection failed. Retrying in 1 second...")
-        time.sleep(1)
+        print("Serial connection failed")
     return ser
 
 def send(expression_scores_list):
@@ -31,7 +31,11 @@ def send(expression_scores_list):
     for score in expression_scores_list:
         data_to_send += f",{int(score*100)}"
     data_to_send += "\n"
-    ser.reset_input_buffer()
-    ser.reset_output_buffer()
-    ser.write(data_to_send.encode())
+    if ser is not None:
+        try:
+            ser.reset_input_buffer()
+            ser.reset_output_buffer()
+            ser.write(data_to_send.encode())
+        except serial.SerialException:
+            connect()
     return data_to_send

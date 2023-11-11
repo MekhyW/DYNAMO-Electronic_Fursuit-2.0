@@ -90,6 +90,9 @@ async def main():
                         print("Invalid command")
     except ConnectionRefusedError:
         print("Connection refused. Is Voicemod running?")
+    except Exception as e:
+        print(e)
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    while True:
+        asyncio.get_event_loop().run_until_complete(main())

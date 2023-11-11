@@ -10,6 +10,7 @@ import Serial
 import ControlBot
 
 def machine_vision_thread():
+    MachineVision.open_camera(MachineVision.cap_id)
     while True:
         try:
             MachineVision.main()
@@ -40,9 +41,10 @@ def assistant_thread():
             print(e)
 
 def voicemod_thread():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(Voicemod.connect())
+    while True:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(Voicemod.connect())
 
 def main():
     threading.Thread(target=machine_vision_thread).start()

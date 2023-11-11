@@ -12,7 +12,6 @@ face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True, min_de
 emotion_model = pickle.load(open('resources/emotion_model.pkl', 'rb'))
 pca_model = joblib.load('resources/pca_model.pkl')
 eye_closeness_model = pickle.load(open('resources/eyecloseness_model.pkl', 'rb'))
-cap = cv2.VideoCapture(0)
 RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
 LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
 RIGHT_EYE_EXTENDED = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 341, 256, 252, 253, 254, 339, 260, 259, 257, 258, 286, 414]
@@ -31,6 +30,18 @@ emotion_scores = [0]*6
 eye_tracking_mode = True
 expression_manual_mode = False
 expression_manual_id = 0
+
+cap = None
+cap_id = 1
+
+def open_camera(camera_id):
+    global cap
+    while True:
+        cap = cv2.VideoCapture(camera_id)
+        if not cap.isOpened():
+            print("Camera failure")
+        else:
+            return cap
 
 def calculate_roll_angle(landmarks):
     left_ear_x = landmarks[234].x
@@ -143,8 +154,14 @@ def calculate_eye_closeness(mesh_points):
     ley2 = mesh_points[145][1]
     rey1 = mesh_points[386][1]
     rey2 = mesh_points[374][1]
-    left_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(lex1-lex2)/abs(ley1-ley2)]])[0][1]
-    right_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(rex1-rex2)/abs(rey1-rey2)]])[0][1]
+    reason_left = abs(lex1-lex2)/abs(ley1-ley2)
+    reason_right = abs(rex1-rex2)/abs(rey1-rey2)
+    if reason_left > 99:
+        reason_left = 99
+    if reason_right > 99:
+        reason_right = 99
+    left_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_left]])[0][1]
+    right_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_right]])[0][1]
     left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
     right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
     return left_eye_closeness, right_eye_closeness
@@ -174,13 +191,18 @@ def eye_track(frame, draw=False):
 
 def main(draw=False):
     ret, frame = cap.read()
-    update_mesh_points(frame)
-    frame = eye_track(frame, draw=draw)
-    frame = predict_emotion(frame, draw=draw)
-    cv2.waitKey(1)
-    return frame
+    if frame is not None:
+        update_mesh_points(frame)
+        frame = eye_track(frame, draw=draw)
+        frame = predict_emotion(frame, draw=draw)
+        cv2.waitKey(1)
+        return frame
+    else:
+        open_camera(cap_id)
+        return None
 
 if __name__ == "__main__":
+    open_camera(cap_id)
     while True:
         frame = main(draw=True)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]

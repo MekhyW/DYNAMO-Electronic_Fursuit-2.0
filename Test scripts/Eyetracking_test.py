@@ -18,7 +18,17 @@ LEFT_EYE_EXTENDED = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 15
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
 
-cap = cv2.VideoCapture(0)
+cap = None
+cap_id = 1
+
+def open_camera(camera_id):
+    global cap
+    while True:
+        cap = cv2.VideoCapture(camera_id)
+        if not cap.isOpened():
+            print("Camera failure")
+        else:
+            return cap
 
 def calculate_roll_angle(landmarks):
     left_ear_x = landmarks[234].x
@@ -62,8 +72,14 @@ def calculate_eye_closeness(mesh_points):
     ley2 = mesh_points[145][1]
     rey1 = mesh_points[386][1]
     rey2 = mesh_points[374][1]
-    left_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(lex1-lex2)/abs(ley1-ley2)]])[0][1]
-    right_eye_closeness_noisy = eye_closeness_model.predict_proba([[abs(rex1-rex2)/abs(rey1-rey2)]])[0][1]
+    reason_left = abs(lex1-lex2)/abs(ley1-ley2)
+    reason_right = abs(rex1-rex2)/abs(rey1-rey2)
+    if reason_left > 99:
+        reason_left = 99
+    if reason_right > 99:
+        reason_right = 99
+    left_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_left]])[0][1]
+    right_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_right]])[0][1]
     left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
     right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
     return left_eye_closeness, right_eye_closeness
@@ -98,10 +114,14 @@ def eye_track(frame, draw=True):
             cv2.rectangle(frame, (rex1_ext, rey1_ext), (rex2_ext, rey2_ext), (0, 255, 0), 2)
     return frame
 
+open_camera(cap_id)
 while True:
     ret, frame = cap.read()
-    frame = eye_track(frame)
-    print(displacement_eye, left_eye_closeness, right_eye_closeness)
-    cv2.imshow('frame', frame)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    if frame is not None:
+        frame = eye_track(frame)
+        print(displacement_eye, left_eye_closeness, right_eye_closeness)
+        cv2.imshow('frame', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    else:
+        open_camera(cap_id)

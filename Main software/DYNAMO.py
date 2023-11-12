@@ -54,9 +54,12 @@ def main():
     ControlBot.StartBot()
     while True:
         try:
-            Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
-                       MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, 
-                       MachineVision.emotion_scores)
+            if Unity.connected is False:
+                Unity.connect()
+            else:
+                Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
+                        MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, 
+                        MachineVision.emotion_scores)
             if Serial.ser is None:
                 Serial.connect()
             else:

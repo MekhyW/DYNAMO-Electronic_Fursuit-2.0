@@ -1,5 +1,4 @@
 import serial
-import time
 
 port = 'COM3'
 baud = 9600

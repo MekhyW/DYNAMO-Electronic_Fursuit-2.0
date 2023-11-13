@@ -221,7 +221,12 @@ def thread_function_query(msg):
                         else:
                             MachineVision.expression_manual_mode = True
                             MachineVision.expression_manual_id = int(query_data.split()[2])
-                            ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), query_id)
+                            if MachineVision.expression_manual_id == 6:
+                                for i in range(len(Serial.leds_effects_options)):
+                                    if 'Rainbow' in Serial.leds_effects_options[i]:
+                                        Serial.leds_effect = i
+                                        break
+                            ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), int(query_data.split()[2]))
                     case 'auto':
                         MachineVision.expression_manual_mode = False
                         ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)

@@ -1,17 +1,5 @@
 #define NUM_INPUTS 12
 int inputs[NUM_INPUTS] = {0};
-//0: animatronics_on
-//1: leds_on
-//2: leds_brightness
-//3: leds_color
-//4: leds_effect
-//5: leds_level
-//6: emotion angry
-//7: emotion disgusted
-//8: emotion happy
-//9: emotion neutral
-//10: emotion sad
-//11: emotion surprised
 
 String readFromSerial() {
   String received_data;

@@ -26,6 +26,17 @@ int tail_left_pos = 90;
 int tail_right_pos = 90;
 int tail_up_pos = 90;
 
+struct ServosTaskInput
+{
+  int animatronics_on;
+  int emotion_angry;
+  int emotion_disgusted;
+  int emotion_happy;
+  int emotion_neutral;
+  int emotion_sad;
+  int emotion_surprised;
+};
+
 void setupServos() {
   eyebrow_left.attach(4);
   eyebrow_right.attach(5);

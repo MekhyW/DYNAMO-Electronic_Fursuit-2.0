@@ -14,14 +14,24 @@ uint32_t orange = GearsStrip.Color(255, 165, 0);
 uint32_t green = GearsStrip.Color(0, 255, 0);
 
 int Color_Brightness = 25;
+uint32_t color = white;
 
-void colorStatic(uint32_t color) {
+struct LEDsTaskInput
+{
+  int leds_on;
+  int leds_brightness;
+  int leds_color;
+  int leds_effect;
+  int leds_level;
+};
+
+void colorStatic() {
   GearsStrip.setBrightness(Color_Brightness/2);
   GearsStrip.fill(color, 0, GearsStrip.numPixels());
   GearsStrip.show();
 }
 
-void colorFade(uint32_t color){
+void colorFade() {
     GearsStrip.setBrightness(Color_Brightness);
     for(int k = 0; k < Color_Brightness*2; k++) {
       GearsStrip.fill(color, 0, GearsStrip.numPixels());
@@ -37,7 +47,7 @@ void colorFade(uint32_t color){
     }
 }
 
-void colorWipe(uint32_t color) {
+void colorWipe() {
   GearsStrip.setBrightness(Color_Brightness);
   if (GearsStrip.getPixelColor(0) == 0)
   {
@@ -56,7 +66,7 @@ void colorWipe(uint32_t color) {
 }
 
 
-void colorTheaterChase(uint32_t color) {
+void colorTheaterChase() {
   GearsStrip.setBrightness(Color_Brightness*2);
   for(int b=0; b<3; b++) {
     GearsStrip.clear();
@@ -68,7 +78,7 @@ void colorTheaterChase(uint32_t color) {
   }
 }
 
-void Rainbow(int wait) {
+void Rainbow() {
   GearsStrip.setBrightness(Color_Brightness*2);
   for(long firstPixelHue = 0; firstPixelHue < 65536; firstPixelHue += 512) {
     for(int i=0; i<GearsStrip.numPixels(); i++) {
@@ -76,11 +86,11 @@ void Rainbow(int wait) {
       GearsStrip.setPixelColor(i, GearsStrip.gamma32(GearsStrip.ColorHSV(pixelHue)));
     }
     GearsStrip.show();
-    vTaskDelay(wait / portTICK_PERIOD_MS);
+    vTaskDelay(50 / portTICK_PERIOD_MS);
   }
 }
 
-void colorStrobe(uint32_t color){
+void colorStrobe() {
   GearsStrip.setBrightness(Color_Brightness/2);
   for(int j = 0; j < 5; j++) {
     GearsStrip.fill(color, 0, GearsStrip.numPixels());
@@ -93,7 +103,10 @@ void colorStrobe(uint32_t color){
   vTaskDelay(1000 / portTICK_PERIOD_MS);
 }
 
-void colorMovingSubstrips(uint32_t color_a, uint32_t color_b, int substrip_size){
+void colorMovingSubstrips() {
+  uint32_t color_a = color;
+  uint32_t color_b = black;
+  int substrip_size = LED_COUNT/10;
   GearsStrip.setBrightness(Color_Brightness*2);
   int numPixels = GearsStrip.numPixels();
   for(int i = 0; i < numPixels; i++) {
@@ -114,7 +127,7 @@ void off() {
   GearsStrip.show();
 }
 
-void colorLevel(uint32_t color, int level){
+void colorLevel(int level){
   GearsStrip.setBrightness(Color_Brightness);
   GearsStrip.clear();
   GearsStrip.fill(color, 0, level);

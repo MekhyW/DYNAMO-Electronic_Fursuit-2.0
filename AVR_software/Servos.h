@@ -9,22 +9,18 @@ Servo ear_tilt_right;
 Servo mouth_left;
 Servo mouth_right;
 Servo muzzle;
-Servo tail_left;
-Servo tail_right;
-Servo tail_up;
+//Servo tail_left;
+//Servo tail_right;
+//Servo tail_up;
 
-int eyebrow_left_pos = 90;
-int eyebrow_right_pos = 90;
-int ear_pan_left_pos = 90;
-int ear_tilt_left_pos = 90;
-int ear_pan_right_pos = 90;
-int ear_tilt_right_pos = 90;
-int mouth_left_pos = 90;
-int mouth_right_pos = 90;
-int muzzle_pos = 90;
-int tail_left_pos = 90;
-int tail_right_pos = 90;
-int tail_up_pos = 90;
+int servo_calibration_matrix[6][9] = {
+  {90, 90, 90, 90, 90, 90, 90, 90, 90}, // angry
+  {90, 90, 90, 90, 90, 90, 90, 90, 90}, // disgusted
+  {90, 90, 90, 90, 90, 90, 90, 90, 90}, // happy
+  {90, 90, 90, 90, 90, 90, 90, 90, 90}, // neutral
+  {90, 90, 90, 90, 90, 90, 90, 90, 90}, // sad
+  {90, 90, 90, 90, 90, 90, 90, 90, 90}  // surprised
+};
 
 struct ServosTaskInput
 {
@@ -47,12 +43,13 @@ void setupServos() {
   mouth_left.attach(10);
   mouth_right.attach(11);
   muzzle.attach(12);
-  tail_left.attach(21);
-  tail_right.attach(22);
-  tail_up.attach(23);
+  //tail_left.attach(21);
+  //tail_right.attach(22);
+  //tail_up.attach(23);
 }
 
-void writepos() {
+void writepos(int eyebrow_left_pos, int eyebrow_right_pos, int ear_pan_left_pos, int ear_tilt_left_pos,
+              int ear_pan_right_pos, int ear_tilt_right_pos, int mouth_left_pos, int mouth_right_pos, int muzzle_pos) {
   eyebrow_left.write(eyebrow_left_pos);
   eyebrow_right.write(eyebrow_right_pos);
   ear_pan_left.write(ear_pan_left_pos);
@@ -62,7 +59,7 @@ void writepos() {
   mouth_left.write(mouth_left_pos);
   mouth_right.write(mouth_right_pos);
   muzzle.write(muzzle_pos);
-  tail_left.write(tail_left_pos);
-  tail_right.write(tail_right_pos);
-  tail_up.write(tail_up_pos);
+  //tail_left.write(tail_left_pos);
+  //tail_right.write(tail_right_pos);
+  //tail_up.write(tail_up_pos);
 }

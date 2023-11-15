@@ -87,10 +87,20 @@ void TaskServos(void *pvParameters) {
   for (;;) {
     ServosTaskInput servos_input;
     xQueueReceive(queue_servos, &servos_input, portMAX_DELAY);
-    if (servos_input.animatronics_on == 1) {
-      //update servo values using config file and emotion values
-      writepos();
+    int expressions_sum = servos_input.emotion_angry + servos_input.emotion_disgusted + servos_input.emotion_happy
+                            + servos_input.emotion_neutral + servos_input.emotion_sad + servos_input.emotion_surprised;
+    if (servos_input.animatronics_on == 1 && expressions_sum > 0) {
+      float emotions[6] = {servos_input.emotion_angry / expressions_sum, servos_input.emotion_disgusted / expressions_sum,
+                          servos_input.emotion_happy / expressions_sum, servos_input.emotion_neutral / expressions_sum,
+                          servos_input.emotion_sad / expressions_sum, servos_input.emotion_surprised / expressions_sum};
+      int pos[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
+      for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 9; j++) {
+          pos[j] += emotions[i] * servo_calibration_matrix[i][j];
+        }
+      }
+      writepos(pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], pos[6], pos[7], pos[8]);
     }
     vTaskDelay(10);
   }
-}  
+}

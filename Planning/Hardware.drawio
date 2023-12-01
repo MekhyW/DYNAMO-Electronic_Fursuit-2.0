@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="487" dy="427" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="489" dy="427" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -23,7 +23,7 @@
                     <mxGeometry x="430" y="156" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="15" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
-                    <mxGeometry x="50" y="390" width="320" height="420" as="geometry"/>
+                    <mxGeometry x="50" y="390" width="320" height="362" as="geometry"/>
                 </mxCell>
                 <mxCell id="16" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
                     <mxGeometry x="510" y="436" width="280" height="177" as="geometry"/>
@@ -102,14 +102,6 @@
                         <mxPoint x="280" y="140" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="122" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FAFAFA;strokeWidth=1;startArrow=none;startFill=0;" parent="1" source="26" target="75" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="75" y="580"/>
-                            <mxPoint x="75" y="775"/>
-                        </Array>
-                    </mxGeometry>
-                </mxCell>
                 <mxCell id="26" value="Power distribution area" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
                     <mxGeometry x="130" y="560" width="120" height="40" as="geometry"/>
                 </mxCell>
@@ -179,9 +171,6 @@
                         </Array>
                         <mxPoint x="280" y="690" as="sourcePoint"/>
                     </mxGeometry>
-                </mxCell>
-                <mxCell id="75" value="Servo motors (tail)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
-                    <mxGeometry x="155" y="750" width="110" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="79" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" parent="1" source="76" edge="1">
                     <mxGeometry relative="1" as="geometry">

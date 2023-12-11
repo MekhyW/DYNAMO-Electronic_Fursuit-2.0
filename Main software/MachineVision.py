@@ -180,7 +180,7 @@ def eye_track(frame, draw=False):
             displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
             displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
             displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
-            displacement_eye = 0.9*np.array(displacement_eye) + 0.1*np.array(displacement_eye_noisy)
+            displacement_eye = 0.5*np.array(displacement_eye) + 0.5*np.array(displacement_eye_noisy)
             if draw:
                 frame = draw_tracking(frame, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
     else:

@@ -61,6 +61,7 @@ def trigger():
     print("Assistant Triggered")
 
 def start():
+    print("Assistant started!")
     recorder.start()
 
 def refresh():

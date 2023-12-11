@@ -415,6 +415,7 @@ def StartBot():
             return True
         except Exception as e:
             print(e)
+            print("Failed to start Control bot, retrying in 1 second...")
             time.sleep(1)
     
 

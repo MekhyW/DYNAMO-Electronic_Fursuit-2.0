@@ -33,8 +33,8 @@ def play_audio(filename):
         if not is_paused:
             audio_data = np.frombuffer(data, dtype=np.int16)
             audio_data_max = np.max(audio_data)
-            Serial.leds_effect = len(Serial.leds_effects_options)
-            Serial.leds_level = int(audio_data_max / 100)
+            Serial.leds_effect = len(Serial.leds_effects_options) #"Level" effect is last index + 1
+            Serial.leds_level = int((audio_data_max / 32767) * 100)
             stream.write(data)
             data = wf.readframes(chunk_size)
         if stop_flag:

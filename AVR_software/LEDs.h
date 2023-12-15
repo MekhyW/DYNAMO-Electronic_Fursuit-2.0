@@ -127,10 +127,10 @@ void off() {
   GearsStrip.show();
 }
 
-void colorLevel(int level){
+void colorLevel(int level_percent) {
   GearsStrip.setBrightness(Color_Brightness);
   GearsStrip.clear();
-  GearsStrip.fill(color, 0, level);
+  GearsStrip.fill(color, 0, int(LED_COUNT * level_percent / 100));
   GearsStrip.show();
 }
 

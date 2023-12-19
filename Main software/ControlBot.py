@@ -74,6 +74,9 @@ def DiscardPreviousUpdates():
 def ConfirmSuccess(from_id, msg, edit_text, query_id):
     fursuitbot.editMessageText((from_id, msg['message']['message_id']), edit_text)
     fursuitbot.answerCallbackQuery(query_id, text='Success!')
+    if from_id != ownerID:
+        sender = fursuitbot.getChat(from_id)['first_name']
+        fursuitbot.sendMessage(ownerID, f'{edit_text}\n(Command sent by {sender})')
 
 
 def thread_function(msg):

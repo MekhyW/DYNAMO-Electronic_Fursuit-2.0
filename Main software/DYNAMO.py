@@ -30,13 +30,12 @@ def assistant_thread():
                 Waveform.play_audio("resources/assistant_ok.wav")
                 transcript = Assistant.process_query()
                 answer = Assistant.assistant_query(transcript)
-                if len(answer):
-                    print(answer)
-                    Waveform.TTS(answer)
-                else:
-                    print("No answer")
-                    Waveform.TTS("I don't have an answer to that")
+                if not len(answer):
+                    answer = "I don't have an answer to that"
+                Waveform.TTS(answer)
                 Assistant.start()
+                ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
+                ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
         except Exception as e:
             print(e)
 

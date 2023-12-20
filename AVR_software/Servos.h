@@ -9,9 +9,6 @@ Servo ear_tilt_right;
 Servo mouth_left;
 Servo mouth_right;
 Servo muzzle;
-//Servo tail_left;
-//Servo tail_right;
-//Servo tail_up;
 
 int servo_calibration_matrix[6][9] = {
   {90, 90, 90, 90, 90, 90, 90, 90, 90}, // angry
@@ -43,9 +40,6 @@ void setupServos() {
   mouth_left.attach(10);
   mouth_right.attach(11);
   muzzle.attach(12);
-  //tail_left.attach(21);
-  //tail_right.attach(22);
-  //tail_up.attach(23);
 }
 
 void writepos(int eyebrow_left_pos, int eyebrow_right_pos, int ear_pan_left_pos, int ear_tilt_left_pos,
@@ -59,7 +53,4 @@ void writepos(int eyebrow_left_pos, int eyebrow_right_pos, int ear_pan_left_pos,
   mouth_left.write(mouth_left_pos);
   mouth_right.write(mouth_right_pos);
   muzzle.write(muzzle_pos);
-  //tail_left.write(tail_left_pos);
-  //tail_right.write(tail_right_pos);
-  //tail_up.write(tail_up_pos);
 }

@@ -72,7 +72,7 @@ Create a `credentials.json` file in the `Main software` folder of the project's 
 }
 ```
 
-### 9. Open AVR_software.ino, Install Required Libraries, and Upload with Headers
+### 9. AVR_software
 
 Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
 

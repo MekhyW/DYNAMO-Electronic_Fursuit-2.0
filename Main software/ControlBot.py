@@ -51,8 +51,17 @@ def PlayMusic(fursuitbot, chat_id, text):
             file_name = file
             break
     fursuitbot.sendMessage(chat_id, 'Done!\n>>>Playing now')
-    Waveform.play_audio(file_name)
-    os.remove(file_name)
+    Waveform.play_audio(file_name, delete=True)
+
+def PlayAudioMessage(fursuitbot, chat_id, msg):
+    fursuitbot.sendMessage(chat_id, '>>>Downloading sound...')
+    file_name = '{}.ogg'.format(msg['message_id'])
+    if 'voice' in msg:
+        fursuitbot.download_file(msg['voice']['file_id'], file_name)
+    elif 'audio' in msg:
+        fursuitbot.download_file(msg['audio']['file_id'], file_name)
+    fursuitbot.sendMessage(chat_id, 'Done!\n>>>Playing now')
+    Waveform.play_audio(file_name, delete=True)
 
 def ToggleOutsiderCommands(fursuitbot, chat_id):
     global lock_outsider_commands
@@ -86,64 +95,72 @@ def thread_function(msg):
         if lock_outsider_commands and int(chat_id) != int(ownerID):
             fursuitbot.sendMessage(chat_id, 'Outsider commands are currently LOCKED')
             return
-        if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'debugging python', 'debugging shell']:
-            data = last_message_chat[chat_id]['data']
-            last_message_chat[chat_id] = msg
-            if msg['text'] == '/cancel':
-                fursuitbot.sendMessage(chat_id, 'Command was cancelled')
-            elif data == 'music':
-                PlayMusic(fursuitbot, chat_id, msg['text'])
-            elif data == 'debugging python':
-                output_buffer = StringIO()
-                with redirect_stdout(output_buffer):
-                    try:
-                        exec(msg['text'])
-                        output = output_buffer.getvalue()
-                        if output:
-                            fursuitbot.sendMessage(chat_id, output)
-                        else:
-                            fursuitbot.sendMessage(chat_id, '(no output)')
-                    except:
-                        fursuitbot.sendMessage(chat_id, traceback.format_exc())
-            elif data == 'debugging shell':
-                result = subprocess.run(msg['text'], shell=True, capture_output=True)
-                if result.stderr:
-                    fursuitbot.sendMessage(chat_id, result.stderr.decode('utf-8', errors='ignore'))
-                elif result.stdout:
-                    fursuitbot.sendMessage(chat_id, result.stdout.decode('utf-8', errors='ignore'))
-                else:
-                    fursuitbot.sendMessage(chat_id, '(no output)')
-        if msg['text'] not in main_menu_buttons:
-            fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
+        elif content_type == 'text':
+            if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'debugging python', 'debugging shell']:
+                data = last_message_chat[chat_id]['data']
+                last_message_chat[chat_id] = msg
+                if msg['text'] == '/cancel':
+                    fursuitbot.sendMessage(chat_id, 'Command was cancelled')
+                elif data == 'music':
+                    PlayMusic(fursuitbot, chat_id, msg['text'])
+                elif data == 'debugging python':
+                    output_buffer = StringIO()
+                    with redirect_stdout(output_buffer):
+                        try:
+                            exec(msg['text'])
+                            output = output_buffer.getvalue()
+                            if output:
+                                fursuitbot.sendMessage(chat_id, output)
+                            else:
+                                fursuitbot.sendMessage(chat_id, '(no output)')
+                        except:
+                            fursuitbot.sendMessage(chat_id, traceback.format_exc())
+                elif data == 'debugging shell':
+                    result = subprocess.run(msg['text'], shell=True, capture_output=True)
+                    if result.stderr:
+                        fursuitbot.sendMessage(chat_id, result.stderr.decode('utf-8', errors='ignore'))
+                    elif result.stdout:
+                        fursuitbot.sendMessage(chat_id, result.stdout.decode('utf-8', errors='ignore'))
+                    else:
+                        fursuitbot.sendMessage(chat_id, '(no output)')
+            if msg['text'] not in main_menu_buttons:
+                fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
+            else:
+                match msg['text']:
+                    case '🎵 Media / Sound':
+                        fursuitbot.sendMessage(chat_id, 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
+                    case '😁 Expression':
+                        fursuitbot.sendMessage(chat_id, 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                    case '👀 Eye Tracking':
+                        fursuitbot.sendMessage(chat_id, 'Eye Tracking', reply_markup={'inline_keyboard': inline_keyboard_eyetracking})
+                    case '⚙️ Animatronic':
+                        fursuitbot.sendMessage(chat_id, 'Animatronic', reply_markup={'inline_keyboard': inline_keyboard_animatronic})
+                    case '💡 LEDs':
+                        fursuitbot.sendMessage(chat_id, 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                    case '🎙️ Voice':
+                        fursuitbot.sendMessage(chat_id, 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
+                    case '🍪 Cookiebot (Assistant AI)':
+                        fursuitbot.sendMessage(chat_id, 'Cookiebot', reply_markup={'inline_keyboard': inline_keyboard_cookiebot})
+                    case '🖼️ Refsheet / Sticker Pack':
+                        fursuitbot.sendMessage(chat_id, 'Refsheet / Sticker Pack', reply_markup={'inline_keyboard': inline_keyboard_refsheet})
+                    case '🔒 Lock/Unlock Outsiders':
+                        ToggleOutsiderCommands(fursuitbot, chat_id)
+                    case '🔧 Debugging':
+                        fursuitbot.sendMessage(chat_id, 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
+                    case '🛑 Shutdown':
+                        fursuitbot.sendMessage(chat_id, 'Shutdown', reply_markup={'inline_keyboard': inline_keyboard_shutdown})
+        elif content_type in ['voice', 'audio']:
+            PlayAudioMessage(fursuitbot, chat_id, msg)
         else:
-            match msg['text']:
-                case '🎵 Media / Sound':
-                    fursuitbot.sendMessage(chat_id, 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
-                case '😁 Expression':
-                    fursuitbot.sendMessage(chat_id, 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
-                case '👀 Eye Tracking':
-                    fursuitbot.sendMessage(chat_id, 'Eye Tracking', reply_markup={'inline_keyboard': inline_keyboard_eyetracking})
-                case '⚙️ Animatronic':
-                    fursuitbot.sendMessage(chat_id, 'Animatronic', reply_markup={'inline_keyboard': inline_keyboard_animatronic})
-                case '💡 LEDs':
-                    fursuitbot.sendMessage(chat_id, 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
-                case '🎙️ Voice':
-                    fursuitbot.sendMessage(chat_id, 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
-                case '🍪 Cookiebot (Assistant AI)':
-                    fursuitbot.sendMessage(chat_id, 'Cookiebot', reply_markup={'inline_keyboard': inline_keyboard_cookiebot})
-                case '🖼️ Refsheet / Sticker Pack':
-                    fursuitbot.sendMessage(chat_id, 'Refsheet / Sticker Pack', reply_markup={'inline_keyboard': inline_keyboard_refsheet})
-                case '🔒 Lock/Unlock Outsiders':
-                    ToggleOutsiderCommands(fursuitbot, chat_id)
-                case '🔧 Debugging':
-                    fursuitbot.sendMessage(chat_id, 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
-                case '🛑 Shutdown':
-                    fursuitbot.sendMessage(chat_id, 'Shutdown', reply_markup={'inline_keyboard': inline_keyboard_shutdown})
+            fursuitbot.sendMessage(chat_id, 'I currently do not support this type of input  :(')
     except Exception as e:
         print(e)
-        if 'ConnectionResetError' not in traceback.format_exc():
+        if 'ConnectionResetError' in traceback.format_exc():
+            fursuitbot.sendMessage(chat_id, 'Connection Error, please try again')
+        else:
             fursuitbot.sendMessage(ownerID, traceback.format_exc())
             fursuitbot.sendMessage(ownerID, str(msg))
+            fursuitbot.sendMessage(chat_id, 'An error occurred, please try again')
     finally:
         last_message_chat[chat_id] = msg
 
@@ -160,26 +177,10 @@ def thread_function_query(msg):
                 fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
                 fursuitbot.answerCallbackQuery(query_id, text='Enter name or link')
             case 'sfx':
-                if len(query_data.split()) == 1:
-                    soundboard_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'sfx goback'}]]
-                    for soundboard in Voicemod.soundboards:
-                        soundboard_keyboard.append([{'text': soundboard['name'], 'callback_data': 'sfx soundboard {}'.format(soundboard['id'])}])
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'SFX Keyboards', reply_markup={'inline_keyboard': soundboard_keyboard})
-                elif query_data.split()[1] == 'soundboard':
-                    for soundboard in Voicemod.soundboards:
-                        if soundboard['id'] == query_data.split()[2]:
-                            sounds = soundboard['sounds']
-                            break
-                    sound_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'sfx'}]]
-                    for sound in sounds:
-                        sound_keyboard.append([{'text': sound['name'], 'callback_data': 'sfx play {}'.format(sound['id'])}])
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'SFX Keyboard', reply_markup={'inline_keyboard': sound_keyboard})
-                elif query_data.split()[1] == 'play':
-                    Voicemod.sfx_id = query_data.split()[2]
-                    Voicemod.play_sfx_flag = True
-                    ConfirmSuccess(from_id, msg, 'Playing SFX ID {}'.format(Voicemod.sfx_id), query_id)
-                elif query_data.split()[1] == 'goback':
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
+                fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
+                with open('resources/soundtutorial.mp4', 'rb') as video:
+                    fursuitbot.sendVideo(from_id, video, caption='You can forward me an audio or use an inline bot to search one!\n\nEXAMPLE:\n"@myinstantsbot {SOUND NAME}"')
+                fursuitbot.answerCallbackQuery(query_id, text='Search SFX')
             case 'media':
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
@@ -383,7 +384,9 @@ def thread_function_query(msg):
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
     except Exception as e:
         print(e)
-        if 'ConnectionResetError' not in traceback.format_exc():
+        if 'ConnectionResetError' in traceback.format_exc():
+            fursuitbot.answerCallbackQuery(query_id, text='CONNECTION ERROR')
+        else:
             fursuitbot.sendMessage(ownerID, traceback.format_exc())
             fursuitbot.sendMessage(ownerID, str(msg))
             fursuitbot.answerCallbackQuery(query_id, text='ERROR')

@@ -103,16 +103,16 @@ void TaskServos(void *pvParameters) {
     int expressions_sum = servos_input.emotion_angry + servos_input.emotion_disgusted + servos_input.emotion_happy
                             + servos_input.emotion_neutral + servos_input.emotion_sad + servos_input.emotion_surprised;
     if (servos_input.animatronics_on == 1 && expressions_sum > 0) {
-      float emotions[6] = {servos_input.emotion_angry / expressions_sum, servos_input.emotion_disgusted / expressions_sum,
+      float emotions[NUM_EMOTIONS] = {servos_input.emotion_angry / expressions_sum, servos_input.emotion_disgusted / expressions_sum,
                           servos_input.emotion_happy / expressions_sum, servos_input.emotion_neutral / expressions_sum,
                           servos_input.emotion_sad / expressions_sum, servos_input.emotion_surprised / expressions_sum};
-      int pos[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-      for (int i = 0; i < 6; i++) {
-        for (int j = 0; j < 9; j++) {
+      int pos[NUM_SERVOS] = {0, 0, 0, 0, 0, 0, 0, 0};
+      for (int i = 0; i < NUM_EMOTIONS; i++) {
+        for (int j = 0; j < NUM_SERVOS; j++) {
           pos[j] += emotions[i] * servo_calibration_matrix[i][j];
         }
       }
-      writepos(pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], pos[6], pos[7], pos[8]);
+      writepos(pos[0], pos[1], pos[2], pos[3], pos[4], pos[5], pos[6], pos[7]);
     }
     vTaskDelay(TASK_DELAY_MS / portTICK_PERIOD_MS);
   }

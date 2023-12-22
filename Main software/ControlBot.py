@@ -17,7 +17,7 @@ Token = json.load(open('credentials.json'))['fursuitbot_token']
 ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
 fursuitbot = telepot.Bot(Token)
 
-refsheet = open('resources/refsheet.png', 'rb')
+refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
 stickerpack = 'https://t.me/addstickers/MekhyW'
 stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgUWYjKWFS6B-MTAE'
 
@@ -83,7 +83,7 @@ def DiscardPreviousUpdates():
 def ConfirmSuccess(from_id, msg, edit_text, query_id):
     fursuitbot.editMessageText((from_id, msg['message']['message_id']), edit_text)
     fursuitbot.answerCallbackQuery(query_id, text='Success!')
-    if from_id != ownerID:
+    if int(from_id) != int(ownerID):
         sender = fursuitbot.getChat(from_id)['first_name']
         fursuitbot.sendMessage(ownerID, f'{edit_text}\n(Command sent by {sender})')
 
@@ -337,9 +337,11 @@ def thread_function_query(msg):
             case 'misc':
                 match ' '.join(query_data.split()[1:]):
                     case 'refsheet':
+                        fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
+                        fursuitbot.sendChatAction(from_id, 'upload_photo')
                         while True:
                             try:
-                                fursuitbot.sendPhoto(from_id, refsheet, caption='Refsheet')
+                                fursuitbot.sendPhoto(from_id, refsheetpath, caption='Here is my reference sheet!\n\nMekhy is a raccoon-wolf engineer who creates robots and performs experiments. He is very evil and unreliable/unpredictable (cartoon villain vibe *twirls mustache*), but despite this he manages to be very cute/charismatic and "soften" around friends and people he trusts! ;3')
                                 break
                             except ConnectionResetError:
                                 pass

@@ -16,6 +16,7 @@ def machine_vision_thread():
             MachineVision.main()
         except Exception as e:
             print(e)
+        time.sleep(0.01)
 
 def assistant_thread():
     Assistant.start()
@@ -31,13 +32,14 @@ def assistant_thread():
                 Waveform.play_audio("resources/assistant_ok.wav")
                 transcript = Assistant.process_query()
                 answer = Assistant.assistant_query(transcript)
+                Assistant.start()
                 if len(answer):
                     Waveform.TTS(answer)
                     ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
                     ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
-                Assistant.start()
         except Exception as e:
             print(e)
+        time.sleep(0.01)
 
 def voicemod_thread():
     while True:
@@ -63,9 +65,9 @@ def main():
                 Serial.connect()
             else:
                 Serial.send(MachineVision.emotion_scores)
-            time.sleep(0.01)
         except Exception as e:
             print(e)
+        time.sleep(0.01)
 
 if __name__ == "__main__":
     main()

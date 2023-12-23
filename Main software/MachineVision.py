@@ -25,6 +25,7 @@ displacement_eye = (0,0)
 left_eye_closeness = 0
 right_eye_closeness = 0
 emotion_labels = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
+emotion_labels_extra = ['hypnotic']
 emotion_scores = [0]*6
 
 eye_tracking_mode = True

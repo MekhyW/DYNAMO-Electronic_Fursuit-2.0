@@ -185,7 +185,6 @@ def thread_function_query(msg):
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
                         Waveform.stop_flag = True
-                        Voicemod.stop_sfx_flag = True
                         ConfirmSuccess(from_id, msg, 'Media Stopped', query_id)
                     case 'pause':
                         Waveform.is_paused = True
@@ -226,11 +225,8 @@ def thread_function_query(msg):
                             MachineVision.expression_manual_mode = True
                             MachineVision.expression_manual_id = int(query_data.split()[2])
                             if MachineVision.expression_manual_id == 6:
-                                for i in range(len(Serial.leds_effects_options)):
-                                    if 'Rainbow' in Serial.leds_effects_options[i]:
-                                        Serial.leds_effect = i
-                                        break
-                            ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), int(query_data.split()[2]))
+                                Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
+                            ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), query_id)
                     case 'auto':
                         MachineVision.expression_manual_mode = False
                         ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
@@ -259,7 +255,7 @@ def thread_function_query(msg):
                         if len(query_data.split()) == 2:
                             options = []
                             for effect_id in range(len(Serial.leds_effects_options)):
-                                options.append([{'text': Serial.leds_effects_options[effect_id], 'callback_data': 'leds effect {}'.format(effect_id)}])
+                                options.append([{'text': Serial.leds_effects_options[effect_id].capitalize(), 'callback_data': 'leds effect {}'.format(effect_id)}])
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Effect', reply_markup={'inline_keyboard':
                                 [[{'text': '⬅️ Go back', 'callback_data': 'leds effect goback'}]] + options})
                         elif query_data.split()[2] == 'goback':
@@ -267,12 +263,12 @@ def thread_function_query(msg):
                         else:
                             Serial.leds_on = 1
                             Serial.leds_effect = int(query_data.split()[2])
-                            ConfirmSuccess(from_id, msg, 'LEDs Effect set to {}'.format(Serial.leds_effects_options[Serial.leds_effect]), query_id)
+                            ConfirmSuccess(from_id, msg, 'LEDs Effect set to {}'.format(Serial.leds_effects_options[Serial.leds_effect].capitalize()), query_id)
                     case 'color':
                         if len(query_data.split()) == 2:
                             options = []
                             for color_id in range(len(Serial.leds_color_options)):
-                                options.append([{'text': Serial.leds_color_options[color_id], 'callback_data': 'leds color {}'.format(color_id)}])
+                                options.append([{'text': Serial.leds_color_options[color_id].capitalize(), 'callback_data': 'leds color {}'.format(color_id)}])
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Color', reply_markup={'inline_keyboard':
                                 [[{'text': '⬅️ Go back', 'callback_data': 'leds color goback'}]] + options})
                         elif query_data.split()[2] == 'goback':
@@ -280,7 +276,7 @@ def thread_function_query(msg):
                         else:
                             Serial.leds_on = 1
                             Serial.leds_color = int(query_data.split()[2])
-                            ConfirmSuccess(from_id, msg, 'LEDs Color set to {}'.format(Serial.leds_color_options[Serial.leds_color]), query_id)
+                            ConfirmSuccess(from_id, msg, 'LEDs Color set to {}'.format(Serial.leds_color_options[Serial.leds_color].capitalize()), query_id)
                     case 'brightness':
                         if len(query_data.split()) == 2:
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Brightness', reply_markup={'inline_keyboard':

@@ -5,8 +5,8 @@ baud = 9600
 ser = None
 
 leds_brightness_default = 25
-leds_color_options = ['White', 'Red', 'Purple', 'Yellow', 'Pink', 'Deep blue', 'Light blue', 'Orange', 'Green']
-leds_effects_options = ['Solid Color', 'Fade', 'Wipe', 'Theater Chase', 'Rainbow', 'Strobe', 'Moving Substrips', 'None (Off)']
+leds_color_options = ['white', 'red', 'purple', 'yellow', 'pink', 'deep blue', 'light blue', 'orange', 'green']
+leds_effects_options = ['solid color', 'fade', 'wipe', 'theater chase', 'rainbow', 'strobe', 'moving substrips', 'none (off)']
 
 animatronics_on = 1
 leds_on = 1

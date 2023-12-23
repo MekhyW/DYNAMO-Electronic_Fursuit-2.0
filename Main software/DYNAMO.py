@@ -24,18 +24,18 @@ def assistant_thread():
             Assistant.refresh()
             if Assistant.triggered:
                 Assistant.triggered = False
+                Waveform.stop_flag = True
                 Waveform.play_audio("resources/assistant_listening.wav")
                 time.sleep(0.5)
                 Assistant.record_query()
                 Waveform.play_audio("resources/assistant_ok.wav")
                 transcript = Assistant.process_query()
                 answer = Assistant.assistant_query(transcript)
-                if not len(answer):
-                    answer = "I don't have an answer to that"
-                Waveform.TTS(answer)
+                if len(answer):
+                    Waveform.TTS(answer)
+                    ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
+                    ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
                 Assistant.start()
-                ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
-                ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
         except Exception as e:
             print(e)
 

@@ -28,11 +28,19 @@ def connect():
 def send(expression_scores_list):
     expression_scores_str = ",".join(map(lambda score: str(int(score * 100)), expression_scores_list))
     data_to_send = f"{animatronics_on},{leds_on},{leds_brightness},{leds_color},{leds_effect},{leds_level},{expression_scores_str}\n"
+    response = None
     if ser is not None:
         try:
             ser.reset_input_buffer()
             ser.reset_output_buffer()
             ser.write(data_to_send.encode())
+            response = ser.readline().decode()
         except serial.SerialException:
+            print("Serial connection failed")
             connect()
-    return data_to_send
+            return None
+        finally:
+            if response and "Invalid message format!" in response:
+                raise Exception("AVR returned Invalid message format!")
+            return response
+    return None

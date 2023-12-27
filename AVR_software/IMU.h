@@ -11,7 +11,7 @@ sensors_event_t orientationData , angVelocityData , linearAccelData;
 void setupIMU() {
     if (!bno.begin())
     {
-        Serial.print("No BNO055 detected ... Check your wiring or I2C ADDR!");
+        Serial.println("No BNO055 detected ... Check your wiring or I2C ADDR!");
     }
 }
 

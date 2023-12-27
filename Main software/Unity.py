@@ -27,6 +27,7 @@ def send(displacement_eye_x, displacement_eye_y, left_eye_closeness, right_eye_c
     expression_scores_list = [str(0) if score < 0.01 else str(score).replace(".", ",") for score in expression_scores_list]
     expression_scores_string = " ".join(expression_scores_list)
     message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closeness} {right_eye_closeness} {expression_scores_string}"
+    response = None
     try:
         client_socket.sendall(message.encode())
         response = client_socket.recv(1024).decode()
@@ -35,6 +36,6 @@ def send(displacement_eye_x, displacement_eye_y, left_eye_closeness, right_eye_c
         connect()
         return None
     finally:
-        if "Invalid message format!" in response:
+        if response and "Invalid message format!" in response:
             raise Exception("Unity app returned Invalid message format!")
         return response

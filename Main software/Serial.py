@@ -26,10 +26,8 @@ def connect():
     return ser
 
 def send(expression_scores_list):
-    data_to_send = f"{animatronics_on},{leds_on},{leds_brightness},{leds_color},{leds_effect},{leds_level}"
-    for score in expression_scores_list:
-        data_to_send += f",{int(score*100)}"
-    data_to_send += "\n"
+    expression_scores_str = ",".join(map(lambda score: str(int(score * 100)), expression_scores_list))
+    data_to_send = f"{animatronics_on},{leds_on},{leds_brightness},{leds_color},{leds_effect},{leds_level},{expression_scores_str}\n"
     if ser is not None:
         try:
             ser.reset_input_buffer()

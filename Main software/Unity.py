@@ -24,11 +24,8 @@ def send(displacement_eye_x, displacement_eye_y, left_eye_closeness, right_eye_c
     displacement_eye_y = str(displacement_eye_y).replace(".", ",")
     left_eye_closeness = str(left_eye_closeness).replace(".", ",")
     right_eye_closeness = str(right_eye_closeness).replace(".", ",")
-    expression_scores_string = ""
-    for score in expression_scores_list:
-        if score < 0.01:
-            score = 0
-        expression_scores_string += str(score).replace(".", ",") + " "
+    expression_scores_list = [str(0) if score < 0.01 else str(score).replace(".", ",") for score in expression_scores_list]
+    expression_scores_string = " ".join(expression_scores_list)
     message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closeness} {right_eye_closeness} {expression_scores_string}"
     try:
         client_socket.sendall(message.encode())

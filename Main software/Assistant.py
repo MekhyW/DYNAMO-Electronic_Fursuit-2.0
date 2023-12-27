@@ -121,8 +121,9 @@ def start():
     recorder.start()
 
 def refresh():
-    keyword_index = porcupine.process(recorder.read())
-    if keyword_index >= 0 and hotword_detection_enabled:
+    if not hotword_detection_enabled:
+        return
+    if porcupine.process(recorder.read()) >= 0:
         trigger()
 
 if __name__ == "__main__":

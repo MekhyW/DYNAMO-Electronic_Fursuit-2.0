@@ -2,7 +2,6 @@ import numpy as np
 from scipy.special import expit
 import cv2
 import mediapipe as mp
-import math
 import pickle
 import joblib
 mp_face_mesh = mp.solutions.face_mesh
@@ -45,18 +44,19 @@ def open_camera(camera_id):
             return cap
 
 def calculate_roll_angle(landmarks):
-    left_ear_x = landmarks[234].x
-    left_ear_y = landmarks[234].y
-    right_ear_x = landmarks[454].x
-    right_ear_y = landmarks[454].y
-    angle_rad = math.atan2(right_ear_y - left_ear_y, right_ear_x - left_ear_x)
-    angle_deg = math.degrees(angle_rad)
+    left_ear = np.array([landmarks[234].x, landmarks[234].y])
+    right_ear = np.array([landmarks[454].x, landmarks[454].y])
+    delta = right_ear - left_ear
+    angle_deg = np.degrees(np.arctan2(delta[1], delta[0]))
     return angle_deg
 
 def compensate_head_roll(frame, results_mesh, W, H):
     roll_angle_deg = calculate_roll_angle(results_mesh.multi_face_landmarks[0].landmark)
     M = cv2.getRotationMatrix2D((W/2, H/2), roll_angle_deg, 1)
-    frame = cv2.warpAffine(frame, M, (W, H))
+    alpha = M[0, 0]
+    beta = M[0, 1]
+    frame = cv2.warpAffine(frame, np.array([[alpha, beta, (1 - alpha) * W / 2 - beta * H / 2],
+                                            [-beta, alpha, beta * W / 2 + (1 - alpha) * H / 2]]), (W, H))
     return frame
 
 def fit_ellipse(points):
@@ -147,24 +147,16 @@ def predict_emotion(frame, draw=False):
 
 def calculate_eye_closeness(mesh_points):
     global left_eye_closeness, right_eye_closeness
-    lex1 = mesh_points[33][0]
-    lex2 = mesh_points[133][0]
-    rex1 = mesh_points[362][0]
-    rex2 = mesh_points[263][0]
-    ley1 = mesh_points[159][1]
-    ley2 = mesh_points[145][1]
-    rey1 = mesh_points[386][1]
-    rey2 = mesh_points[374][1]
-    reason_left = abs(lex1-lex2)/abs(ley1-ley2)
-    reason_right = abs(rex1-rex2)/abs(rey1-rey2)
-    if reason_left > 99:
-        reason_left = 99
-    if reason_right > 99:
-        reason_right = 99
+    lex1, lex2 = mesh_points[33, 0], mesh_points[133, 0]
+    rex1, rex2 = mesh_points[362, 0], mesh_points[263, 0]
+    ley1, ley2 = mesh_points[159, 1], mesh_points[145, 1]
+    rey1, rey2 = mesh_points[386, 1], mesh_points[374, 1]
+    reason_left = abs(lex1 - lex2) / abs(ley1 - ley2) if abs(ley1 - ley2) != 0 else 99
+    reason_right = abs(rex1 - rex2) / abs(rey1 - rey2) if abs(rey1 - rey2) != 0 else 99
     left_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_left]])[0][1]
     right_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_right]])[0][1]
-    left_eye_closeness = 0.5*left_eye_closeness + 0.5*left_eye_closeness_noisy
-    right_eye_closeness = 0.5*right_eye_closeness + 0.5*right_eye_closeness_noisy
+    left_eye_closeness = 0.5 * left_eye_closeness + 0.5 * left_eye_closeness_noisy
+    right_eye_closeness = 0.5 * right_eye_closeness + 0.5 * right_eye_closeness_noisy
     return left_eye_closeness, right_eye_closeness
 
 def eye_track(frame, draw=False):

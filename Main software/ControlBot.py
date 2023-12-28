@@ -38,14 +38,11 @@ last_message_chat = {}
 lock_outsider_commands = False
 
 def PlayMusic(fursuitbot, chat_id, text):
-    Waveform.stop_flag = True
-    time.sleep(1)
-    for file in os.listdir('.'):
-        if file.endswith('.wav'):
-            os.remove(file)
     fursuitbot.sendMessage(chat_id, '>>>Downloading song with query "{}"...'.format(text))
     command = 'spotdl "{}" --format wav --preload --no-cache'.format(text)
     os.system(command)
+    Waveform.stop_flag = True
+    time.sleep(1)
     for file in os.listdir('.'):
         if file.endswith('.wav'):
             file_name = file

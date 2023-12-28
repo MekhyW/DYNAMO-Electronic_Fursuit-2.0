@@ -4,6 +4,7 @@ import cv2
 import mediapipe as mp
 import pickle
 import joblib
+
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 drawSpec = mp_drawing.DrawingSpec(thickness=1, circle_radius=2)

@@ -1,4 +1,5 @@
 import pyaudio
+from pydub import AudioSegment
 import numpy as np
 import wave
 import subprocess
@@ -21,6 +22,13 @@ def convert_to_wav(input_filename):
         os.remove(input_filename)
         return output_filename
     return input_filename
+
+def normalize_audio(file_path, target_dBFS=-20.0):
+    audio = AudioSegment.from_file(file_path)
+    normalized_audio = audio.normalize()
+    change_in_dBFS = target_dBFS - normalized_audio.dBFS
+    normalized_audio = normalized_audio.apply_gain(change_in_dBFS)
+    normalized_audio.export(file_path, format="wav")
 
 def play_audio_stream(wf, stream):
     global is_paused, stop_flag
@@ -45,6 +53,7 @@ def close_audio_stream(stream):
 
 def play_audio(filename, delete=False):
     filename = convert_to_wav(filename)
+    normalize_audio(filename)
     wf = wave.open(filename, 'rb')
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
                     channels=wf.getnchannels(),

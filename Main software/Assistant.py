@@ -66,14 +66,20 @@ def assistant_hard_commands(query):
     else:
         return False
 
-def record_query():
+def record_query(silence_window_s=2, silence_threshold_percent=50):
     print("Recording")
     wavfile = wave.open("resources/query.wav", "wb")
     wavfile.setparams((1, 2, 16000, 512, "NONE", "NONE"))
     pcms = []
-    for i in range(0, int(16000 / 512 * 5)):
+    remaining = int(16000 / 512 * silence_window_s)
+    while remaining > 0:
         pcm = recorder.read()
         pcms.append(pcm)
+        volume = Serial.leds_level_from_int16(max(pcm))
+        if volume > silence_threshold_percent:
+            remaining = int(16000 / 512 * silence_window_s)
+        else:
+            remaining -= 1
     for pcm in pcms:
         wavfile.writeframes(struct.pack("h" * len(pcm), *pcm))
     wavfile.close()

@@ -15,6 +15,11 @@ leds_color = 0
 leds_effect = 0
 leds_level = 0
 
+def leds_level_from_int16(int16_value):
+    global leds_effect, leds_level
+    leds_effect = len(leds_effects_options)  # "Level" effect is last index + 1
+    leds_level = int((int16_value / 32767) * 100) # Convert int16 to percentage int
+
 def connect():
     global ser
     ser = None

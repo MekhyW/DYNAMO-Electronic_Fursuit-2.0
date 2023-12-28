@@ -13,21 +13,17 @@ chunk_size = 4096
 
 is_paused = False
 stop_flag = False
-audio_data = []
-audio_data_max = 0
 
-def play_audio(filename, delete=False):
-    global is_paused, stop_flag, audio_data, audio_data_max
-    if filename[-4:] != ".wav":
-        subprocess.call(["ffmpeg", "-i", filename, "-ar", "16000", filename[:-4] + ".wav", "-y"])
-        if delete:
-            os.remove(filename)
-        filename = filename[:-4] + ".wav"
-    wf = wave.open(filename, 'rb')
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
+def convert_to_wav(input_filename):
+    if input_filename[-4:] != ".wav":
+        output_filename = input_filename[:-4] + ".wav"
+        subprocess.call(["ffmpeg", "-i", input_filename, "-ar", "16000", output_filename, "-y"])
+        os.remove(input_filename)
+        return output_filename
+    return input_filename
+
+def play_audio_stream(wf, stream):
+    global is_paused, stop_flag
     is_paused = False
     stop_flag = False
     data = wf.readframes(chunk_size)
@@ -35,16 +31,27 @@ def play_audio(filename, delete=False):
         if not is_paused:
             audio_data = np.frombuffer(data, dtype=np.int16)
             audio_data_max = np.max(audio_data)
-            Serial.leds_effect = len(Serial.leds_effects_options) #"Level" effect is last index + 1
-            Serial.leds_level = int((audio_data_max / 32767) * 100)
+            Serial.leds_level_from_int16(audio_data_max)
             stream.write(data)
             data = wf.readframes(chunk_size)
         if stop_flag:
             stop_flag = False
             break
+    wf.close()
+
+def close_audio_stream(stream):
     stream.stop_stream()
     stream.close()
-    wf.close()
+
+def play_audio(filename, delete=False):
+    filename = convert_to_wav(filename)
+    wf = wave.open(filename, 'rb')
+    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+    play_audio_stream(wf, stream)
+    close_audio_stream(stream)
     if delete:
         os.remove(filename)
 

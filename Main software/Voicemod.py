@@ -12,12 +12,9 @@ url = "ws://localhost:59129/v1"
 toggle_hear_my_voice_flag = False
 toggle_voice_changer_flag = False
 toggle_background_flag = False
-play_sfx_flag = False
-stop_sfx_flag = False
 load_voice_flag = False
 sfx_id = None
 voice_id = None
-soundboards = None
 voices = None
 
 async def send_message(websocket, command, payload, only_once=False):
@@ -49,14 +46,14 @@ async def getVoices():
                     voicesdicts.append({"name": voice["friendlyName"], "id": voice["id"]})
             return voicesdicts
     
-async def getAllSoundboard():
-    for attempt in range(3):
-        soundboardsdicts = []
-        soundboards = await send_message(voicemod_websocket, 'getAllSoundboard', {}, only_once=True)
-        if soundboards is not None and 'payload' in soundboards and 'soundboards' in soundboards['payload']:
-            for soundboard in soundboards['payload']['soundboards']:
-                soundboardsdicts.append({"name": soundboard["name"], "id": soundboard["id"], "sounds": soundboard["sounds"]})
-            return soundboardsdicts
+#async def getAllSoundboard():
+#    for attempt in range(3):
+#        soundboardsdicts = []
+#        soundboards = await send_message(voicemod_websocket, 'getAllSoundboard', {}, only_once=True)
+#        if soundboards is not None and 'payload' in soundboards and 'soundboards' in soundboards['payload']:
+#            for soundboard in soundboards['payload']['soundboards']:
+#                soundboardsdicts.append({"name": soundboard["name"], "id": soundboard["id"], "sounds": soundboard["sounds"]})
+#            return soundboardsdicts
     
 async def toggleHearMyVoice():
     await send_message(voicemod_websocket, 'toggleHearMyVoice', {}, only_once=True)
@@ -77,8 +74,8 @@ async def stopSFX():
     await send_message(voicemod_websocket, 'stopAllMemeSounds', {}, only_once=True)
 
 async def connect():
-    global voicemod_websocket, soundboards, voices
-    global toggle_hear_my_voice_flag, toggle_voice_changer_flag, toggle_background_flag, play_sfx_flag, stop_sfx_flag, load_voice_flag
+    global voicemod_websocket, voices
+    global toggle_hear_my_voice_flag, toggle_voice_changer_flag, toggle_background_flag, load_voice_flag
     global sfx_id, voice_id
     while True:
         try:
@@ -86,8 +83,8 @@ async def connect():
                 await send_message(websocket_voicemod, "registerClient", {"clientKey": voicemod_key})
                 voicemod_websocket = websocket_voicemod
                 print("Voicemod connected!")
-                soundboards = await getAllSoundboard()
-                print("Soundboards loaded")
+                #soundboards = await getAllSoundboard()
+                #print("Soundboards loaded")
                 voices = await getVoices()
                 print("Voices loaded")
                 while True:
@@ -101,12 +98,12 @@ async def connect():
                     if toggle_background_flag:
                         await toggleBackground()
                         toggle_background_flag = False
-                    if play_sfx_flag:
-                        await playSFX(sfx_id)
-                        play_sfx_flag = False
-                    if stop_sfx_flag:
-                        await stopSFX()
-                        stop_sfx_flag = False
+                    #if play_sfx_flag:
+                    #    await playSFX(sfx_id)
+                    #    play_sfx_flag = False
+                    #if stop_sfx_flag:
+                    #    await stopSFX()
+                    #    stop_sfx_flag = False
                     if load_voice_flag:
                         await setVoice(voice_id)
                         load_voice_flag = False

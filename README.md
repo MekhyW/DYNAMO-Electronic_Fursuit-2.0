@@ -85,3 +85,10 @@ Upload the code to the Arduino Leonardo device inside of the Lattepanda.
 ### 10. Set Launch.bat to Run on Boot
 
 Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
+
+
+# Preparations before each use
+
+1) Recharge the batteries of the system
+2) Up to 24 hours prior to use, boot the system and use mouse and keyboard to login on Voicemod (to avoid the login screen from appearing)
+3) Test hardware connections and software functionality

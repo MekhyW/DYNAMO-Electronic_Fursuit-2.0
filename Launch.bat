@@ -11,6 +11,7 @@ git pull || echo Git pull failed
 
 :: Start Voicemod
 start "" "C:\Program Files\Voicemod Desktop\VoicemodDesktop.exe" || echo Voicemod failed to start
+python voicemod-autologin.py || echo Voicemod autologin script failed
 
 :: Start Eye-Graphics.exe
 start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Eye-Graphics.exe" || echo Eye-Graphics failed to start

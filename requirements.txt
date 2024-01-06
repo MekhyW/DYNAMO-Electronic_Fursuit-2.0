@@ -17,3 +17,5 @@ psutil==5.9.4
 pycaw==20230407
 pyserial==3.5
 scikit-learn==1.2.0
+pytesseract==0.3.10
+pyautogui==0.9.54

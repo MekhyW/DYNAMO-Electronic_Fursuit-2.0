@@ -13,6 +13,7 @@ TBW
 # Software Setup
 
 To setup the project software on a LattePanda Delta 3 board, follow the steps below for required environment and configurations. It should be running Windows 10 and have a stable internet connection.
+I also recommend updating to the latest update of Windows 10, and removing any bloat software from the system (such as Cortana, Office 365, etc).
 
 ### 1. Install Git Bash
 
@@ -25,12 +26,18 @@ Download and install Python 3.11 from the official [Python website](https://www.
 
 ### 3. Install FFMPEG
 
-Download and install FFMPEG from the official [FFMPEG website](https://ffmpeg.org/). During installation, make sure to check the option to add FFMPEG to the system PATH.
+Open the Windows Command Shell with administrator privileges and run the following commands:
+
+```bash
+@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command " [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
+choco install ffmpeg
+```
 
 ### 4. Install Tesseract
 
-Download and install Tesseract using the Tesseract installer for Windows from the [UB Mannheim Repository](https://github.com/UB-Mannheim/tesseract/wiki).
+Download and install Tesseract using the 64-bit Tesseract installer for Windows from the [UB Mannheim Repository](https://github.com/UB-Mannheim/tesseract/wiki).
 Make sure it is installed in the `C:\Program Files\Tesseract-OCR` directory.
+
 It is also recommended to install Google Chrome and enable the Dark Reader extension for better OCR results.
 
 ### 5. Install Voicemod

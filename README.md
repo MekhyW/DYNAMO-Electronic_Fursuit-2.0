@@ -33,29 +33,24 @@ Open the Windows Command Shell with administrator privileges and run the followi
 choco install ffmpeg
 ```
 
-### 4. Install Tesseract
-
-Download and install Tesseract using the 64-bit Tesseract installer for Windows from the [UB Mannheim Repository](https://github.com/UB-Mannheim/tesseract/wiki).
-Make sure it is installed in the `C:\Program Files\Tesseract-OCR` directory.
-
-It is also recommended to install Google Chrome and enable the Dark Reader extension for better OCR results.
-
-### 5. Install Voicemod
+### 4. Install Voicemod
 
 Download and install Voicemod from the official [Voicemod website](https://www.voicemod.net/). Install it in the `C:\Program Files` directory. Then log in to your Voicemod account and activate the Pro license if not already activated.
 
-### 6. Configure Audio Settings in Voicemod
+DO NOT use the same account as another device, as it will log out the other device or vice versa!!
+
+### 5. Configure Audio Settings in Voicemod
 
 Open Voicemod and configure the audio settings, including reduction (I recommend leaving at a high value, like 80%) and set it to update without asking.
 
 The file `voidemod-presets.vs2` contains the presets used for the project. You can import it into Voicemod to use the same settings.
 
-### 7. Setup Displays
+### 6. Setup Displays
 
 I use a UDisplay HDMI-USB adapter for the second eye display. Whatever the device, make sure that it´s firmware is up to date and set to autorun.
 Set the second display to be an extended display.
 
-### 8. Clone Repositories to Documents Folder
+### 7. Clone Repositories to Documents Folder
 
 Clone the project repositories to `C:\Users\LattePanda\Documents\GitHub` folder using the following commands in Git Bash:
 
@@ -67,7 +62,7 @@ git clone https://github.com/MekhyW/Eye-Graphics
 git clone https://github.com/MekhyW/Facial-Emotion-Classification
 ```
 
-### 9. Install Requirements.txt
+### 8. Install Requirements.txt
 
 Navigate to the project's main directory in Git Bash and install the required Python packages using the following command:
 
@@ -75,7 +70,7 @@ Navigate to the project's main directory in Git Bash and install the required Py
 pip install -r requirements.txt
 ```
 
-### 10. Provide credentials.json
+### 9. Provide credentials.json
 
 Create a `credentials.json` file in the `Main software` folder of the project's main repository, with the following contents:
 
@@ -89,7 +84,7 @@ Create a `credentials.json` file in the `Main software` folder of the project's 
 }
 ```
 
-### 11. AVR_software
+### 10. AVR_software
 
 Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
 
@@ -99,7 +94,7 @@ Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the fo
 
 Upload the code to the Arduino Leonardo device inside of the Lattepanda.
 
-### 12. Set Launch.bat to Run on Boot
+### 11. Set Launch.bat to Run on Boot
 
 Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
 

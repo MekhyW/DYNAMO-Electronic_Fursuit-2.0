@@ -27,7 +27,8 @@ def send_and_receive():
         left_eye_closeness = input("Enter left eye closeness: ").replace(".", ",")
         right_eye_closeness = input("Enter right eye closed: ").replace(".", ",")
         expression_scores = input("Enter the 6 expression scores (separated by spaces): ").replace(".", ",")
-        message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closeness} {right_eye_closeness} {expression_scores}"
+        manual_expression = input("Enter manual expression id: ").replace(".", ",")
+        message = f"{displacement_eye_x} {displacement_eye_y} {left_eye_closeness} {right_eye_closeness} {expression_scores} {manual_expression}"
         try:
             client_socket.sendall(message.encode())
             response = client_socket.recv(1024).decode()

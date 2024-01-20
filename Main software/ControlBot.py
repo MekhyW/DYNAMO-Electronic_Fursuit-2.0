@@ -210,12 +210,18 @@ def thread_function_query(msg):
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Expression', reply_markup={'inline_keyboard': 
                                 [[{'text': '⬅️ Go back', 'callback_data': 'expression set goback'}], 
                                  [{'text': 'Neutral', 'callback_data': 'expression set 3'}], 
-                                 [{'text': 'Happy', 'callback_data': 'expression set 2'}], 
-                                 [{'text': 'Sad', 'callback_data': 'expression set 4'}], 
-                                 [{'text': 'Angry', 'callback_data': 'expression set 0'}], 
-                                 [{'text': 'Surprised', 'callback_data': 'expression set 5'}],
-                                 [{'text': 'Disgusted', 'callback_data': 'expression set 1'}],
-                                 [{'text': 'Hypno', 'callback_data': 'expression set 6'}]]})
+                                 [{'text': '🤩   Happy   🤩', 'callback_data': 'expression set 2'}], 
+                                 [{'text': '😢    Sad    😢', 'callback_data': 'expression set 4'}], 
+                                 [{'text': '😡   Angry   😡', 'callback_data': 'expression set 0'}], 
+                                 [{'text': '😱 Surprised 😱', 'callback_data': 'expression set 5'}],
+                                 [{'text': '😒 Disgusted 😒', 'callback_data': 'expression set 1'}],
+                                 [{'text': '😵‍💫  Hypnotic 😵‍💫', 'callback_data': 'expression set 6'}],
+                                 [{'text': '❤️   Heart   ❤️', 'callback_data': 'expression set 7'}],
+                                 [{'text': '🌈  Rainbow  🌈', 'callback_data': 'expression set 8'}],
+                                 [{'text': '😈 Nightmare 😈', 'callback_data': 'expression set 9'}],
+                                 [{'text': '⚙️ Gear eyes ⚙️', 'callback_data': 'expression set 10'}],
+                                 [{'text': '💀   SANS    💀', 'callback_data': 'expression set 11'}]
+                                ]})
                         elif query_data.split()[2] == 'goback':
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
                         else:

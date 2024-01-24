@@ -44,8 +44,13 @@ def assistant_thread():
 def voicemod_thread():
     while True:
         loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(Voicemod.connect())
+        try:
+            loop.run_until_complete(Voicemod.connect())
+        except Exception as e:
+            print(e)
+        finally:
+            loop.close()
+            time.sleep(1)
 
 def main():
     threading.Thread(target=machine_vision_thread).start()

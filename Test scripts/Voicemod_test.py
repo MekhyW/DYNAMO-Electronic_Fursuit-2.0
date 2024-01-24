@@ -8,33 +8,37 @@ import string
 with open("../Main software/credentials.json") as f:
     credentials = json.load(f)
 voicemod_key = credentials["voicemod_key"]
+url = "ws://localhost:59129/v1"
 
-async def send_message(websocket, message, only_once=False):
-    response = None
-    response_prev = None
+async def send_message(websocket, message):
     while True:
         try:
             await websocket.send(json.dumps(message))
-            response = await asyncio.wait_for(websocket.recv(), timeout=1)
+            response = await websocket.recv()
             response = json.loads(response)
             print(response)
-            if response_prev == response or only_once:
-                break
-            response_prev = response
+            valid_response_actions = {
+                'toggleHearMyVoice': ['hearMySelfEnabledEvent', 'hearMySelfDisabledEvent'],
+                'toggleVoiceChanger': ['voiceChangerEnabledEvent', 'voiceChangerDisabledEvent'],
+                'toggleBackground': ['backgroundEffectsEnabledEvent', 'backgroundEffectsDisabledEvent'],
+                'getVoices': ['getVoices'],
+                'loadVoice': ['loadVoice']
+            }
+            if message['action'] in valid_response_actions and 'action' in response and response['action'] not in valid_response_actions[message['action']]:
+                continue
+            return response
         except asyncio.TimeoutError:
             print("Timeout")
             break
-    return response
+    return None
 
 async def main():
-    url = "ws://localhost:59129/v1"
     try:
-        async with websockets.connect(url, ping_interval=5) as websocket_voicemod:
+        async with websockets.connect(url, ping_interval=5, max_size=2**30) as websocket_voicemod:
             register_message = {"action": "registerClient", "id": "ff7d7f15-0cbf-4c44-bc31-b56e0a6c9fa6",
                 "payload": {"clientKey": voicemod_key}
             }
-            register_response = await send_message(websocket_voicemod, register_message)
-            print(register_response)
+            await send_message(websocket_voicemod, register_message)
             while True:
                 command = input("Enter command: ")
                 message = {"action": command, "id": ''.join(random.choice(string.ascii_lowercase) for i in range(36)), "payload": {}}
@@ -74,16 +78,16 @@ async def main():
                         else:
                             print("Error getting status")
                     case "toggleHearMyVoice" | "toggleVoiceChanger" | "toggleBackground":
-                        await send_message(websocket_voicemod, message, only_once=True)
+                        await send_message(websocket_voicemod, message)
                     case "loadVoice":
                         voice_id = input("Enter voice id: ")
                         message["payload"]["voiceId"] = voice_id
-                        await send_message(websocket_voicemod, message, only_once=True)
+                        await send_message(websocket_voicemod, message)
                     case "playMeme":
                         meme_id = input("Enter sound id: ")
                         message["payload"]["FileName"] = meme_id
                         message["payload"]["IsKeyDown"] = True
-                        await send_message(websocket_voicemod, message, only_once=True)
+                        await send_message(websocket_voicemod, message)
                     case "stopAllMemeSounds":
                         await send_message(websocket_voicemod, message)
                     case _:
@@ -94,5 +98,4 @@ async def main():
         print(e)
 
 if __name__ == "__main__":
-    while True:
-        asyncio.get_event_loop().run_until_complete(main())
+    asyncio.get_event_loop().run_until_complete(main())

@@ -28,7 +28,7 @@ inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'e
 inline_keyboard_eyetracking = [[{'text': 'Set to ON', 'callback_data': 'eyetracking on'}, {'text': 'Set to OFF', 'callback_data': 'eyetracking off'}]]
 inline_keyboard_animatronic = [[{'text': 'Set to ON', 'callback_data': 'animatronic on'}, {'text': 'Set to OFF', 'callback_data': 'animatronic off'}]]
 inline_keyboard_leds = [[{'text': 'Set Effect', 'callback_data': 'leds effect'}, {'text': 'Set Color', 'callback_data': 'leds color'}], [{'text': 'Set Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Turn ON', 'callback_data': 'leds on'}, {'text': 'Turn OFF', 'callback_data': 'leds off'}]]
-inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}, {'text': 'Voice Changer ON/OFF', 'callback_data': 'voice changer toggle'}], [{'text': 'Mute / Unmute', 'callback_data': 'voice hear toggle'}], [{'text': 'Background ON/OFF', 'callback_data': 'voice bg toggle'}]]
+inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': 'Mute', 'callback_data': 'voice hear off'}, {'text': 'Unmute', 'callback_data': 'voice hear on'}], [{'text': 'Background ON', 'callback_data': 'voice bg on'}, {'text': 'Background OFF', 'callback_data': 'voice bg off'}]]
 inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}]]
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}]]
 inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging resources'}, {'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}]]
@@ -308,18 +308,25 @@ def thread_function_query(msg):
                                 voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})
                         elif query_data.split()[2] == 'load':
+                            Waveform.stop_gibberish_flag = True
                             Voicemod.voice_id = query_data.split()[3]
                             Voicemod.load_voice_flag = True
                             ConfirmSuccess(from_id, msg, 'Voice loaded ID {}'.format(Voicemod.voice_id), query_id)
                         elif query_data.split()[2] == 'goback':
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
                     case 'changer':
+                        Waveform.stop_gibberish_flag = True
+                        Voicemod.desired_status = query_data.split()[2] == 'on'
                         Voicemod.toggle_voice_changer_flag = True
                         ConfirmSuccess(from_id, msg, 'Voice Changer Toggled', query_id)
                     case 'hear':
+                        Waveform.stop_gibberish_flag = True
+                        Voicemod.desired_status = query_data.split()[2] == 'on'
                         Voicemod.toggle_hear_my_voice_flag = True
                         ConfirmSuccess(from_id, msg, 'Hear My Voice Toggled', query_id)
                     case 'bg':
+                        Waveform.stop_gibberish_flag = True
+                        Voicemod.desired_status = query_data.split()[2] == 'on'
                         Voicemod.toggle_background_flag = True
                         ConfirmSuccess(from_id, msg, 'Background FX Toggled', query_id)
             case 'assistant':

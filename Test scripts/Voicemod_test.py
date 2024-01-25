@@ -18,6 +18,9 @@ async def send_message(websocket, message):
             response = json.loads(response)
             print(response)
             valid_response_actions = {
+                'getHearMyselfStatus': ['getHearMyselfStatus'],
+                'getVoiceChangerStatus': ['getVoiceChangerStatus'],
+                'getBackgroundEffectStatus': ['getBackgroundEffectStatus'],
                 'toggleHearMyVoice': ['hearMySelfEnabledEvent', 'hearMySelfDisabledEvent'],
                 'toggleVoiceChanger': ['voiceChangerEnabledEvent', 'voiceChangerDisabledEvent'],
                 'toggleBackground': ['backgroundEffectsEnabledEvent', 'backgroundEffectsDisabledEvent'],
@@ -98,4 +101,5 @@ async def main():
         print(e)
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(main())
+    while True:
+        asyncio.get_event_loop().run_until_complete(main())

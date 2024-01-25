@@ -21,6 +21,7 @@ previous_answers = ["The Los Angeles Dodgers", "Não, você que é fofo! UwU"]
 
 triggered = False
 hotword_detection_enabled = True
+current_pcm = None
 
 def assistant_hard_commands(query):
     if all(term in query for term in ["expression", "automatic"]):
@@ -73,9 +74,9 @@ def record_query(silence_window_s=2, silence_threshold_percent=50):
     pcms = []
     remaining = int(16000 / 512 * silence_window_s)
     while remaining > 0:
-        pcm = recorder.read()
-        pcms.append(pcm)
-        volume = Serial.leds_level_from_int16(max(pcm))
+        refresh()
+        pcms.append(current_pcm)
+        volume = Serial.leds_level_from_int16(max(current_pcm))
         if volume > silence_threshold_percent:
             remaining = int(16000 / 512 * silence_window_s)
         else:
@@ -127,9 +128,11 @@ def start():
     recorder.start()
 
 def refresh():
-    if not hotword_detection_enabled:
+    global current_pcm
+    current_pcm = recorder.read()
+    if triggered or not hotword_detection_enabled:
         return
-    if porcupine.process(recorder.read()) >= 0:
+    if porcupine.process(current_pcm) >= 0:
         trigger()
 
 if __name__ == "__main__":

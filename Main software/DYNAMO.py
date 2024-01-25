@@ -24,7 +24,6 @@ def assistant_thread():
         try:
             Assistant.refresh()
             if Assistant.triggered:
-                Assistant.triggered = False
                 Waveform.stop_flag = True
                 Waveform.play_audio("resources/assistant_listening.wav")
                 time.sleep(0.5)
@@ -37,8 +36,10 @@ def assistant_thread():
                     Waveform.TTS(answer)
                     ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
                     ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
+                Assistant.triggered = False
         except Exception as e:
             print(e)
+            Assistant.triggered = False
         time.sleep(0.01)
 
 def voicemod_thread():

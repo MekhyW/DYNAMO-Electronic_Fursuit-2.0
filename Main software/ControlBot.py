@@ -303,7 +303,8 @@ def thread_function_query(msg):
                 match query_data.split()[1]:
                     case 'change':
                         if len(query_data.split()) == 2:
-                            voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change goback'}]]
+                            voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change goback'}], 
+                                              [{'text': 'Gibberish Voices ➡️', 'callback_data': 'voice change gibberish'}]]
                             for voice in Voicemod.voices:
                                 voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})
@@ -314,6 +315,11 @@ def thread_function_query(msg):
                             ConfirmSuccess(from_id, msg, 'Voice loaded ID {}'.format(Voicemod.voice_id), query_id)
                         elif query_data.split()[2] == 'goback':
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
+                        elif query_data.split()[2] == 'gibberish':
+                            voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change'}]]
+                            for voice in Voicemod.gibberish_voices:
+                                voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Gibberish Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})
                     case 'changer':
                         Waveform.stop_gibberish_flag = True
                         Voicemod.desired_status = query_data.split()[2] == 'on'

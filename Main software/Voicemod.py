@@ -18,6 +18,7 @@ load_voice_flag = True
 desired_status = True
 voice_id = 'nofx'
 voices = []
+gibberish_voices = []
 
 async def send_message(websocket, command, payload):
     while True:
@@ -45,19 +46,20 @@ async def send_message(websocket, command, payload):
     return None
 
 async def getVoices():
+    global voices, gibberish_voices
     for attempt in range(3):
-        voicesdicts = []
-        voices = await send_message(voicemod_websocket, 'getVoices', {})
-        voices = voices['payload']
-        if voices is not None and 'voices' in voices:
-            voices = voices["voices"]
-            for voice in voices:
+        voices = []
+        gibberish_voices = []
+        response = await send_message(voicemod_websocket, 'getVoices', {})
+        response = response['payload']
+        if response is not None and 'voices' in response:
+            response = response["voices"]
+            for voice in response:
                 if voice["favorited"]:
-                    voicesdicts.append({"name": voice["friendlyName"], "id": voice["id"]})
+                    voices.append({"name": voice["friendlyName"], "id": voice["id"]})
             for gibberish_voice in os.listdir("resources/gibberish_voices"):
                 name = gibberish_voice.replace(".wav", "")
-                voicesdicts.append({"name": name, "id": f"gibberish-{name}"})
-            return voicesdicts
+                gibberish_voices.append({"name": name, "id": f"gibberish-{name}"})
         
 async def getStatus(command):
     status = await send_message(voicemod_websocket, command, {})
@@ -85,14 +87,14 @@ async def setVoice(voice_id):
     await send_message(voicemod_websocket, 'loadVoice', {"voiceId": voice_id})
 
 async def connect():
-    global voicemod_websocket, voices, voice_id
+    global voicemod_websocket
     global toggle_hear_my_voice_flag, toggle_voice_changer_flag, toggle_background_flag, load_voice_flag
     try:
         async with websockets.connect(url, ping_interval=5, max_size=2**30) as websocket_voicemod:
             await send_message(websocket_voicemod, "registerClient", {"clientKey": voicemod_key})
             voicemod_websocket = websocket_voicemod
             print("Voicemod connected!")
-            voices = await getVoices()
+            await getVoices()
             print("Voices loaded")
             while True:
                 time.sleep(0.1)

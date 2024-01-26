@@ -60,6 +60,9 @@ async def getVoices():
             for gibberish_voice in os.listdir("resources/gibberish_voices"):
                 name = gibberish_voice.replace(".wav", "")
                 gibberish_voices.append({"name": name, "id": f"gibberish-{name}"})
+            voices = sorted(voices, key=lambda k: k['name'])
+            gibberish_voices = sorted(gibberish_voices, key=lambda k: k['name'])
+            return
         
 async def getStatus(command):
     status = await send_message(voicemod_websocket, command, {})

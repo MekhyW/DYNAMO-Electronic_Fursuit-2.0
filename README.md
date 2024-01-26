@@ -45,12 +45,7 @@ Open Voicemod and configure the audio settings, including reduction (I recommend
 
 The file `voidemod-presets.vs2` contains the presets used for the project. You can import it into Voicemod to use the same settings.
 
-### 6. Setup Displays
-
-I use a UDisplay HDMI-USB adapter for the second eye display. Whatever the device, make sure that it´s firmware is up to date and set to autorun.
-Set the second display to be an extended display.
-
-### 7. Clone Repositories to Documents Folder
+### 6. Clone Repositories to Documents Folder
 
 Clone the project repositories to `C:\Users\LattePanda\Documents\GitHub` folder using the following commands in Git Bash:
 
@@ -62,7 +57,7 @@ git clone https://github.com/MekhyW/Eye-Graphics
 git clone https://github.com/MekhyW/Facial-Emotion-Classification
 ```
 
-### 8. Install Requirements.txt
+### 7. Install Requirements.txt
 
 Navigate to the project's main directory in Git Bash and install the required Python packages using the following command:
 
@@ -70,7 +65,7 @@ Navigate to the project's main directory in Git Bash and install the required Py
 pip install -r requirements.txt
 ```
 
-### 9. Provide credentials.json
+### 8. Provide credentials.json
 
 Create a `credentials.json` file in the `Main software` folder of the project's main repository, with the following contents:
 
@@ -84,7 +79,7 @@ Create a `credentials.json` file in the `Main software` folder of the project's 
 }
 ```
 
-### 10. AVR_software
+### 9. AVR_software
 
 Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
 
@@ -94,13 +89,24 @@ Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the fo
 
 Upload the code to the Arduino Leonardo device inside of the Lattepanda.
 
-### 11. Set Launch.bat to Run on Boot
+### 10. Set Launch.bat to Run on Boot
 
 Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
+
+### 11. Setup Displays
+
+I use a UDisplay HDMI-USB adapter for the second eye display. Whatever the device, make sure that it´s firmware is up to date and set to autorun.
+Set the second display to be an extended display.
+
+### 12. Setup 4G Module
+
+To allow the suit to connect to the internet outside of WiFi range, install a 4G module following the instructions at [4G Module Setup](https://docs.lattepanda.com/content/3rd_delta_edition/connectivity/#cellular-4g5g).
+
+Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6.
 
 
 # Preparations before each use
 
 1) Recharge the batteries of the system
 2) Check if SIM card has enough data, if not, recharge it
-3) Test hardware connections and software functionality
+3) Make sure all hardware is connected and working

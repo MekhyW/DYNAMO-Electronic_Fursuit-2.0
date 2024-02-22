@@ -6,7 +6,7 @@ import pickle
 displacement_eye = (0,0)
 left_eye_closeness = 0
 right_eye_closeness = 0
-eye_closeness_model = pickle.load(open('../Main software/resources/eyecloseness_model.pkl', 'rb'))
+eye_closeness_model = pickle.load(open('Main software/resources/eyecloseness_model.pkl', 'rb'))
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 drawSpec = mp_drawing.DrawingSpec(thickness=1, circle_radius=2)
@@ -122,7 +122,6 @@ while True:
         new_frame_time = time.time() 
         fps = 1/(new_frame_time-prev_frame_time) 
         prev_frame_time = new_frame_time 
-        #print(displacement_eye, left_eye_closeness, right_eye_closeness)
-        print(fps)
+        print(fps, displacement_eye, left_eye_closeness, right_eye_closeness)
     else:
         open_camera(cap_id)

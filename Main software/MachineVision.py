@@ -4,6 +4,8 @@ import cv2
 import mediapipe as mp
 import pickle
 import joblib
+import warnings
+warnings.filterwarnings("ignore")
 
 mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
@@ -12,8 +14,8 @@ face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True, min_de
 emotion_model = pickle.load(open('resources/emotion_model.pkl', 'rb'))
 pca_model = joblib.load('resources/pca_model.pkl')
 eye_closeness_model = pickle.load(open('resources/eyecloseness_model.pkl', 'rb'))
-RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398]
-LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246]
+RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 362]
+LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33]
 RIGHT_EYE_EXTENDED = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 341, 256, 252, 253, 254, 339, 260, 259, 257, 258, 286, 414]
 LEFT_EYE_EXTENDED = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 110, 24, 23, 22, 26, 112, 190, 56, 28, 27, 29, 30]  
 LEFT_IRIS = [468, 469, 470, 471, 472]
@@ -65,8 +67,8 @@ def fit_ellipse(points):
     center, axes = ellipse[0], ellipse[1]
     return center, axes
 
-def transform_to_zero_one_numpy(arr):
-    if len(arr) == 0:
+def transform_to_zero_one_numpy(arr, normalize=False):
+    if not len(arr):
         return arr
     min_val = np.min(arr)
     max_val = np.max(arr)
@@ -74,6 +76,8 @@ def transform_to_zero_one_numpy(arr):
         return np.zeros_like(arr)
     value_range = max_val - min_val
     transformed_arr = (arr - min_val) / value_range
+    if normalize:
+        transformed_arr /= np.sum(transformed_arr)
     return transformed_arr
 
 def calculate_proximity(lower, upper, x):
@@ -87,6 +91,34 @@ def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     displacement_y = -2*calculate_proximity(ey1, ey2, eye_center[1])
     displacement = (displacement_x, displacement_y)
     return displacement
+
+def calculate_sclera_area(mesh_points):
+    lex1, lex2 = mesh_points[33, 0], mesh_points[133, 0]
+    rex1, rex2 = mesh_points[362, 0], mesh_points[263, 0]
+    area_sclera_left = 0
+    area_sclera_right = 0
+    for i in range(len(LEFT_EYE) - 1):
+        area_sclera_left += (mesh_points[LEFT_EYE[i], 0] * mesh_points[LEFT_EYE[i + 1], 1]) - (mesh_points[LEFT_EYE[i + 1], 0] * mesh_points[LEFT_EYE[i], 1])
+    for i in range(len(RIGHT_EYE) - 1):
+        area_sclera_right += (mesh_points[RIGHT_EYE[i], 0] * mesh_points[RIGHT_EYE[i + 1], 1]) - (mesh_points[RIGHT_EYE[i + 1], 0] * mesh_points[RIGHT_EYE[i], 1])
+    area_sclera_left = abs(area_sclera_left / (2*(abs(lex1 - lex2)**2)))
+    area_sclera_right = abs(area_sclera_right / (2*(abs(rex1 - rex2)**2)))
+    return area_sclera_left, area_sclera_right
+
+def calculate_width_over_height(mesh_points):
+    lex1 = mesh_points[33][0]
+    lex2 = mesh_points[133][0]
+    rex1 = mesh_points[362][0]
+    rex2 = mesh_points[263][0]
+    ley1 = mesh_points[159][1]
+    ley2 = mesh_points[145][1]
+    rey1 = mesh_points[386][1]
+    rey2 = mesh_points[374][1]
+    reason_left = abs(lex1-lex2)/abs(ley1-ley2)
+    reason_right = abs(rex1-rex2)/abs(rey1-rey2)
+    if reason_left > 20: reason_left = 20
+    if reason_right > 20: reason_right = 20
+    return reason_left, reason_right
 
 def update_mesh_points(frame):
     global results_mesh, mesh_points
@@ -148,14 +180,12 @@ def predict_emotion(frame, draw=False):
 
 def calculate_eye_closeness(mesh_points):
     global left_eye_closeness, right_eye_closeness
-    lex1, lex2 = mesh_points[33, 0], mesh_points[133, 0]
-    rex1, rex2 = mesh_points[362, 0], mesh_points[263, 0]
-    ley1, ley2 = mesh_points[159, 1], mesh_points[145, 1]
-    rey1, rey2 = mesh_points[386, 1], mesh_points[374, 1]
-    reason_left = abs(lex1 - lex2) / abs(ley1 - ley2) if abs(ley1 - ley2) != 0 else 99
-    reason_right = abs(rex1 - rex2) / abs(rey1 - rey2) if abs(rey1 - rey2) != 0 else 99
-    left_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_left]])[0][1]
-    right_eye_closeness_noisy = eye_closeness_model.predict_proba([[reason_right]])[0][1]
+    area_sclera_left, area_sclera_right = calculate_sclera_area(mesh_points)
+    reason_left, reason_right = calculate_width_over_height(mesh_points)
+    pred_left = transform_to_zero_one_numpy(eye_closeness_model.predict_proba([[area_sclera_left, reason_left]])[0], normalize=True)
+    pred_right = transform_to_zero_one_numpy(eye_closeness_model.predict_proba([[area_sclera_right, reason_right]])[0], normalize=True)
+    left_eye_closeness_noisy = 1.2 - (pred_left[0]*1.2 + pred_left[1]*1 + pred_left[2]*0.5)
+    right_eye_closeness_noisy = 1.2 - (pred_right[0]*1.2 + pred_right[1]*1 + pred_right[2]*0.5)
     left_eye_closeness = 0.5 * left_eye_closeness + 0.5 * left_eye_closeness_noisy
     right_eye_closeness = 0.5 * right_eye_closeness + 0.5 * right_eye_closeness_noisy
     return left_eye_closeness, right_eye_closeness

@@ -186,8 +186,8 @@ def calculate_eye_closeness(mesh_points):
     pred_right = transform_to_zero_one_numpy(eye_closeness_model.predict_proba([[area_sclera_right, reason_right]])[0], normalize=True)
     left_eye_closeness_noisy = 1.2 - (pred_left[0]*1.2 + pred_left[1]*1 + pred_left[2]*0.5)
     right_eye_closeness_noisy = 1.2 - (pred_right[0]*1.2 + pred_right[1]*1 + pred_right[2]*0.5)
-    left_eye_closeness = 0.7 * left_eye_closeness + 0.3 * left_eye_closeness_noisy
-    right_eye_closeness = 0.7 * right_eye_closeness + 0.3 * right_eye_closeness_noisy
+    left_eye_closeness = 0.5 * left_eye_closeness + 0.5 * left_eye_closeness_noisy
+    right_eye_closeness = 0.5 * right_eye_closeness + 0.5 * right_eye_closeness_noisy
     return left_eye_closeness, right_eye_closeness
 
 def eye_track(frame, draw=False):
@@ -219,6 +219,8 @@ def main(draw=False):
         update_mesh_points(frame)
         frame = eye_track(frame, draw=draw)
         frame = predict_emotion(frame, draw=draw)
+        if draw:
+            cv2.imshow('frame', frame)
         cv2.waitKey(1)
         return frame
     else:
@@ -231,5 +233,3 @@ if __name__ == "__main__":
         frame = main(draw=True)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
         print(displacement_eye, left_eye_closeness, right_eye_closeness, emotion_scores_rounded)
-        if frame is not None:
-            cv2.imshow('frame', frame)

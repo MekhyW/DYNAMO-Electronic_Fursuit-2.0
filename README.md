@@ -100,9 +100,11 @@ Set the second display to be an extended display.
 
 ### 12. Setup 4G Module
 
-To allow the suit to connect to the internet outside of WiFi range, install a 4G module following the instructions at [4G Module Setup](https://docs.lattepanda.com/content/3rd_delta_edition/connectivity/#cellular-4g5g).
+To allow the suit to connect to the internet outside of WiFi range, I use a 4G LTE Wifi USB modem.
 
-Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6.
+Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6. Also, it should contain the username and password of the SIM card, as expected by the carrier.
+
+If possible, use 4G/3G mode instead of just 4G. This is because 4G mode can be unstable in some areas and the system will not be able to connect to the internet.
 
 
 # Preparations before each use

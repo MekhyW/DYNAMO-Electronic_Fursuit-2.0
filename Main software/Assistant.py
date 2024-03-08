@@ -106,7 +106,7 @@ def assistant_query(query):
         messages.append({"role": "assistant", "content": previous_answers[i], "name": "CookieBot"})
     messages.append({"role": "user", "content": query})
     try:
-        completion = openai_client.chat.completions.create(model="gpt-4", messages=messages, temperature=1)
+        completion = openai_client.chat.completions.create(model="gpt-4-turbo-preview", messages=messages, temperature=1)
     except Exception as e:
         print(e)
         return ""

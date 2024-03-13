@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.special import expit
+import math
 import cv2
 import mediapipe as mp
 import pickle
@@ -15,9 +16,7 @@ emotion_model = pickle.load(open('resources/emotion_model.pkl', 'rb'))
 pca_model = joblib.load('resources/pca_model.pkl')
 eye_closeness_model = pickle.load(open('resources/eyecloseness_model.pkl', 'rb'))
 RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 362]
-LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33]
-RIGHT_EYE_EXTENDED = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 341, 256, 252, 253, 254, 339, 260, 259, 257, 258, 286, 414]
-LEFT_EYE_EXTENDED = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 110, 24, 23, 22, 26, 112, 190, 56, 28, 27, 29, 30]  
+LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33] 
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
 
@@ -46,27 +45,6 @@ def open_camera(camera_id):
         else:
             return cap
 
-def calculate_roll_angle(landmarks):
-    left_ear = np.array([landmarks[234].x, landmarks[234].y])
-    right_ear = np.array([landmarks[454].x, landmarks[454].y])
-    delta = right_ear - left_ear
-    angle_deg = np.degrees(np.arctan2(delta[1], delta[0]))
-    return angle_deg
-
-def compensate_head_roll(frame, results_mesh, W, H):
-    roll_angle_deg = calculate_roll_angle(results_mesh.multi_face_landmarks[0].landmark)
-    M = cv2.getRotationMatrix2D((W/2, H/2), roll_angle_deg, 1)
-    alpha = M[0, 0]
-    beta = M[0, 1]
-    frame = cv2.warpAffine(frame, np.array([[alpha, beta, (1 - alpha) * W / 2 - beta * H / 2],
-                                            [-beta, alpha, beta * W / 2 + (1 - alpha) * H / 2]]), (W, H))
-    return frame
-
-def fit_ellipse(points):
-    ellipse = cv2.fitEllipse(points)
-    center, axes = ellipse[0], ellipse[1]
-    return center, axes
-
 def transform_to_zero_one_numpy(arr, normalize=False):
     if not len(arr):
         return arr
@@ -80,67 +58,66 @@ def transform_to_zero_one_numpy(arr, normalize=False):
         transformed_arr /= np.sum(transformed_arr)
     return transformed_arr
 
-def calculate_proximity(lower, upper, x):
-    mid_point = (lower + upper) / 2
-    proximity = (x - mid_point) / (upper - mid_point)
-    return proximity
+def calculate_proximity(pointA, pointB, pointMid):
+    dist_MA = math.sqrt((pointA[0] - pointMid[0])**2 + (pointA[1] - pointMid[1])**2 + (pointA[2] - pointMid[2])**2)
+    dist_MB = math.sqrt((pointB[0] - pointMid[0])**2 + (pointB[1] - pointMid[1])**2 + (pointB[2] - pointMid[2])**2)
+    return 2 * (dist_MA / (dist_MA + dist_MB)) - 1
 
 def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     eye_center = np.mean(iris_points, axis=0)
-    displacement_x = 2*calculate_proximity(ex1, ex2, eye_center[0])
-    displacement_y = -2*calculate_proximity(ey1, ey2, eye_center[1])
+    displacement_x = 2*calculate_proximity(ex1, ex2, eye_center)
+    displacement_y = -2*calculate_proximity(ey1, ey2, eye_center)
     displacement = (displacement_x, displacement_y)
     return displacement
 
 def calculate_sclera_area(mesh_points):
-    lex1, lex2 = mesh_points[33, 0], mesh_points[133, 0]
-    rex1, rex2 = mesh_points[362, 0], mesh_points[263, 0]
+    lex1, lex2 = mesh_points[33], mesh_points[133]
+    rex1, rex2 = mesh_points[362], mesh_points[263]
     area_sclera_left = 0
     area_sclera_right = 0
     for i in range(len(LEFT_EYE) - 1):
         area_sclera_left += (mesh_points[LEFT_EYE[i], 0] * mesh_points[LEFT_EYE[i + 1], 1]) - (mesh_points[LEFT_EYE[i + 1], 0] * mesh_points[LEFT_EYE[i], 1])
     for i in range(len(RIGHT_EYE) - 1):
         area_sclera_right += (mesh_points[RIGHT_EYE[i], 0] * mesh_points[RIGHT_EYE[i + 1], 1]) - (mesh_points[RIGHT_EYE[i + 1], 0] * mesh_points[RIGHT_EYE[i], 1])
-    area_sclera_left = abs(area_sclera_left / (2*(abs(lex1 - lex2)**2)))
-    area_sclera_right = abs(area_sclera_right / (2*(abs(rex1 - rex2)**2)))
+    area_sclera_left = abs(area_sclera_left / (2*(math.sqrt((lex1[0]-lex2[0])**2 + (lex1[1]-lex2[1])**2)**2)))
+    area_sclera_right = abs(area_sclera_right / (2*(math.sqrt((rex1[0]-rex2[0])**2 + (rex1[1]-rex2[1])**2)**2)))
     return area_sclera_left, area_sclera_right
 
 def calculate_width_over_height(mesh_points):
-    lex1 = mesh_points[33][0]
-    lex2 = mesh_points[133][0]
-    rex1 = mesh_points[362][0]
-    rex2 = mesh_points[263][0]
-    ley1 = mesh_points[159][1]
-    ley2 = mesh_points[145][1]
-    rey1 = mesh_points[386][1]
-    rey2 = mesh_points[374][1]
-    reason_left = abs(lex1-lex2)/abs(ley1-ley2)
-    reason_right = abs(rex1-rex2)/abs(rey1-rey2)
-    if reason_left > 20: reason_left = 20
-    if reason_right > 20: reason_right = 20
+    lex1 = mesh_points[33]
+    lex2 = mesh_points[133]
+    rex1 = mesh_points[362]
+    rex2 = mesh_points[263]
+    ley1 = mesh_points[159]
+    ley2 = mesh_points[145]
+    rey1 = mesh_points[386]
+    rey2 = mesh_points[374]
+    try:
+        reason_left = math.sqrt((lex1[0]-lex2[0])**2+(lex1[1]-lex2[1])**2+(lex1[2]-lex2[2])**2)/math.sqrt((ley1[0]-ley2[0])**2+(ley1[1]-ley2[1])**2+(ley1[2]-ley2[2])**2)
+        if reason_left > 20: reason_left = 20
+    except ZeroDivisionError:
+        reason_left = 20
+    try:
+        reason_right = math.sqrt((rex1[0]-rex2[0])**2+(rex1[1]-rex2[1])**2+(rex1[2]-rex2[2])**2)/math.sqrt((rey1[0]-rey2[0])**2+(rey1[1]-rey2[1])**2+(rey1[2]-rey2[2])**2)
+        if reason_right > 20: reason_right = 20
+    except ZeroDivisionError:
+        reason_right = 20
     return reason_left, reason_right
 
 def update_mesh_points(frame):
     global results_mesh, mesh_points
     H, W, _ = frame.shape
-    results_mesh_local = face_mesh.process(frame)
-    if results_mesh_local.multi_face_landmarks:
-        frame = compensate_head_roll(frame, results_mesh_local, W, H)
-        results_mesh = face_mesh.process(frame)
+    results_mesh = face_mesh.process(frame)
     if results_mesh.multi_face_landmarks:
-        mesh_points = np.array([np.multiply([p.x, p.y], [W, H]).astype(int) for p in results_mesh.multi_face_landmarks[0].landmark])
+        mesh_points = np.array([np.multiply([p.x, p.y, p.z], [W, H, max(W, H)]).astype(int) for p in results_mesh.multi_face_landmarks[0].landmark])
 
-def draw_tracking(frame, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext):
+def draw_tracking(frame):
     global results_mesh, mesh_points
     if results_mesh.multi_face_landmarks is not None:
         for faceLms in results_mesh.multi_face_landmarks:
             mp_drawing.draw_landmarks(frame, faceLms, mp_face_mesh.FACEMESH_CONTOURS,drawSpec,drawSpec)
-        ellipse_center_L, ellipse_axes_L = fit_ellipse(mesh_points[LEFT_IRIS])
-        ellipse_center_R, ellipse_axes_R = fit_ellipse(mesh_points[RIGHT_IRIS])
-        cv2.ellipse(frame, (int(ellipse_center_L[0]), int(ellipse_center_L[1])), (int(ellipse_axes_L[0]/2), int(ellipse_axes_L[1]/2)), 0, 0, 360, (0, 0, 255), 2)
-        cv2.ellipse(frame, (int(ellipse_center_R[0]), int(ellipse_center_R[1])), (int(ellipse_axes_R[0]/2), int(ellipse_axes_R[1]/2)), 0, 0, 360, (0, 0, 255), 2)
-        cv2.rectangle(frame, (lex1_ext, ley1_ext), (lex2_ext, ley2_ext), (0, 255, 0), 2)
-        cv2.rectangle(frame, (rex1_ext, rey1_ext), (rex2_ext, rey2_ext), (0, 255, 0), 2)
+        cv2.circle(frame, (int(np.mean(mesh_points[LEFT_IRIS], axis=0)[0]), int(np.mean(mesh_points[LEFT_IRIS], axis=0)[1])), 5, (0, 0, 255), -1)
+        cv2.circle(frame, (int(np.mean(mesh_points[RIGHT_IRIS], axis=0)[0]), int(np.mean(mesh_points[RIGHT_IRIS], axis=0)[1])), 5, (0, 0, 255), -1)
     return frame
 
 def draw_emotion(frame, emotion):
@@ -195,18 +172,14 @@ def eye_track(frame, draw=False):
     if eye_tracking_mode:
         H, W, _ = frame.shape
         if mesh_points is not None:
-            lex1_ext, ley1_ext = np.min(mesh_points[LEFT_EYE_EXTENDED], axis=0)
-            lex2_ext, ley2_ext = np.max(mesh_points[LEFT_EYE_EXTENDED], axis=0)
-            rex1_ext, rey1_ext = np.min(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
-            rex2_ext, rey2_ext = np.max(mesh_points[RIGHT_EYE_EXTENDED], axis=0)
             left_eye_closeness, right_eye_closeness = calculate_eye_closeness(mesh_points)
-            displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], lex1_ext, lex2_ext, ley1_ext, ley2_ext)
-            displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], rex1_ext, rex2_ext, rey1_ext, rey2_ext)
+            displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], mesh_points[33], mesh_points[133], mesh_points[159], mesh_points[145])
+            displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], mesh_points[362], mesh_points[263], mesh_points[386], mesh_points[374])
             displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
             displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
             displacement_eye = 0.5*np.array(displacement_eye) + 0.5*np.array(displacement_eye_noisy)
             if draw:
-                frame = draw_tracking(frame, lex1_ext, ley1_ext, lex2_ext, ley2_ext, rex1_ext, rey1_ext, rex2_ext, rey2_ext)
+                frame = draw_tracking(frame)
     else:
         displacement_eye = (0,0)
         left_eye_closeness = 0

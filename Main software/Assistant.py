@@ -10,7 +10,7 @@ import MachineVision
 import Serial
 import Windows
 
-openai.api_key = json.load(open("credentials.json"))["openai_key"]
+openai_client = openai.OpenAI(api_key=json.load(open("credentials.json"))["openai_key"])
 porcupine_access_key = json.load(open("credentials.json"))["porcupine_key"]
 keyword_paths = ["resources/Cookie-Bot_en_windows_v2_1_0.ppn"]
 porcupine = pvporcupine.create(access_key=porcupine_access_key, keyword_paths=keyword_paths)
@@ -99,14 +99,14 @@ def assistant_query(query):
     if assistant_hard_commands(query):
         print("Assistant command executed")
         return ""
-    prompt_beginning = "You are a helpful and silly assistant. Your name is Cookie Bot. Respond in the same language as the question"
+    prompt_beginning = "You are a helpful and silly assistant. Your name is Cookie Bot. Respond in the same language as the question, and try not to answer too long!"
     messages=[{"role": "system", "content": prompt_beginning}]
     for i in range(len(previous_questions)):
         messages.append({"role": "user", "content": previous_questions[i]})
-        messages.append({"role": "assistant", "content": previous_answers[i]})
+        messages.append({"role": "assistant", "content": previous_answers[i], "name": "CookieBot"})
     messages.append({"role": "user", "content": query})
     try:
-        completion = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+        completion = openai_client.chat.completions.create(model="gpt-4", messages=messages, temperature=1)
     except Exception as e:
         print(e)
         return ""

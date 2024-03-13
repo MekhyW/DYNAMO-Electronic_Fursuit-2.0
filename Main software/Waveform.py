@@ -5,11 +5,10 @@ import wave
 import subprocess
 import os
 from gtts import gTTS
-from googletrans import Translator
+import langdetect
 import Serial
 import Assistant
 
-translator = Translator()
 p = pyaudio.PyAudio()
 chunk_size = 4096
 
@@ -83,7 +82,7 @@ def play_audio(filename, delete=False):
         os.remove(filename)
 
 def TTS(text):
-    language = translator.detect(text).lang
+    language = langdetect.detect(text)
     tts = gTTS(text=text, lang=language, slow=False)
     tts.save("resources/tts.mp3")
     subprocess.call(["ffmpeg", "-i", "resources/tts.mp3", "-filter:a", "atempo=1.5,aecho=0.8:0.9:20:0.6,asetrate=22050", "resources/tts_faster.mp3", "-y"])

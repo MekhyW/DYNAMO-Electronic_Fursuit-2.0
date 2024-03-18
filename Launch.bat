@@ -5,7 +5,7 @@ cd "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics"
 git pull || echo Git pull failed
 cd "..\"
 
-:: Update the "Eye-Graphics" repository
+:: Update the "DYNAMO-Electronic_Fursuit-2.0" repository
 cd "DYNAMO-Electronic_Fursuit-2.0"
 git pull || echo Git pull failed
 

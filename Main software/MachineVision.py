@@ -45,6 +45,19 @@ def open_camera(camera_id):
         else:
             return cap
 
+def undistort_image(image, k1=-1, k2=1, k3=0.05):
+    height, width = image.shape[:2]
+    focal_length = width
+    center = (width/2, height/2)
+    camera_matrix = np.array([[focal_length, 0, center[0]],
+                              [0, focal_length, center[1]],
+                              [0, 0, 1]], dtype=np.float32)
+    distortion_coefficients = np.array([k1, k2, k3, 0, 0], dtype=np.float32)
+    undistorted_image = cv2.undistort(image, camera_matrix, distortion_coefficients)
+    if width > height:
+        undistorted_image = undistorted_image[:, int((width-height)/2):int((width+height)/2)]
+    return undistorted_image
+
 def transform_to_zero_one_numpy(arr, normalize=False):
     if not len(arr):
         return arr
@@ -189,6 +202,7 @@ def eye_track(frame, draw=False):
 def main(draw=False):
     ret, frame = cap.read()
     if frame is not None:
+        frame = undistort_image(frame)
         update_mesh_points(frame)
         frame = eye_track(frame, draw=draw)
         frame = predict_emotion(frame, draw=draw)
@@ -201,8 +215,11 @@ def main(draw=False):
         return None
 
 if __name__ == "__main__":
+    import time
     open_camera(cap_id)
     while True:
+        start = time.time()
         frame = main(draw=True)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
-        print(displacement_eye, left_eye_closeness, right_eye_closeness, emotion_scores_rounded)
+        fps = 1/(time.time()-start)
+        print(fps, displacement_eye, left_eye_closeness, right_eye_closeness, emotion_scores_rounded)

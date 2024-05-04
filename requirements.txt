@@ -17,3 +17,4 @@ psutil==5.9.4
 pycaw==20230407
 pyserial==3.5
 scikit-learn==1.2.0
+mord==0.7

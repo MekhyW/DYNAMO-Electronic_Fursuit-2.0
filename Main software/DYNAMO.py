@@ -53,12 +53,14 @@ def voicemod_thread():
             loop.close()
             time.sleep(1)
 
+def controlbot_thread():
+    ControlBot.StartBot()
+
 def main():
     threading.Thread(target=machine_vision_thread).start()
     threading.Thread(target=assistant_thread).start()
     threading.Thread(target=voicemod_thread).start()
-    Unity.connect()
-    ControlBot.StartBot()
+    threading.Thread(target=controlbot_thread).start()
     while True:
         try:
             if Unity.connected is False:

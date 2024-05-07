@@ -211,12 +211,13 @@ def thread_function_query(msg):
                         if len(query_data.split()) == 2:
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Expression', reply_markup={'inline_keyboard': 
                                 [[{'text': '⬅️ Go back', 'callback_data': 'expression set goback'}], 
-                                 [{'text': 'Neutral', 'callback_data': 'expression set 3'}], 
+                                 [{'text': '🙂  Neutral  🙂', 'callback_data': 'expression set 3'}], 
                                  [{'text': '🤩   Happy   🤩', 'callback_data': 'expression set 2'}], 
                                  [{'text': '😢    Sad    😢', 'callback_data': 'expression set 4'}], 
                                  [{'text': '😡   Angry   😡', 'callback_data': 'expression set 0'}], 
                                  [{'text': '😱 Surprised 😱', 'callback_data': 'expression set 5'}],
                                  [{'text': '😒 Disgusted 😒', 'callback_data': 'expression set 1'}],
+                                 [{'text': '😏Mischievous😏', 'callback_data': 'expression set 12'}],
                                  [{'text': '😵‍💫  Hypnotic 😵‍💫', 'callback_data': 'expression set 6'}],
                                  [{'text': '❤️   Heart   ❤️', 'callback_data': 'expression set 7'}],
                                  [{'text': '🌈  Rainbow  🌈', 'callback_data': 'expression set 8'}],

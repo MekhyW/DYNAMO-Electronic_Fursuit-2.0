@@ -218,9 +218,10 @@ def main(draw=False):
 if __name__ == "__main__":
     import time
     open_camera(cap_id)
+    fps = 0
     while True:
         start = time.time()
         frame = main(draw=True)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
-        fps = 1/(time.time()-start)
+        fps = (fps*0.9) + ((1/(time.time()-start))*0.1)
         print(fps, displacement_eye, left_eye_closeness, right_eye_closeness, emotion_scores_rounded)

@@ -30,6 +30,7 @@ emotion_labels_extra = ['hypnotic', 'heart', 'rainbow', 'nightmare', 'gears', 's
 emotion_scores = [0]*6
 
 eye_tracking_mode = True
+eye_sily_mode = False
 expression_manual_mode = False
 expression_manual_id = 0
 

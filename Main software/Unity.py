@@ -19,7 +19,7 @@ def connect():
         print("Unity app connection refused. Is the app running?")
         connected = False
 
-def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right, emotion_scores, manual_mode, manual_id):
+def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right, emotion_scores, manual_mode, manual_id, silly_mode):
     displacement_eye_x = str(displacement_eye_x).replace(".", ",")
     displacement_eye_y = str(displacement_eye_y).replace(".", ",")
     closeness_left = str(closeness_left).replace(".", ",")
@@ -27,10 +27,8 @@ def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right
     emotion_scores = [str(0) if score < 0.01 else str(score).replace(".", ",") for score in emotion_scores]
     emotion_scores_string = " ".join(emotion_scores)
     message = f"{displacement_eye_x} {displacement_eye_y} {closeness_left} {closeness_right} {emotion_scores_string}"
-    if manual_mode and manual_id >= len(emotion_scores):
-        message += f" {manual_id}"
-    else:
-        message += " -1"
+    message += f" {manual_id}" if manual_mode and manual_id >= len(emotion_scores) else " -1"
+    message += " 1" if silly_mode else " 0"
     response = None
     try:
         client_socket.sendall(message.encode())

@@ -67,8 +67,8 @@ def main():
                 Unity.connect()
             else:
                 Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
-                        MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, 
-                        MachineVision.emotion_scores, MachineVision.expression_manual_mode, MachineVision.expression_manual_id)
+                        MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, MachineVision.emotion_scores, 
+                        MachineVision.expression_manual_mode, MachineVision.expression_manual_id, MachineVision.eye_sily_mode)
             if Serial.ser is None:
                 Serial.connect()
             else:

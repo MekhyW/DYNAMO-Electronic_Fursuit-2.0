@@ -23,12 +23,12 @@ stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgU
 
 main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
-inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': 'Stop Media', 'callback_data': 'media stop'}, {'text': 'Pause Media', 'callback_data': 'media pause'}, {'text': 'Unpause Media', 'callback_data': 'media resume'}], [{'text': 'Set Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}, {'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_eyetracking = [[{'text': 'Set to ON', 'callback_data': 'eyetracking on'}, {'text': 'Set to OFF', 'callback_data': 'eyetracking off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_animatronic = [[{'text': 'Set to ON', 'callback_data': 'animatronic on'}, {'text': 'Set to OFF', 'callback_data': 'animatronic off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_leds = [[{'text': 'Set Effect', 'callback_data': 'leds effect'}, {'text': 'Set Color', 'callback_data': 'leds color'}], [{'text': 'Set Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Turn ON', 'callback_data': 'leds on'}, {'text': 'Turn OFF', 'callback_data': 'leds off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': 'Mute', 'callback_data': 'voice hear off'}, {'text': 'Unmute', 'callback_data': 'voice hear on'}], [{'text': 'Background ON', 'callback_data': 'voice bg on'}, {'text': 'Background OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}], [{'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}], [{'text': 'Silly Mode', 'callback_data': 'expression sillymode'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_eyetracking = [[{'text': 'ON', 'callback_data': 'eyetracking on'}, {'text': 'OFF', 'callback_data': 'eyetracking off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_animatronic = [[{'text': 'ON', 'callback_data': 'animatronic on'}, {'text': 'OFF', 'callback_data': 'animatronic off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_leds = [[{'text': 'ON', 'callback_data': 'leds on'}, {'text': 'OFF', 'callback_data': 'leds off'}], [{'text': 'Effect', 'callback_data': 'leds effect'}, {'text': 'Color', 'callback_data': 'leds color'}], [{'text': 'Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': '🔈', 'callback_data': 'voice hear on'}, {'text': '🔇', 'callback_data': 'voice hear off'}], [{'text': 'Background fx ON', 'callback_data': 'voice bg on'}, {'text': 'Background fx OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging resources'}, {'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
@@ -236,6 +236,20 @@ def thread_function_query(msg):
                     case 'auto':
                         MachineVision.expression_manual_mode = False
                         ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
+                    case 'sillymode':
+                        if len(query_data.split()) == 2:
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Silly Mode', reply_markup={'inline_keyboard': 
+                                [[{'text': '⬅️ Go back', 'callback_data': 'expression sillymode goback'}], 
+                                 [{'text': 'ON', 'callback_data': 'expression sillymode on'}], 
+                                 [{'text': 'OFF', 'callback_data': 'expression sillymode off'}]]})
+                        elif query_data.split()[2] == 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                        elif query_data.split()[2] == 'on':
+                            MachineVision.eye_sily_mode = True
+                            ConfirmSuccess(from_id, msg, 'Silly Mode set to ON', query_id)
+                        elif query_data.split()[2] == 'off':
+                            MachineVision.eye_sily_mode = False
+                            ConfirmSuccess(from_id, msg, 'Silly Mode set to OFF', query_id)
             case 'eyetracking':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':

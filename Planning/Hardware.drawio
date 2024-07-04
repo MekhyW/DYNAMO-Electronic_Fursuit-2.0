@@ -100,7 +100,7 @@
                         <mxPoint x="280" y="238" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="26" value="Power distribution area" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
+                <mxCell id="26" value="Power distribution board" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
                     <mxGeometry x="130" y="677" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="13" value="4-inch HDMI Display" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;" parent="1" vertex="1">
@@ -208,7 +208,7 @@
                 <mxCell id="8" value="OV2710 camera with fisheye and IR lights" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="290" y="324" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="5" value="USB Microphone" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="5" value="BY-MM1 Microphone with USB adapter" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="430" y="324" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="134" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#FAFAFA;strokeWidth=1;fontSize=8;startArrow=none;startFill=0;" parent="1" source="132" target="112" edge="1">

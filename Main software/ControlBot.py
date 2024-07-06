@@ -120,6 +120,10 @@ def thread_function(msg):
                         fursuitbot.sendMessage(chat_id, result.stdout.decode('utf-8', errors='ignore'))
                     else:
                         fursuitbot.sendMessage(chat_id, '(no output)')
+            elif msg['text'].startswith('/privacy'):
+                with open('resources/privacy.html', 'r') as file:
+                    privacy_text = file.read()
+                fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
             if msg['text'] not in main_menu_buttons:
                 fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
             else:

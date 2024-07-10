@@ -322,7 +322,7 @@ def thread_function_query(msg):
                     case 'change':
                         if len(query_data.split()) == 2:
                             voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change goback'}], 
-                                              [{'text': 'Gibberish Voices ➡️', 'callback_data': 'voice change gibberish'}]]
+                                              [{'text': 'More ➡️', 'callback_data': 'voice change gibberish'}]]
                             for voice in Voicemod.voices:
                                 voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})

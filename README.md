@@ -4,11 +4,24 @@ TBW
 
 # Directory Structure
 
-TBW
+```
+├───AVR_software
+├───CAD
+│   ├───Component box
+│   └───Mask
+├───Logos
+├───Main software
+│   ├───resources
+├───Planning
+└───Test scripts
+```
 
-# How it Works
-
-TBW
+- AVR_software: C++ code for the AVR microcontroller responsible for controlling the servos, fan(s) and LEDs of the suit
+- CAD: Design files for the components of the project
+- Logos: Logos used in the project
+- Main software: Python code for the main software of the project. The 'resources' folder contains the machine learning models and other resources used by the software
+- Planning: Diagrams and planning documents
+- Test scripts: Some scripts used for testing the project
 
 # Software Setup
 

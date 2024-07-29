@@ -4,16 +4,15 @@ import pvporcupine
 from pvrecorder import PvRecorder
 import struct
 import wave
-import json
 import os
+from Environment import openai_key, porcupine_key
 import MachineVision
 import Serial
 import Windows
 
-openai_client = openai.OpenAI(api_key=json.load(open("credentials.json"))["openai_key"])
-porcupine_access_key = json.load(open("credentials.json"))["porcupine_key"]
+openai_client = openai.OpenAI(api_key=openai_key)
 keyword_paths = ["resources/Cookie-Bot_en_windows_v2_1_0.ppn"]
-porcupine = pvporcupine.create(access_key=porcupine_access_key, keyword_paths=keyword_paths)
+porcupine = pvporcupine.create(access_key=porcupine_key, keyword_paths=keyword_paths)
 recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 whisper_model = whisper.load_model("base")
 previous_questions = ["who won the world series in 2020?", "você é fofo!"]

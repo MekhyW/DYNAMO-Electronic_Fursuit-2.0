@@ -80,16 +80,14 @@ pip install -r requirements.txt
 
 ### 8. Provide credentials.json
 
-Create a `credentials.json` file in the `Main software` folder of the project's main repository, with the following contents:
+Create a `.env` file in the root folder of the project's main repository, with the following contents:
 
-```json
-{
-    "voicemod_key": "YOUR_VOICEMOD_KEY",
-    "fursuitbot_token": "TELEGRAM_BOT_KEY",
-    "fursuitbot_ownerID": "YOUR_TELEGRAM_ID",
-    "openai_key": "OPENAI_API_KEY",
-    "porcupine_key": "PORCUPINE_API_KEY"
-}
+```bash
+voicemod_key = "YOUR_VOICEMOD_KEY"
+fursuitbot_token = "YOUR_TELEGRAM_BOT_TOKEN"
+fursuitbot_ownerID = "YOUR_TELEGRAM_USER_ID"
+openai_key = "YOUR_OPENAI_API_KEY"
+porcupine_key = "YOUR_PORCUPINE_API_KEY"
 ```
 
 ### 9. AVR_software

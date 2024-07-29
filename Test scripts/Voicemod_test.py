@@ -5,9 +5,7 @@ import json
 import random
 import string
 
-with open("../Main software/credentials.json") as f:
-    credentials = json.load(f)
-voicemod_key = credentials["voicemod_key"]
+voicemod_key = ''
 url = "ws://localhost:59129/v1"
 
 async def send_message(websocket, message):

@@ -5,7 +5,8 @@ import traceback
 from contextlib import redirect_stdout
 from io import StringIO
 import subprocess, threading
-import json, os, time
+import os, time
+from Environment import fursuitbot_token, fursuitbot_ownerID
 import Waveform
 import MachineVision
 import Windows
@@ -13,9 +14,7 @@ import Assistant
 import Voicemod
 import Serial
 
-Token = json.load(open('credentials.json'))['fursuitbot_token']
-ownerID = json.load(open('credentials.json'))['fursuitbot_ownerID']
-fursuitbot = telepot.Bot(Token)
+fursuitbot = telepot.Bot(fursuitbot_token)
 
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
 stickerpack = 'https://t.me/addstickers/MekhyW'
@@ -62,7 +61,7 @@ def PlayAudioMessage(fursuitbot, chat_id, msg):
 
 def ToggleOutsiderCommands(fursuitbot, chat_id):
     global lock_outsider_commands
-    if int(chat_id) != int(ownerID):
+    if int(chat_id) != int(fursuitbot_ownerID):
         fursuitbot.sendMessage(chat_id, 'You are not the owner of this suit!')
         return
     lock_outsider_commands = not lock_outsider_commands
@@ -80,16 +79,16 @@ def DiscardPreviousUpdates():
 def ConfirmSuccess(from_id, msg, edit_text, query_id):
     fursuitbot.editMessageText((from_id, msg['message']['message_id']), edit_text)
     fursuitbot.answerCallbackQuery(query_id, text='Success!')
-    if int(from_id) != int(ownerID):
+    if int(from_id) != int(fursuitbot_ownerID):
         sender = fursuitbot.getChat(from_id)['first_name']
-        fursuitbot.sendMessage(ownerID, f'{edit_text}\n(Command sent by {sender})')
+        fursuitbot.sendMessage(fursuitbot_ownerID, f'{edit_text}\n(Command sent by {sender})')
 
 
 def thread_function(msg):
     try:
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
-        if lock_outsider_commands and int(chat_id) != int(ownerID):
+        if lock_outsider_commands and int(chat_id) != int(fursuitbot_ownerID):
             fursuitbot.sendMessage(chat_id, 'Outsider commands are currently LOCKED')
             return
         elif content_type == 'text':
@@ -159,8 +158,8 @@ def thread_function(msg):
         if 'ConnectionResetError' in traceback.format_exc():
             fursuitbot.sendMessage(chat_id, 'Connection Error, please try again')
         else:
-            fursuitbot.sendMessage(ownerID, traceback.format_exc())
-            fursuitbot.sendMessage(ownerID, str(msg))
+            fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
+            fursuitbot.sendMessage(fursuitbot_ownerID, str(msg))
             fursuitbot.sendMessage(chat_id, 'An error occurred, please try again')
     finally:
         last_message_chat[chat_id] = msg
@@ -170,7 +169,7 @@ def thread_function_query(msg):
     try:
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
-        if lock_outsider_commands and int(from_id) != int(ownerID):
+        if lock_outsider_commands and int(from_id) != int(fursuitbot_ownerID):
             fursuitbot.answerCallbackQuery(query_id, text='Outsider commands are currently LOCKED')
             return
         match query_data.split()[0]:
@@ -380,7 +379,7 @@ def thread_function_query(msg):
                         fursuitbot.sendSticker(from_id, stickerexample)
                         fursuitbot.sendMessage(from_id, 'Add the sticker pack to your Telegram here: {}'.format(stickerpack))
             case 'debugging':
-                if int(from_id) == int(ownerID):
+                if int(from_id) == int(fursuitbot_ownerID):
                     match ' '.join(query_data.split()[1:]):
                         case 'resources':
                             cpu_info = Windows.get_cpu_info()
@@ -398,7 +397,7 @@ def thread_function_query(msg):
                 else:
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
             case 'shutdown':
-                if int(from_id) == int(ownerID):
+                if int(from_id) == int(fursuitbot_ownerID):
                     fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
                     match ' '.join(query_data.split()[1:]):
                         case 'turnoff':
@@ -419,8 +418,8 @@ def thread_function_query(msg):
         if 'ConnectionResetError' in traceback.format_exc():
             fursuitbot.answerCallbackQuery(query_id, text='CONNECTION ERROR')
         else:
-            fursuitbot.sendMessage(ownerID, traceback.format_exc())
-            fursuitbot.sendMessage(ownerID, str(msg))
+            fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
+            fursuitbot.sendMessage(fursuitbot_ownerID, str(msg))
             fursuitbot.answerCallbackQuery(query_id, text='ERROR')
     finally:
         last_message_chat[from_id] = msg
@@ -431,7 +430,7 @@ def handle(msg):
         new_thread = threading.Thread(target=thread_function, args=(msg,))
         new_thread.start()
     except:
-        fursuitbot.sendMessage(ownerID, traceback.format_exc())
+        fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
 
 
 def handle_query(msg):
@@ -439,7 +438,7 @@ def handle_query(msg):
         new_thread = threading.Thread(target=thread_function_query, args=(msg,))
         new_thread.start()
     except:
-        fursuitbot.sendMessage(ownerID, traceback.format_exc())
+        fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
 
 
 def StartBot():
@@ -448,7 +447,7 @@ def StartBot():
         try:
             DiscardPreviousUpdates()
             MessageLoop(fursuitbot, {'chat': handle, 'callback_query': handle_query}).run_as_thread()
-            fursuitbot.sendMessage(ownerID, '>>> READY! <<<')
+            fursuitbot.sendMessage(fursuitbot_ownerID, '>>> READY! <<<')
             print("Control bot online!")
             return True
         except Exception as e:

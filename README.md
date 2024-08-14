@@ -1,6 +1,6 @@
 # DYNAMO
 
-TBW
+Improved modular computing platform for wearable costumes, with animatronic support, facial/eye tracking, sound processing and more
 
 # Directory Structure
 

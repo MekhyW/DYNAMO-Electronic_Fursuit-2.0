@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="706" dy="427" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="388" dy="244" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -8,16 +8,24 @@
                     <mxGeometry x="526.5" y="531" width="247" height="94" as="geometry"/>
                 </mxCell>
                 <mxCell id="2" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
-                    <mxGeometry x="285" y="165" width="280" height="219" as="geometry"/>
+                    <mxGeometry x="285" y="144" width="280" height="240" as="geometry"/>
                 </mxCell>
                 <mxCell id="11" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="4" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="Flat cable to pins distribution board" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
-                    <mxGeometry x="295" y="177" width="120" height="50" as="geometry"/>
+                <mxCell id="147" style="edgeStyle=none;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="4" target="146">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="426" y="202"/>
+                            <mxPoint x="426" y="169"/>
+                        </Array>
+                    </mxGeometry>
                 </mxCell>
-                <mxCell id="6" value="Servo motors (head)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
-                    <mxGeometry x="440" y="177" width="120" height="50" as="geometry"/>
+                <mxCell id="4" value="Flat cable to pins adapter board" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#60a917;fontColor=#ffffff;strokeColor=#2D7600;" parent="1" vertex="1">
+                    <mxGeometry x="295" y="189" width="120" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="MG90S Servo motors" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
+                    <mxGeometry x="440" y="189" width="120" height="50" as="geometry"/>
                 </mxCell>
                 <mxCell id="14" value="4-inch HDMI Display" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;" parent="1" vertex="1">
                     <mxGeometry x="430" y="254" width="120" height="40" as="geometry"/>
@@ -95,7 +103,7 @@
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="269" y="697"/>
-                            <mxPoint x="271" y="202"/>
+                            <mxPoint x="271" y="214"/>
                         </Array>
                         <mxPoint x="280" y="238" as="targetPoint"/>
                     </mxGeometry>
@@ -236,6 +244,9 @@
                         <mxPoint x="200" y="580" as="sourcePoint"/>
                         <mxPoint x="330" y="528" as="targetPoint"/>
                     </mxGeometry>
+                </mxCell>
+                <mxCell id="146" value="40mm cooler fan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" vertex="1" parent="1">
+                    <mxGeometry x="440" y="153" width="120" height="33" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

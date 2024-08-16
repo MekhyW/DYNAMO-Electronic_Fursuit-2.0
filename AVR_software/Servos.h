@@ -1,28 +1,22 @@
 #include <Servo.h>
-#define NUM_SERVOS 8
+#define NUM_SERVOS 2
 #define NUM_EMOTIONS 6
 #define DETACH_THRESHOLD 1000
 #define POSITION_CHANGE_TOLERANCE 10
 
 Servo eyebrow_left;
 Servo eyebrow_right;
-Servo ear_pan_left;
-Servo ear_tilt_left;
-Servo ear_pan_right;
-Servo ear_tilt_right;
-Servo mouth_left;
-Servo mouth_right;
-Servo servos[] = {eyebrow_left,eyebrow_right,ear_pan_left,ear_tilt_left,ear_pan_right,ear_tilt_right,mouth_left,mouth_right};
+Servo servos[] = {eyebrow_left, eyebrow_right};
 
 int servo_calibration_matrix[NUM_EMOTIONS][NUM_SERVOS] = {
-  {90, 90, 90, 90, 90, 90, 90, 90}, // angry
-  {90, 90, 90, 90, 90, 90, 90, 90}, // disgusted
-  {90, 90, 90, 90, 90, 90, 90, 90}, // happy
-  {90, 90, 90, 90, 90, 90, 90, 90}, // neutral
-  {90, 90, 90, 90, 90, 90, 90, 90}, // sad
-  {90, 90, 90, 90, 90, 90, 90, 90}  // surprised
+  {90, 90}, // angry
+  {90, 90}, // disgusted
+  {90, 90}, // happy
+  {90, 90}, // neutral
+  {90, 90}, // sad
+  {90, 90}  // surprised
 };
-int previousServoPositions[NUM_SERVOS] = {90, 90, 90, 90, 90, 90, 90, 90};
+int previousServoPositions[NUM_SERVOS];
 unsigned long lastChangeTime[NUM_SERVOS];
 
 struct ServosTaskInput
@@ -39,6 +33,8 @@ struct ServosTaskInput
 void setupServos() {
   for (int i = 0; i < NUM_SERVOS; i++) {
     servos[i].attach(i + 4);
+    previousServoPositions[i] = 90;
+    lastChangeTime[i] = 0;
   }
 }
 

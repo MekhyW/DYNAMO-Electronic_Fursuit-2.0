@@ -22,7 +22,7 @@ stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgU
 
 main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
-inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Text to Speech', 'callback_data': 'tts'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}], [{'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}], [{'text': 'Silly Mode', 'callback_data': 'expression sillymode'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_eyetracking = [[{'text': 'ON', 'callback_data': 'eyetracking on'}, {'text': 'OFF', 'callback_data': 'eyetracking off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_animatronic = [[{'text': 'ON', 'callback_data': 'animatronic on'}, {'text': 'OFF', 'callback_data': 'animatronic off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
@@ -59,6 +59,14 @@ def PlayAudioMessage(fursuitbot, chat_id, msg):
     fursuitbot.sendMessage(chat_id, 'Done!\n>>>Playing now')
     Waveform.play_audio(file_name, delete=True)
 
+def TextToSpeech(fursuitbot, chat_id, text):
+    fursuitbot.sendMessage(chat_id, '>>>Generating audio...')
+    Waveform.TTS_generate(text)
+    fursuitbot.sendMessage(chat_id, 'Done!\n>>>Speaking now')
+    Waveform.TTS_play()
+    Assistant.previous_questions.append("")
+    Assistant.previous_answers.append(text)
+
 def ToggleOutsiderCommands(fursuitbot, chat_id):
     global lock_outsider_commands
     if int(chat_id) != int(fursuitbot_ownerID):
@@ -77,7 +85,7 @@ def DiscardPreviousUpdates():
         fursuitbot.getUpdates(offset=last_update_id+1)
 
 def ConfirmSuccess(from_id, msg, edit_text, query_id):
-    fursuitbot.editMessageText((from_id, msg['message']['message_id']), edit_text)
+    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '>>>'+edit_text)
     fursuitbot.answerCallbackQuery(query_id, text='Success!')
     if int(from_id) != int(fursuitbot_ownerID):
         sender = fursuitbot.getChat(from_id)['first_name']
@@ -92,13 +100,15 @@ def thread_function(msg):
             fursuitbot.sendMessage(chat_id, 'Outsider commands are currently LOCKED')
             return
         elif content_type == 'text':
-            if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'debugging python', 'debugging shell']:
+            if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'tts', 'debugging python', 'debugging shell']:
                 data = last_message_chat[chat_id]['data']
                 last_message_chat[chat_id] = msg
                 if msg['text'] == '/cancel':
                     fursuitbot.sendMessage(chat_id, 'Command was cancelled')
                 elif data == 'music':
                     PlayMusic(fursuitbot, chat_id, msg['text'])
+                elif data == 'tts':
+                    TextToSpeech(fursuitbot, chat_id, msg['text'])
                 elif data == 'debugging python':
                     output_buffer = StringIO()
                     with redirect_stdout(output_buffer):
@@ -194,6 +204,9 @@ def thread_function_query(msg):
                     case 'resume':
                         Waveform.is_paused = False
                         ConfirmSuccess(from_id, msg, 'Media Resumed', query_id)
+            case 'tts':
+                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the text you want Cookiebot to say!\nOr use /cancel to cancel the command.')
+                fursuitbot.answerCallbackQuery(query_id, text='Enter text')
             case 'volume':
                 if len(query_data.split()) == 1:
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Volume', reply_markup={'inline_keyboard': 
@@ -401,13 +414,13 @@ def thread_function_query(msg):
                     fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
                     match ' '.join(query_data.split()[1:]):
                         case 'turnoff':
-                            fursuitbot.sendMessage(from_id, 'Shutting down...')
+                            fursuitbot.sendMessage(from_id, '>>>Shutting down...')
                             Windows.shutdown()
                         case 'reboot':
-                            fursuitbot.sendMessage(from_id, 'Rebooting...')
+                            fursuitbot.sendMessage(from_id, '>>>Rebooting...')
                             Windows.restart()
                         case 'kill':
-                            fursuitbot.sendMessage(from_id, 'Killing software...')
+                            fursuitbot.sendMessage(from_id, '>>>Killing software...')
                             Windows.kill_process('Unity.exe')
                             Windows.kill_process('VoicemodDesktop.exe') 
                             os._exit(0)

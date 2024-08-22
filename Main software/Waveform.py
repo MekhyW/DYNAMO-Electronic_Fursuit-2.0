@@ -81,10 +81,12 @@ def play_audio(filename, delete=False):
     if delete:
         os.remove(filename)
 
-def TTS(text):
+def TTS_generate(text):
     language = langdetect.detect(text)
     tts = gTTS(text=text, lang=language, slow=False)
     tts.save("resources/tts.mp3")
     subprocess.call(["ffmpeg", "-i", "resources/tts.mp3", "-filter:a", "atempo=1.5,aecho=0.8:0.9:20:0.6,asetrate=22050", "resources/tts_faster.mp3", "-y"])
     os.remove("resources/tts.mp3")
+
+def TTS_play():
     play_audio("resources/tts_faster.mp3", delete=True)

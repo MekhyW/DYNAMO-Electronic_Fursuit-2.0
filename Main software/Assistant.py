@@ -95,6 +95,8 @@ def process_query():
 def assistant_query(query):
     global previous_question, previous_answer
     query = query.strip().lower()
+    if not len(query):
+        return ""
     if assistant_hard_commands(query):
         print("Assistant command executed")
         return ""
@@ -110,9 +112,12 @@ def assistant_query(query):
         print(e)
         return ""
     answer = completion.choices[0].message.content
-    if len(query) and len(answer):
+    if len(answer):
         previous_questions.append(query)
         previous_answers.append(answer)
+        while len(previous_questions) > 10:
+            previous_questions.pop(0)
+            previous_answers.pop(0)
     else:
         answer = "I don't have an answer to that"
     return answer

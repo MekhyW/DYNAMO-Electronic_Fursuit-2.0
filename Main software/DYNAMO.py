@@ -33,7 +33,8 @@ def assistant_thread():
                 answer = Assistant.assistant_query(transcript)
                 Assistant.start()
                 if len(answer):
-                    Waveform.TTS(answer)
+                    Waveform.TTS_generate(answer)
+                    Waveform.TTS_play()
                     ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
                     ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
                 Assistant.triggered = False

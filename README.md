@@ -9,6 +9,7 @@ Improved modular computing platform for wearable costumes, with animatronic supp
 ├───CAD
 │   ├───Component box
 │   └───Mask
+│   └───Hinge
 ├───Logos
 ├───Main software
 │   ├───resources

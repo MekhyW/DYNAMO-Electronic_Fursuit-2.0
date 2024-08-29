@@ -25,17 +25,19 @@ mesh_points = None
 displacement_eye = (0,0)
 left_eye_closeness = 0
 right_eye_closeness = 0
+cross_eyedness = 0
+cross_eyedness_threshold = 0.5
 emotion_labels = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
 emotion_labels_extra = ['hypnotic', 'heart', 'rainbow', 'nightmare', 'gears', 'sans', 'mischievous']
 emotion_scores = [0] * len(emotion_labels)
 
 eye_tracking_mode = True
-eye_sily_mode = False
+force_crossed_eye = False
 expression_manual_mode = False
 expression_manual_id = 0
 
 cap = None
-cap_id = 1
+cap_id = 0
 
 def open_camera(camera_id):
     global cap
@@ -182,22 +184,26 @@ def calculate_eye_closeness(mesh_points):
     return left_eye_closeness, right_eye_closeness
 
 def eye_track(frame, draw=False):
-    global results_mesh, mesh_points, displacement_eye, left_eye_closeness, right_eye_closeness
+    global results_mesh, mesh_points, displacement_eye, left_eye_closeness, right_eye_closeness, cross_eyedness
     if eye_tracking_mode:
         H, W, _ = frame.shape
         if mesh_points is not None:
             left_eye_closeness, right_eye_closeness = calculate_eye_closeness(mesh_points)
             displacement_left_eye = calculate_eye_displacement(mesh_points[LEFT_IRIS], mesh_points[33], mesh_points[133], mesh_points[159], mesh_points[145])
             displacement_right_eye = calculate_eye_displacement(mesh_points[RIGHT_IRIS], mesh_points[362], mesh_points[263], mesh_points[386], mesh_points[374])
+            displacement_left_eye = (max(min(1, displacement_left_eye[0]), -1), max(min(1, displacement_left_eye[1]), -1))
+            displacement_right_eye = (max(min(1, displacement_right_eye[0]), -1), max(min(1, displacement_right_eye[1]), -1))
             displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
-            displacement_eye_noisy = (max(min(1, displacement_eye_noisy[0]), -1), max(min(1, displacement_eye_noisy[1]), -1))
             displacement_eye = 0.5*np.array(displacement_eye) + 0.5*np.array(displacement_eye_noisy)
+            cross_eyedness_noisy = abs(displacement_left_eye[0] - displacement_right_eye[0])
+            cross_eyedness = 0.8*cross_eyedness + 0.2*cross_eyedness_noisy
             if draw:
                 frame = draw_tracking(frame)
     else:
         displacement_eye = (0,0)
         left_eye_closeness = 0.2
         right_eye_closeness = 0.2
+        cross_eyedness = 0
     return frame
 
 def main(draw=False):
@@ -224,4 +230,4 @@ if __name__ == "__main__":
         frame = main(draw=True)
         emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
         fps = (fps*0.9) + ((1/(time.time()-start))*0.1)
-        print(fps, displacement_eye, left_eye_closeness, right_eye_closeness, emotion_scores_rounded)
+        print(fps, displacement_eye, left_eye_closeness, right_eye_closeness, cross_eyedness, emotion_scores_rounded)

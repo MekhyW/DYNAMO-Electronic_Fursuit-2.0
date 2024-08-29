@@ -59,9 +59,9 @@ def controlbot_thread():
 
 def main():
     threading.Thread(target=machine_vision_thread).start()
-    threading.Thread(target=assistant_thread).start()
-    threading.Thread(target=voicemod_thread).start()
-    threading.Thread(target=controlbot_thread).start()
+    #threading.Thread(target=assistant_thread).start()
+    #threading.Thread(target=voicemod_thread).start()
+    #threading.Thread(target=controlbot_thread).start()
     while True:
         try:
             if Unity.connected is False:
@@ -69,11 +69,12 @@ def main():
             else:
                 Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
                         MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, MachineVision.emotion_scores, 
-                        MachineVision.expression_manual_mode, MachineVision.expression_manual_id, MachineVision.eye_sily_mode)
-            if Serial.ser is None:
-                Serial.connect()
-            else:
-                Serial.send(MachineVision.emotion_scores)
+                        MachineVision.expression_manual_mode, MachineVision.expression_manual_id, 
+                        MachineVision.force_crossed_eye or MachineVision.cross_eyedness > MachineVision.cross_eyedness_threshold)
+            #if Serial.ser is None:
+            #    Serial.connect()
+            #else:
+            #    Serial.send(MachineVision.emotion_scores)
         except Exception as e:
             print(e)
         time.sleep(0.01)

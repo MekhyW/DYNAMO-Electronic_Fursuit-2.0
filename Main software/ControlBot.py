@@ -251,6 +251,7 @@ def thread_function_query(msg):
                             ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), query_id)
                     case 'auto':
                         MachineVision.expression_manual_mode = False
+                        MachineVision.force_crossed_eye = False
                         ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
                     case 'sillymode':
                         if len(query_data.split()) == 2:
@@ -261,15 +262,16 @@ def thread_function_query(msg):
                         elif query_data.split()[2] == 'goback':
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
                         elif query_data.split()[2] == 'on':
-                            MachineVision.eye_sily_mode = True
+                            MachineVision.force_crossed_eye = True
                             ConfirmSuccess(from_id, msg, 'Silly Mode set to ON', query_id)
                         elif query_data.split()[2] == 'off':
-                            MachineVision.eye_sily_mode = False
+                            MachineVision.force_crossed_eye = False
                             ConfirmSuccess(from_id, msg, 'Silly Mode set to OFF', query_id)
             case 'eyetracking':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
                         MachineVision.eye_tracking_mode = True
+                        MachineVision.force_crossed_eye = False
                         ConfirmSuccess(from_id, msg, 'Eye Tracking set to ON', query_id)
                     case 'off':
                         MachineVision.eye_tracking_mode = False

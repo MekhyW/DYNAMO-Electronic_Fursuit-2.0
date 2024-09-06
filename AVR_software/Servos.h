@@ -52,8 +52,7 @@ void detachIfNoChange(int servoIndex, int newPos) {
 void writepos(int eyebrow_left_pos, int eyebrow_right_pos, int ear_pan_left_pos, int ear_tilt_left_pos,
               int ear_pan_right_pos, int ear_tilt_right_pos, int mouth_left_pos, int mouth_right_pos) {
   int newServoPositions[NUM_SERVOS] = {
-    eyebrow_left_pos, eyebrow_right_pos, ear_pan_left_pos, ear_tilt_left_pos,
-    ear_pan_right_pos, ear_tilt_right_pos, mouth_left_pos, mouth_right_pos
+    eyebrow_left_pos, eyebrow_right_pos
   };
   for (int i = 0; i < NUM_SERVOS; i++) {
     detachIfNoChange(i, newServoPositions[i]);

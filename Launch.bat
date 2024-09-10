@@ -13,7 +13,7 @@ git pull || echo Git pull failed
 start "" "C:\Program Files\Voicemod Desktop\VoicemodDesktop.exe" || echo Voicemod failed to start
 
 :: Start Eye-Graphics.exe
-start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Eye-Graphics.exe" || echo Eye-Graphics failed to start
+start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Build\Eye-Graphics.exe" || echo Eye-Graphics failed to start
 
 :: Start DYNAMO.py
 cd "Main software"

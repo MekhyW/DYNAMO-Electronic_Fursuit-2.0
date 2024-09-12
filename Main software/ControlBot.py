@@ -22,7 +22,7 @@ stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgU
 
 main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
-inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}, {'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Text to Speech', 'callback_data': 'tts'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}], [{'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Text to Speech', 'callback_data': 'tts'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}], [{'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}], [{'text': 'Silly Mode', 'callback_data': 'expression sillymode'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_eyetracking = [[{'text': 'ON', 'callback_data': 'eyetracking on'}, {'text': 'OFF', 'callback_data': 'eyetracking off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_animatronic = [[{'text': 'ON', 'callback_data': 'animatronic on'}, {'text': 'OFF', 'callback_data': 'animatronic off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
@@ -30,7 +30,7 @@ inline_keyboard_leds = [[{'text': 'ON', 'callback_data': 'leds on'}, {'text': 'O
 inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': '🔈', 'callback_data': 'voice hear on'}, {'text': '🔇', 'callback_data': 'voice hear off'}], [{'text': 'Background fx ON', 'callback_data': 'voice bg on'}, {'text': 'Background fx OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging resources'}, {'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging resources'}, {'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Set input device', 'callback_data': 'audiodevice input'}, {'text': 'Set output device', 'callback_data': 'audiodevice output'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 
 last_message_chat = {}
@@ -396,6 +396,8 @@ def thread_function_query(msg):
             case 'debugging':
                 if int(from_id) == int(fursuitbot_ownerID):
                     match ' '.join(query_data.split()[1:]):
+                        case 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
                         case 'resources':
                             cpu_info = Windows.get_cpu_info()
                             memory_info = Windows.get_memory_info()
@@ -411,6 +413,22 @@ def thread_function_query(msg):
                             fursuitbot.answerCallbackQuery(query_id, text='Enter Shell command')
                 else:
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
+            case 'audiodevice':
+                if len(query_data.split()) >= 3:
+                    device_name = ' '.join(query_data.split()[2:])
+                    Windows.set_default_sound_device(device_name)
+                    ConfirmSuccess(from_id, msg, f'Sound {query_data.split()[1]} device set to {device_name}', query_id)
+                else:
+                    Windows.refresh_sound_devices()
+                    audiodevice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'debugging goback'}]]
+                    if 'input' in query_data:
+                        for device in Windows.input_audio_devices:
+                            audiodevice_keyboard.append([{'text': device['Name'], 'callback_data': f'audiodevice input {device["Name"]}'}])
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Select new INPUT audio device\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard})
+                    elif 'output' in query_data:
+                        for device in Windows.output_audio_devices:
+                            audiodevice_keyboard.append([{'text': device['Name'], 'callback_data': f'audiodevice output {device["Name"]}'}])
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Select new OUTPUT audio device\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard})
             case 'shutdown':
                 if int(from_id) == int(fursuitbot_ownerID):
                     fursuitbot.deleteMessage((from_id, msg['message']['message_id']))

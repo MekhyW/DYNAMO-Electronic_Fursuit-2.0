@@ -1,8 +1,13 @@
 import psutil
 import os
+import subprocess
+import json
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
+
+input_audio_devices = []
+output_audio_devices = []
 
 def get_cpu_info():
     return {
@@ -54,3 +59,46 @@ def restart():
 
 def kill_process(process_name):
     os.system("taskkill /f /im " + process_name)
+
+def refresh_sound_devices():
+    global input_audio_devices, output_audio_devices
+    subprocess.call(["SoundVolumeView.exe", "/sjson", "sound_volume.json"], shell=True)
+    with open("sound_volume.json", "rb") as f:
+        audiodevices = json.load(f)
+    input_audio_devices = []
+    output_audio_devices = []
+    for audiodevice in audiodevices:
+        if "Device State" in audiodevice and len(audiodevice["Device State"]):
+            if audiodevice["Direction"] == "Capture":
+                input_audio_devices.append({'Name': audiodevice["Name"], 'ID': audiodevice["Item ID"]})
+            else:
+                output_audio_devices.append({'Name': audiodevice["Name"], 'ID': audiodevice["Item ID"]})
+
+def set_default_sound_device(device_name):
+    def find_device_id(devices, name):
+        for device in devices:
+            if device['Name'] == name:
+                return device['ID']
+        return None
+    device_id = find_device_id(input_audio_devices, device_name) or find_device_id(output_audio_devices, device_name)
+    if device_id is None:
+        raise ValueError(f"Device '{device_name}' not found in input or output devices.")
+    subprocess.call(["SoundVolumeView.exe", "/SetDefault", device_id, "all"], shell=True)
+
+if __name__ == "__main__":
+    cpu_info = get_cpu_info()
+    memory_info = get_memory_info()
+    disk_info = get_disk_info()
+    system_volume = get_system_volume()
+    print(f"CPU Usage: {cpu_info['usage']}%")
+    print(f"Memory Usage: {memory_info['percent']}%")
+    print(f"Disk Usage: {disk_info['percent']}%")
+    print(f"System Volume: {system_volume * 100:.2f}%")
+    #set_system_volume(0.5)
+    #print('Rebooting in 5 seconds...')
+    #import time
+    #time.sleep(5)
+    #restart()
+    #kill_process("chrome.exe")
+    refresh_sound_devices()
+    print(input_audio_devices, output_audio_devices)

@@ -34,7 +34,7 @@ inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging 
 inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 
 last_message_chat = {}
-lock_outsider_commands = False
+lock_outsider_commands = True
 
 def PlayMusic(fursuitbot, chat_id, text):
     fursuitbot.sendMessage(chat_id, '>>>Downloading song with query "{}"...'.format(text))

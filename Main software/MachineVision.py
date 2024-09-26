@@ -38,6 +38,7 @@ expression_manual_id = 0
 
 cap = None
 cap_id = 0
+upside_down = True
 
 def open_camera(camera_id):
     global cap
@@ -49,6 +50,8 @@ def open_camera(camera_id):
             return cap
 
 def undistort_image(image, k1=-1, k2=1, k3=0.05):
+    if upside_down:
+        image = cv2.rotate(image, cv2.ROTATE_180)
     height, width = image.shape[:2]
     focal_length = width
     center = (width/2, height/2)
@@ -195,7 +198,7 @@ def eye_track(frame, draw=False):
             displacement_right_eye = (max(min(1, displacement_right_eye[0]), -1), max(min(1, displacement_right_eye[1]), -1))
             displacement_eye_noisy = ((displacement_left_eye[0]+displacement_right_eye[0])/2, (displacement_left_eye[1]+displacement_right_eye[1])/2)
             displacement_eye = 0.5*np.array(displacement_eye) + 0.5*np.array(displacement_eye_noisy)
-            cross_eyedness_noisy = abs(displacement_left_eye[0] - displacement_right_eye[0])
+            cross_eyedness_noisy = displacement_left_eye[0] - displacement_right_eye[0]
             cross_eyedness = 0.8*cross_eyedness + 0.2*cross_eyedness_noisy
             if draw:
                 frame = draw_tracking(frame)
@@ -214,7 +217,10 @@ def main(draw=False):
         frame = eye_track(frame, draw=draw)
         frame = predict_emotion(frame, draw=draw)
         if draw:
-            cv2.imshow('frame', frame)
+            try:
+                cv2.imshow('frame', frame)
+            except cv2.error:
+                print("Frame not ready")
         cv2.waitKey(1)
         return frame
     else:

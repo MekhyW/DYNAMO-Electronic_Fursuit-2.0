@@ -79,7 +79,7 @@ Navigate to the project's main directory in Git Bash and install the required Py
 pip install -r requirements.txt
 ```
 
-### 8. Provide credentials.json
+### 8. Provide credentials
 
 Create a `.env` file in the root folder of the project's main repository, with the following contents:
 
@@ -98,8 +98,6 @@ Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the fo
 - FreeRTOS
 - Adafruit NeoPixel
 - Adafruit BNO055
-
-Upload the code to the Arduino Leonardo device inside of the Lattepanda.
 
 ### 10. Set Launch.bat to Run on Boot
 
@@ -125,4 +123,5 @@ If possible, use 4G/3G mode instead of just 4G. This is because 4G mode can be u
 
 1) Recharge the batteries of the system
 2) Check if SIM card has enough data, if not, recharge it
-3) Make sure all hardware is connected and working
+3) Make sure all hardware is connected
+4) Open Telegram on phone or have a friend use the bot for control

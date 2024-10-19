@@ -19,12 +19,14 @@ RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 38
 LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33] 
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
+MOUTH = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95]
 
 results_mesh = None
 mesh_points = None
 displacement_eye = (0,0)
 left_eye_closeness = 0
 right_eye_closeness = 0
+mouth_closedness = 0
 cross_eyedness = 0
 cross_eyedness_threshold = 0.5
 emotion_labels = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
@@ -102,7 +104,15 @@ def calculate_sclera_area(mesh_points):
     area_sclera_right = abs(area_sclera_right / (2*(math.sqrt((rex1[0]-rex2[0])**2 + (rex1[1]-rex2[1])**2)**2)))
     return area_sclera_left, area_sclera_right
 
-def calculate_width_over_height(mesh_points):
+def calculate_mouth_area(mesh_points):
+    ex1, ex2 = mesh_points[78], mesh_points[308]
+    area = 0
+    for i in range(len(MOUTH) - 1):
+        area += (mesh_points[MOUTH[i], 0] * mesh_points[MOUTH[i + 1], 1]) - (mesh_points[MOUTH[i + 1], 0] * mesh_points[MOUTH[i], 1])
+    area = abs(area / (2*(math.sqrt((ex1[0]-ex2[0])**2 + (ex1[1]-ex2[1])**2)**2)))
+    return area
+
+def calculate_width_over_height_eye(mesh_points):
     lex1 = mesh_points[33]
     lex2 = mesh_points[133]
     rex1 = mesh_points[362]
@@ -123,6 +133,18 @@ def calculate_width_over_height(mesh_points):
         reason_right = 20
     return reason_left, reason_right
 
+def calculate_width_over_height_mouth(mesh_points):
+    ex1 = mesh_points[78]
+    ex2 = mesh_points[308]
+    ey1 = mesh_points[13]
+    ey2 = mesh_points[14]
+    try:
+        reason = math.sqrt((ex1[0]-ex2[0])**2+(ex1[1]-ex2[1])**2+(ex1[2]-ex2[2])**2)/math.sqrt((ey1[0]-ey2[0])**2+(ey1[1]-ey2[1])**2+(ey1[2]-ey2[2])**2)
+        if reason > 100: reason = 100
+    except ZeroDivisionError:
+        reason = 100
+    return reason
+
 def update_mesh_points(frame):
     global results_mesh, mesh_points
     H, W, _ = frame.shape
@@ -141,7 +163,21 @@ def draw_tracking(frame):
 
 def draw_emotion(frame, emotion):
     if emotion:
-        cv2.putText(frame, emotion, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, f"Expr: {emotion.capitalize()}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    return frame
+
+def draw_eyecloseness(frame, left_eye_closeness, right_eye_closeness):
+    cv2.putText(frame, f"L eye closed: {round(left_eye_closeness, 2)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"R eye closed: {round(right_eye_closeness, 2)}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    return frame
+
+def draw_mouth_closedness(frame, mouth_closedness):
+    cv2.putText(frame, f"Mouth closed: {round(mouth_closedness, 2)}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    return frame
+
+def draw_gaze(frame, displacement_eye, cross_eyedness):
+    cv2.putText(frame, f"Gaze: {round(displacement_eye[0], 2)} {round(displacement_eye[1], 2)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"Crosseyed: {round(cross_eyedness, 2)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
     return frame
 
 def predict_emotion(frame, draw=False):
@@ -177,7 +213,7 @@ def predict_emotion(frame, draw=False):
 def calculate_eye_closeness(mesh_points):
     global left_eye_closeness, right_eye_closeness
     area_sclera_left, area_sclera_right = calculate_sclera_area(mesh_points)
-    reason_left, reason_right = calculate_width_over_height(mesh_points)
+    reason_left, reason_right = calculate_width_over_height_eye(mesh_points)
     pred_left = transform_to_zero_one_numpy(eye_closeness_model.predict_proba([[area_sclera_left, reason_left]])[0], normalize=True)
     pred_right = transform_to_zero_one_numpy(eye_closeness_model.predict_proba([[area_sclera_right, reason_right]])[0], normalize=True)
     left_eye_closeness_noisy = 1.2 - (pred_left[0]*1.2 + pred_left[1]*1 + pred_left[2]*0.5)
@@ -185,6 +221,16 @@ def calculate_eye_closeness(mesh_points):
     left_eye_closeness = 0.8 * left_eye_closeness + 0.2 * left_eye_closeness_noisy
     right_eye_closeness = 0.8 * right_eye_closeness + 0.2 * right_eye_closeness_noisy
     return left_eye_closeness, right_eye_closeness
+
+def calculate_mouth_closedness(mesh_points):
+    global mouth_closedness
+    area_mouth = calculate_mouth_area(mesh_points)
+    reason = calculate_width_over_height_mouth(mesh_points)
+    pred = transform_to_zero_one_numpy(eye_closeness_model.predict_proba([[area_mouth, reason]])[0], normalize=True)
+    mouth_closedness = pred[3] * 0.2 + mouth_closedness * 0.8
+    if mouth_closedness < 0.01:
+        mouth_closedness = 0
+    return mouth_closedness
 
 def eye_track(frame, draw=False):
     global results_mesh, mesh_points, displacement_eye, left_eye_closeness, right_eye_closeness, cross_eyedness
@@ -202,11 +248,21 @@ def eye_track(frame, draw=False):
             cross_eyedness = 0.8*cross_eyedness + 0.2*cross_eyedness_noisy
             if draw:
                 frame = draw_tracking(frame)
+                frame = draw_eyecloseness(frame, left_eye_closeness, right_eye_closeness)
+                frame = draw_gaze(frame, displacement_eye, cross_eyedness)
     else:
         displacement_eye = (0,0)
         left_eye_closeness = 0.2
         right_eye_closeness = 0.2
         cross_eyedness = 0
+    return frame
+
+def mouth_track(frame, draw=False):
+    global results_mesh, mesh_points, mouth_closedness
+    if mesh_points is not None:
+        mouth_closedness = calculate_mouth_closedness(mesh_points)
+        if draw:
+            frame = draw_mouth_closedness(frame, mouth_closedness)
     return frame
 
 def main(draw=False):
@@ -215,6 +271,7 @@ def main(draw=False):
         frame = undistort_image(frame)
         update_mesh_points(frame)
         frame = eye_track(frame, draw=draw)
+        frame = mouth_track(frame, draw=draw)
         frame = predict_emotion(frame, draw=draw)
         if draw:
             try:
@@ -228,12 +285,12 @@ def main(draw=False):
         return None
 
 if __name__ == "__main__":
-    import time
     open_camera(cap_id)
+    upside_down = False
+    import time
     fps = 0
     while True:
         start = time.time()
         frame = main(draw=True)
-        emotion_scores_rounded = [round(score, 2) for score in emotion_scores]
         fps = (fps*0.9) + ((1/(time.time()-start))*0.1)
-        print(fps, displacement_eye, left_eye_closeness, right_eye_closeness, cross_eyedness, emotion_scores_rounded)
+        print(fps)

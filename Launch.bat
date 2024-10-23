@@ -21,10 +21,6 @@ if %errorlevel% equ 0 (
 )
 cd "..\"
 
-:: Start Voicemod
-start "" "C:\Program Files\Voicemod Desktop\VoicemodDesktop.exe" || echo Voicemod failed to start
-timeout /t 15 >nul
-
 :: Start Eye-Graphics.exe
 start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Build\Eye-Graphics.exe" || echo Eye-Graphics failed to start
 

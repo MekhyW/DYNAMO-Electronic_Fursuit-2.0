@@ -8,6 +8,8 @@ from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 input_audio_devices = []
 output_audio_devices = []
+default_input_device = None
+default_output_device = None
 
 def get_cpu_info():
     return {
@@ -61,7 +63,7 @@ def kill_process(process_name):
     os.system("taskkill /f /im " + process_name)
 
 def refresh_sound_devices():
-    global input_audio_devices, output_audio_devices
+    global input_audio_devices, output_audio_devices, default_input_device, default_output_device
     subprocess.call(["SoundVolumeView.exe", "/sjson", "sound_volume.json"], shell=True)
     with open("sound_volume.json", "rb") as f:
         audiodevices = json.load(f)
@@ -69,6 +71,10 @@ def refresh_sound_devices():
     output_audio_devices = []
     for audiodevice in audiodevices:
         if "Device State" in audiodevice and len(audiodevice["Device State"]):
+            if audiodevice["Default"] == "Capture":
+                default_input_device = audiodevice["Item ID"]
+            elif audiodevice["Default"] == "Render":
+                default_output_device = audiodevice["Item ID"]
             if audiodevice["Direction"] == "Capture":
                 input_audio_devices.append({'Name': audiodevice["Name"], 'ID': audiodevice["Item ID"]})
             else:
@@ -76,14 +82,29 @@ def refresh_sound_devices():
 
 def set_default_sound_device(device_name):
     def find_device_id(devices, name):
+        global default_input_device, default_output_device
         for device in devices:
             if device['Name'] == name:
+                if device["Default"] == "Capture":
+                    default_input_device = device["Item ID"]
+                elif device["Default"] == "Render":
+                    default_output_device = device["Item ID"]
                 return device['ID']
         return None
     device_id = find_device_id(input_audio_devices, device_name) or find_device_id(output_audio_devices, device_name)
     if device_id is None:
         raise ValueError(f"Device '{device_name}' not found in input or output devices.")
     subprocess.call(["SoundVolumeView.exe", "/SetDefault", device_id, "all"], shell=True)
+
+def mute_microphone():
+    if default_input_device is None:
+        refresh_sound_devices()
+    subprocess.call(["SoundVolumeView.exe", "/Mute", default_input_device], shell=True)
+
+def unmute_microphone():
+    if default_input_device is None:
+        refresh_sound_devices()
+    subprocess.call(["SoundVolumeView.exe", "/Unmute", default_input_device], shell=True)
 
 if __name__ == "__main__":
     cpu_info = get_cpu_info()

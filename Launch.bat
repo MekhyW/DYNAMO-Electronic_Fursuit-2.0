@@ -21,6 +21,9 @@ if %errorlevel% equ 0 (
 )
 cd "..\"
 
+:: Minimize the command prompt window
+powershell -window minimized -command ""
+
 :: Start Eye-Graphics.exe
 start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Build\Eye-Graphics.exe" || echo Eye-Graphics failed to start
 

@@ -45,3 +45,7 @@ def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right
         if response and "Invalid message format!" in response:
             raise Exception("Unity app returned Invalid message format!")
         return response
+    
+if __name__ == "__main__":
+    connect()
+    send(0, 0, 0, 0, [0, 0, 0, 0, 0, 0], False, 0, False)

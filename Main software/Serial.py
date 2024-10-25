@@ -52,3 +52,7 @@ def send(expression_scores_list):
                 raise Exception("AVR returned Invalid message format!")
             return response
     return None
+
+if __name__ == "__main__":
+    connect()
+    send([0, 0, 0, 0, 0, 0])

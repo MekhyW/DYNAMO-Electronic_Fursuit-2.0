@@ -57,27 +57,45 @@ def voicemod_thread():
 def controlbot_thread():
     ControlBot.StartBot()
 
-def main():
-    threading.Thread(target=machine_vision_thread).start()
-    threading.Thread(target=assistant_thread).start()
-    threading.Thread(target=voicemod_thread).start()
-    threading.Thread(target=controlbot_thread).start()
+def serial_thread():
+    while True:
+        try:
+            if Serial.ser is None:
+                Serial.connect()
+                time.sleep(1)
+            else:
+                Serial.send(MachineVision.emotion_scores)
+        except Exception as e:
+            print(f"Serial thread error: {e}")
+        time.sleep(0.01)
+
+def unity_thread():
     while True:
         try:
             if Unity.connected is False:
                 Unity.connect()
+                time.sleep(1)
             else:
                 Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
                         MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, MachineVision.emotion_scores, 
                         MachineVision.expression_manual_mode, MachineVision.expression_manual_id, 
                         MachineVision.force_crossed_eye or MachineVision.cross_eyedness > MachineVision.cross_eyedness_threshold)
-            if Serial.ser is None:
-                Serial.connect()
-            else:
-                Serial.send(MachineVision.emotion_scores)
         except Exception as e:
             print(e)
         time.sleep(0.01)
+
+def main():
+    threads = []
+    threads.append(threading.Thread(target=machine_vision_thread))
+    threads.append(threading.Thread(target=assistant_thread))
+    threads.append(threading.Thread(target=voicemod_thread))
+    threads.append(threading.Thread(target=controlbot_thread))
+    threads.append(threading.Thread(target=serial_thread))
+    threads.append(threading.Thread(target=unity_thread))
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
 
 if __name__ == "__main__":
     main()

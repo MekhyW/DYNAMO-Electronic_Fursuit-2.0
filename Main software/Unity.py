@@ -1,7 +1,7 @@
 import socket
 
 host = "localhost"
-port = 8765
+port = 50000
 client_socket = None
 connected = False
 
@@ -18,6 +18,10 @@ def connect():
     except ConnectionRefusedError:
         print("Unity app connection refused. Is the app running?")
         connected = False
+    except Exception as e:
+        print("Unexpected error on unity connection:", e)
+        connected = False
+    return None
 
 def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right, emotion_scores, manual_mode, manual_id, silly_mode):
     displacement_eye_x = str(displacement_eye_x).replace(".", ",")

@@ -29,6 +29,8 @@ def connect():
         print(f"Connected to {port} at {baud} baud.")
     except serial.SerialException:
         print("Serial connection failed")
+    except Exception as e:
+        print("Unexpected error on serial connection:", e)
     return ser
 
 def send(expression_scores_list):

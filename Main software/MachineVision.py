@@ -286,7 +286,6 @@ def main(draw=False):
 
 if __name__ == "__main__":
     open_camera(cap_id)
-    upside_down = False
     import time
     fps = 0
     while True:

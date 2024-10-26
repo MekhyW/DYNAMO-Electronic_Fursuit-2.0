@@ -13,12 +13,9 @@ git pull || echo Git pull failed
 cd "AVR_software"
 set "ARDUINO_CLI=.\arduino-cli.exe"
 "%ARDUINO_CLI%" core update-index
-if %errorlevel% equ 0 (
-    "%ARDUINO_CLI%" compile --fqbn arduino:avr:leonardo AVR_software.ino || echo Arduino CLI failed to compile
-    "%ARDUINO_CLI%" upload -p COM3 --fqbn arduino:avr:leonardo AVR_software.ino || echo Arduino CLI failed to upload
-) else (
-    echo Arduino CLI failed to update
-)
+"%ARDUINO_CLI%" core install arduino:avr || echo AVR core installation/update failed
+"%ARDUINO_CLI%" compile --fqbn arduino:avr:leonardo AVR_software.ino || echo Arduino CLI failed to compile
+"%ARDUINO_CLI%" upload -p COM3 --fqbn arduino:avr:leonardo AVR_software.ino || echo Arduino CLI failed to upload
 cd "..\"
 
 :: Minimize the command prompt window

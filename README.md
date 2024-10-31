@@ -131,8 +131,7 @@ Edit the `Launch.bat` file to run on boot. You can achieve this by placing a sho
 
 ### 11. Setup Displays
 
-I use a UDisplay HDMI-USB adapter for the second eye display. Whatever the device, make sure that it´s firmware is up to date and set to autorun.
-Set the second display to be an extended display.
+Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
 
 ### 12. Setup 4G Module
 

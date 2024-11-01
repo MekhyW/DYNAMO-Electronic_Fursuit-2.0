@@ -85,7 +85,12 @@ Open Voicemod and configure the audio settings, including reduction (I recommend
 
 The file `voidemod-presets.vs2` contains the presets used for the project. You can import it into Voicemod to use the same settings.
 
-### 6. Clone Repositories to Documents Folder
+### 6. Install and Configure AnyDesk
+
+Download and install AnyDesk from the official [AnyDesk website](https://anydesk.com/) in the default directory (C:\Program Files (x86)\AnyDesk). 
+Open AnyDesk, login/create account and set to connect with password (note down the password). Do NOT enable the option to start AnyDesk with Windows, also you don´t need to note down the ID/address as it can be obtained via the control bot.
+
+### 7. Clone Repositories to Documents Folder
 
 Clone the project repositories to `C:\Users\LattePanda\Documents\GitHub` folder using the following commands in Git Bash:
 
@@ -97,7 +102,7 @@ git clone https://github.com/MekhyW/Eye-Graphics
 git clone https://github.com/MekhyW/Facial-Emotion-Classification
 ```
 
-### 7. Install Requirements.txt
+### 8. Install Requirements.txt
 
 Navigate to the project's main directory in Git Bash and install the required Python packages using the following command:
 
@@ -105,7 +110,7 @@ Navigate to the project's main directory in Git Bash and install the required Py
 pip install -r requirements.txt
 ```
 
-### 8. Provide credentials
+### 9. Provide credentials
 
 Create a `.env` file in the root folder of the project's main repository, with the following contents:
 
@@ -117,7 +122,7 @@ openai_key = "YOUR_OPENAI_API_KEY"
 porcupine_key = "YOUR_PORCUPINE_API_KEY"
 ```
 
-### 9. AVR_software
+### 10. AVR_software
 
 Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
 
@@ -125,15 +130,15 @@ Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the fo
 - Adafruit NeoPixel
 - Adafruit BNO055
 
-### 10. Set Launch.bat to Run on Boot
+### 11. Set Launch.bat to Run on Boot
 
 Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
 
-### 11. Setup Displays
+### 12. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
 
-### 12. Setup 4G Module
+### 13. Setup 4G Module
 
 To allow the suit to connect to the internet outside of WiFi range, I use a 4G LTE Wifi USB modem with a SIM card. Make sure that the LattePanda recognizes the modem and remembers the connection!
 

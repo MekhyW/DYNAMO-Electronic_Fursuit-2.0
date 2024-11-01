@@ -30,14 +30,14 @@ inline_keyboard_leds = [[{'text': 'ON', 'callback_data': 'leds on'}, {'text': 'O
 inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': '🔈', 'callback_data': 'voice hear on'}, {'text': '🔇', 'callback_data': 'voice hear off'}], [{'text': 'Background fx ON', 'callback_data': 'voice bg on'}, {'text': 'Background fx OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_debugging = [[{'text': 'Resources', 'callback_data': 'debugging resources'}, {'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Set audio input', 'callback_data': 'audiodevice input'}, {'text': 'Set audio output', 'callback_data': 'audiodevice output'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_debugging = [[{'text': 'Remote Desktop', 'callback_data': 'debugging anydesk'}], [{'text': 'Resources', 'callback_data': 'debugging resources'}], [{'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Set audio input', 'callback_data': 'audiodevice input'}, {'text': 'Set audio output', 'callback_data': 'audiodevice output'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 
 last_message_chat = {}
 lock_outsider_commands = True
 
 def PlayMusic(fursuitbot, chat_id, text):
-    fursuitbot.sendMessage(chat_id, '>>>Downloading song with query "{}"...'.format(text))
+    fursuitbot.sendMessage(chat_id, '<i>>>>Downloading song with query "{}"...</i>'.format(text), parse_mode='HTML')
     command = 'spotdl "{}" --format wav --preload --no-cache'.format(text)
     os.system(command)
     Waveform.stop_flag = True
@@ -46,23 +46,23 @@ def PlayMusic(fursuitbot, chat_id, text):
         if file.endswith('.wav'):
             file_name = file
             break
-    fursuitbot.sendMessage(chat_id, 'Done!\n>>>Playing now')
+    fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Playing now</i>', parse_mode='HTML')
     Waveform.play_audio(file_name, delete=True)
 
 def PlayAudioMessage(fursuitbot, chat_id, msg):
-    fursuitbot.sendMessage(chat_id, '>>>Downloading sound...')
+    fursuitbot.sendMessage(chat_id, '<i>>>Downloading sound...</i>', parse_mode='HTML')
     file_name = '{}.ogg'.format(msg['message_id'])
     if 'voice' in msg:
         fursuitbot.download_file(msg['voice']['file_id'], file_name)
     elif 'audio' in msg:
         fursuitbot.download_file(msg['audio']['file_id'], file_name)
-    fursuitbot.sendMessage(chat_id, 'Done!\n>>>Playing now')
+    fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Playing now</i>', parse_mode='HTML')
     Waveform.play_audio(file_name, delete=True)
 
 def TextToSpeech(fursuitbot, chat_id, text):
-    fursuitbot.sendMessage(chat_id, '>>>Generating audio...')
+    fursuitbot.sendMessage(chat_id, '<i>>>Generating audio...</i>', parse_mode='HTML')
     Waveform.TTS_generate(text)
-    fursuitbot.sendMessage(chat_id, 'Done!\n>>>Speaking now')
+    fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Speaking now</i>', parse_mode='HTML')
     Waveform.TTS_play()
     Assistant.previous_questions.append("")
     Assistant.previous_answers.append(text)
@@ -70,13 +70,13 @@ def TextToSpeech(fursuitbot, chat_id, text):
 def ToggleOutsiderCommands(fursuitbot, chat_id):
     global lock_outsider_commands
     if int(chat_id) != int(fursuitbot_ownerID):
-        fursuitbot.sendMessage(chat_id, 'You are not the owner of this suit!')
+        fursuitbot.sendMessage(chat_id, '<b>You are not the owner of this suit!</b>', parse_mode='HTML')
         return
     lock_outsider_commands = not lock_outsider_commands
     if lock_outsider_commands:
-        fursuitbot.sendMessage(chat_id, 'Outsider commands are now LOCKED')
+        fursuitbot.sendMessage(chat_id, 'Outsider commands are now <b>LOCKED</b>', parse_mode='HTML')
     else:
-        fursuitbot.sendMessage(chat_id, 'Outsider commands are now UNLOCKED')
+        fursuitbot.sendMessage(chat_id, 'Outsider commands are now <b>UNLOCKED</b>', parse_mode='HTML')
 
 def DiscardPreviousUpdates():
     updates = fursuitbot.getUpdates(timeout=-29)
@@ -85,7 +85,7 @@ def DiscardPreviousUpdates():
         fursuitbot.getUpdates(offset=last_update_id+1)
 
 def ConfirmSuccess(from_id, msg, edit_text, query_id):
-    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '>>>'+edit_text)
+    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<i>>>>'+edit_text+'</i>', parse_mode='HTML')
     fursuitbot.answerCallbackQuery(query_id, text='Success!')
     if int(from_id) != int(fursuitbot_ownerID):
         sender = fursuitbot.getChat(from_id)['first_name']
@@ -97,14 +97,14 @@ def thread_function(msg):
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
         if lock_outsider_commands and int(chat_id) != int(fursuitbot_ownerID):
-            fursuitbot.sendMessage(chat_id, 'Outsider commands are currently LOCKED')
+            fursuitbot.sendMessage(chat_id, 'Outsider commands are currently <b>LOCKED</b>', parse_mode='HTML')
             return
         elif content_type == 'text':
             if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'tts', 'debugging python', 'debugging shell']:
                 data = last_message_chat[chat_id]['data']
                 last_message_chat[chat_id] = msg
                 if msg['text'] == '/cancel':
-                    fursuitbot.sendMessage(chat_id, 'Command was cancelled')
+                    fursuitbot.sendMessage(chat_id, '<i>Command was cancelled</i>', parse_mode='HTML')
                 elif data == 'music':
                     PlayMusic(fursuitbot, chat_id, msg['text'])
                 elif data == 'tts':
@@ -116,11 +116,11 @@ def thread_function(msg):
                             exec(msg['text'])
                             output = output_buffer.getvalue()
                             if output:
-                                fursuitbot.sendMessage(chat_id, output)
+                                fursuitbot.sendMessage(chat_id, f'<i>>>{output}</i>', parse_mode='HTML')
                             else:
-                                fursuitbot.sendMessage(chat_id, '(no output)')
+                                fursuitbot.sendMessage(chat_id, '<i>(no output)</i>', parse_mode='HTML')
                         except:
-                            fursuitbot.sendMessage(chat_id, traceback.format_exc())
+                            fursuitbot.sendMessage(chat_id, traceback.format_exc(), parse_mode='HTML')
                 elif data == 'debugging shell':
                     result = subprocess.run(msg['text'], shell=True, capture_output=True)
                     if result.stderr:
@@ -134,31 +134,31 @@ def thread_function(msg):
                     privacy_text = file.read()
                 fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
             if msg['text'] not in main_menu_buttons:
-                fursuitbot.sendMessage(chat_id, '>>>Awaiting -Command- or -Audio-', reply_markup=main_menu_keyboard)
+                fursuitbot.sendMessage(chat_id, '<i>>>Awaiting -Command- or -Audio-</i>', parse_mode='HTML', reply_markup=main_menu_keyboard)
             else:
                 match msg['text']:
                     case '🎵 Media / Sound':
-                        fursuitbot.sendMessage(chat_id, 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
+                        fursuitbot.sendMessage(chat_id, '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
                     case '😁 Expression':
-                        fursuitbot.sendMessage(chat_id, 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                        fursuitbot.sendMessage(chat_id, '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
                     case '👀 Eye Tracking':
-                        fursuitbot.sendMessage(chat_id, 'Eye Tracking', reply_markup={'inline_keyboard': inline_keyboard_eyetracking})
+                        fursuitbot.sendMessage(chat_id, '<b>Eye Tracking</b>', reply_markup={'inline_keyboard': inline_keyboard_eyetracking}, parse_mode='HTML')
                     case '⚙️ Animatronic':
-                        fursuitbot.sendMessage(chat_id, 'Animatronic', reply_markup={'inline_keyboard': inline_keyboard_animatronic})
+                        fursuitbot.sendMessage(chat_id, '<b>Animatronic</b>', reply_markup={'inline_keyboard': inline_keyboard_animatronic}, parse_mode='HTML')
                     case '💡 LEDs':
-                        fursuitbot.sendMessage(chat_id, 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                        fursuitbot.sendMessage(chat_id, '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
                     case '🎙️ Voice':
-                        fursuitbot.sendMessage(chat_id, 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
+                        fursuitbot.sendMessage(chat_id, '<b>Voice</b>', reply_markup={'inline_keyboard': inline_keyboard_voice}, parse_mode='HTML')
                     case '🍪 Cookiebot (Assistant AI)':
-                        fursuitbot.sendMessage(chat_id, 'Cookiebot', reply_markup={'inline_keyboard': inline_keyboard_cookiebot})
+                        fursuitbot.sendMessage(chat_id, '<b>Cookiebot</b>', reply_markup={'inline_keyboard': inline_keyboard_cookiebot}, parse_mode='HTML')
                     case '🖼️ Refsheet / Sticker Pack':
-                        fursuitbot.sendMessage(chat_id, 'Refsheet / Sticker Pack', reply_markup={'inline_keyboard': inline_keyboard_refsheet})
+                        fursuitbot.sendMessage(chat_id, '<b>Refsheet / Sticker Pack</b>', reply_markup={'inline_keyboard': inline_keyboard_refsheet}, parse_mode='HTML')
                     case '🔒 Lock/Unlock Outsiders':
                         ToggleOutsiderCommands(fursuitbot, chat_id)
                     case '🔧 Debugging':
-                        fursuitbot.sendMessage(chat_id, 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
+                        fursuitbot.sendMessage(chat_id, '<b>Debugging</b>', reply_markup={'inline_keyboard': inline_keyboard_debugging}, parse_mode='HTML')
                     case '🛑 Shutdown':
-                        fursuitbot.sendMessage(chat_id, 'Shutdown', reply_markup={'inline_keyboard': inline_keyboard_shutdown})
+                        fursuitbot.sendMessage(chat_id, '<b>Shutdown</b>', reply_markup={'inline_keyboard': inline_keyboard_shutdown}, parse_mode='HTML')
         elif content_type in ['voice', 'audio']:
             PlayAudioMessage(fursuitbot, chat_id, msg)
         else:
@@ -180,18 +180,18 @@ def thread_function_query(msg):
         query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
         print('Callback Query:', query_id, from_id, query_data)
         if lock_outsider_commands and int(from_id) != int(fursuitbot_ownerID):
-            fursuitbot.answerCallbackQuery(query_id, text='Outsider commands are currently LOCKED')
+            fursuitbot.answerCallbackQuery(query_id, text='Outsider commands are currently <b>LOCKED</b>', parse_mode='HTML')
             return
         match query_data.split()[0]:
             case 'close':
                 fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
             case 'music':
-                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the song name or YouTube link you want me to play!\nOr use /cancel to cancel the command.')
+                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>song name</b> or <b>YouTube link</b> you want me to play!\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
                 fursuitbot.answerCallbackQuery(query_id, text='Enter name or link')
             case 'sfx':
                 fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
                 with open('resources/soundtutorial.mp4', 'rb') as video:
-                    fursuitbot.sendVideo(from_id, video, caption='You can forward me an audio or use an inline bot to search one!\n\nEXAMPLE:\n"@myinstantsbot {SOUND NAME}"')
+                    fursuitbot.sendVideo(from_id, video, caption='You can forward me an audio or use an inline bot to search one!\n<blockquote>EXAMPLE:\n"@myinstantsbot {SOUND NAME}"</blockquote>', parse_mode='HTML')
                 fursuitbot.answerCallbackQuery(query_id, text='Search SFX')
             case 'media':
                 match ' '.join(query_data.split()[1:]):
@@ -205,19 +205,19 @@ def thread_function_query(msg):
                         Waveform.is_paused = False
                         ConfirmSuccess(from_id, msg, 'Media Resumed', query_id)
             case 'tts':
-                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the text you want Cookiebot to say!\nOr use /cancel to cancel the command.')
+                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>text</b> you want Cookiebot to say!\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
                 fursuitbot.answerCallbackQuery(query_id, text='Enter text')
             case 'volume':
                 if len(query_data.split()) == 1:
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Volume', reply_markup={'inline_keyboard': 
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Volume</b>', reply_markup={'inline_keyboard': 
                         [[{'text': '⬅️ Go back', 'callback_data': 'volume goback'}], 
                             [{'text': '0%', 'callback_data': 'volume 0'}], 
                             [{'text': '25%', 'callback_data': 'volume 25'}], 
                             [{'text': '50%', 'callback_data': 'volume 50'}], 
                             [{'text': '75%', 'callback_data': 'volume 75'}], 
-                            [{'text': '100%', 'callback_data': 'volume 100'}]]})
+                            [{'text': '100%', 'callback_data': 'volume 100'}]]}, parse_mode='HTML')
                 elif query_data.split()[1] == 'goback':
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Media', reply_markup={'inline_keyboard': inline_keyboard_mediasound})
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
                 else:
                     Windows.set_system_volume(int(query_data.split()[1]) / 100)
                     ConfirmSuccess(from_id, msg, 'Volume set to {}%'.format(query_data.split()[1]), query_id)
@@ -225,7 +225,7 @@ def thread_function_query(msg):
                 match query_data.split()[1]:
                     case 'set':
                         if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Expression', reply_markup={'inline_keyboard': 
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Expression</b>', reply_markup={'inline_keyboard': 
                                 [[{'text': '⬅️ Go back', 'callback_data': 'expression set goback'}], 
                                  [{'text': '🙂  Neutral  🙂', 'callback_data': 'expression set 3'}], 
                                  [{'text': '🤩   Happy   🤩', 'callback_data': 'expression set 2'}], 
@@ -240,9 +240,9 @@ def thread_function_query(msg):
                                  [{'text': '😈 Nightmare 😈', 'callback_data': 'expression set 9'}],
                                  [{'text': '⚙️ Gear eyes ⚙️', 'callback_data': 'expression set 10'}],
                                  [{'text': '💀   SANS    💀', 'callback_data': 'expression set 11'}]
-                                ]})
+                                ]}, parse_mode='HTML')
                         elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
                         else:
                             MachineVision.expression_manual_mode = True
                             MachineVision.expression_manual_id = int(query_data.split()[2])
@@ -255,12 +255,12 @@ def thread_function_query(msg):
                         ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
                     case 'sillymode':
                         if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Silly Mode', reply_markup={'inline_keyboard': 
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Silly Mode</b>', reply_markup={'inline_keyboard': 
                                 [[{'text': '⬅️ Go back', 'callback_data': 'expression sillymode goback'}], 
                                  [{'text': 'ON', 'callback_data': 'expression sillymode on'}], 
-                                 [{'text': 'OFF', 'callback_data': 'expression sillymode off'}]]})
+                                 [{'text': 'OFF', 'callback_data': 'expression sillymode off'}]]}, parse_mode='HTML')
                         elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Expression', reply_markup={'inline_keyboard': inline_keyboard_expression})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
                         elif query_data.split()[2] == 'on':
                             MachineVision.force_crossed_eye = True
                             ConfirmSuccess(from_id, msg, 'Silly Mode set to ON', query_id)
@@ -291,10 +291,10 @@ def thread_function_query(msg):
                             options = []
                             for effect_id in range(len(Serial.leds_effects_options)):
                                 options.append([{'text': Serial.leds_effects_options[effect_id].capitalize(), 'callback_data': 'leds effect {}'.format(effect_id)}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Effect', reply_markup={'inline_keyboard':
-                                [[{'text': '⬅️ Go back', 'callback_data': 'leds effect goback'}]] + options})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Effect</b>', reply_markup={'inline_keyboard':
+                                [[{'text': '⬅️ Go back', 'callback_data': 'leds effect goback'}]] + options}, parse_mode='HTML')
                         elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
                         else:
                             Serial.leds_on = 1
                             Serial.leds_effect = int(query_data.split()[2])
@@ -304,23 +304,23 @@ def thread_function_query(msg):
                             options = []
                             for color_id in range(len(Serial.leds_color_options)):
                                 options.append([{'text': Serial.leds_color_options[color_id].capitalize(), 'callback_data': 'leds color {}'.format(color_id)}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Color', reply_markup={'inline_keyboard':
-                                [[{'text': '⬅️ Go back', 'callback_data': 'leds color goback'}]] + options})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Color</b>', reply_markup={'inline_keyboard':
+                                [[{'text': '⬅️ Go back', 'callback_data': 'leds color goback'}]] + options}, parse_mode='HTML')
                         elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
                         else:
                             Serial.leds_on = 1
                             Serial.leds_color = int(query_data.split()[2])
                             ConfirmSuccess(from_id, msg, 'LEDs Color set to {}'.format(Serial.leds_color_options[Serial.leds_color].capitalize()), query_id)
                     case 'brightness':
                         if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Set Brightness', reply_markup={'inline_keyboard':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Brightness</b>', reply_markup={'inline_keyboard':
                                 [[{'text': '⬅️ Go back', 'callback_data': 'leds brightness goback'}],
                                  [{'text': 'Weak', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default/2)}'}],
                                  [{'text': 'Medium (default)', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default)}'}],
-                                 [{'text': 'Strong', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default*2)}'}]]})
+                                 [{'text': 'Strong', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default*2)}'}]]}, parse_mode='HTML')
                         elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'LEDs', reply_markup={'inline_keyboard': inline_keyboard_leds})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
                         else:
                             Serial.leds_on = 1
                             Serial.leds_brightness = int(query_data.split()[2])
@@ -339,19 +339,19 @@ def thread_function_query(msg):
                                               [{'text': 'More ➡️', 'callback_data': 'voice change gibberish'}]]
                             for voice in Voicemod.voices:
                                 voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Voice Keyboard</b>', reply_markup={'inline_keyboard': voice_keyboard}, parse_mode='HTML')
                         elif query_data.split()[2] == 'load':
                             Waveform.stop_gibberish_flag = True
                             Voicemod.voice_id = query_data.split()[3]
                             Voicemod.load_voice_flag = True
                             ConfirmSuccess(from_id, msg, 'Voice loaded ID {}'.format(Voicemod.voice_id), query_id)
                         elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Voice', reply_markup={'inline_keyboard': inline_keyboard_voice})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Voice</b>', reply_markup={'inline_keyboard': inline_keyboard_voice}, parse_mode='HTML')
                         elif query_data.split()[2] == 'gibberish':
                             voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change'}]]
                             for voice in Voicemod.gibberish_voices:
                                 voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Gibberish Voice Keyboard', reply_markup={'inline_keyboard': voice_keyboard})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Gibberish Voice Keyboard</b>', reply_markup={'inline_keyboard': voice_keyboard}, parse_mode='HTML')
                     case 'changer':
                         Waveform.stop_gibberish_flag = True
                         Voicemod.desired_status = query_data.split()[2] == 'on'
@@ -397,19 +397,23 @@ def thread_function_query(msg):
                 if int(from_id) == int(fursuitbot_ownerID):
                     match ' '.join(query_data.split()[1:]):
                         case 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Debugging', reply_markup={'inline_keyboard': inline_keyboard_debugging})
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Debugging</b>', reply_markup={'inline_keyboard': inline_keyboard_debugging}, parse_mode='HTML')
+                        case 'anydesk':
+                            anydesk_id = os.popen('for /f "tokens=*" %A in (\'"C:\Program Files (x86)\AnyDesk\AnyDesk.exe" --get-id\') do @echo %A').read().strip()
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 
+                                f'<b>AnyDesk ID:</b> <code>{anydesk_id}</code><blockquote>Copy this ID and paste it on the AnyDesk app to connect to remote access this suit</blockquote>', parse_mode='HTML')
                         case 'resources':
                             cpu_info = Windows.get_cpu_info()
                             memory_info = Windows.get_memory_info()
                             disk_info = Windows.get_disk_info()
                             system_volume = Windows.get_system_volume()
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), 
-                                f'CPU \n Physical cores: {cpu_info["physical_cores"]}\nTotal cores: {cpu_info["total_cores"]}\nMax frequency: {cpu_info["max_frequency"]}\nMin frequency: {cpu_info["min_frequency"]}\nCurrent frequency: {cpu_info["current_frequency"]}\nUsage: {cpu_info["usage"]}%\n\nRAM \n Total: {memory_info["total"]}\nAvailable: {memory_info["available"]}\nUsed: {memory_info["used"]}\nUsage: {memory_info["percent"]}%\n\nDisk \n Total: {disk_info["total"]}\nUsed: {disk_info["used"]}\nFree: {disk_info["free"]}\nUsage: {disk_info["percent"]}%\n\nVolume\nLevel: {100*system_volume}%')                  
+                                f'<b>CPU</b> \n Physical cores: {cpu_info["physical_cores"]}\nTotal cores: {cpu_info["total_cores"]}\nMax frequency: {cpu_info["max_frequency"]}\nMin frequency: {cpu_info["min_frequency"]}\nCurrent frequency: {cpu_info["current_frequency"]}\nUsage: {cpu_info["usage"]}%\n\n<b>RAM</b> \n Total: {memory_info["total"]}\nAvailable: {memory_info["available"]}\nUsed: {memory_info["used"]}\nUsage: {memory_info["percent"]}%\n\n<b>Disk</b> \n Total: {disk_info["total"]}\nUsed: {disk_info["used"]}\nFree: {disk_info["free"]}\nUsage: {disk_info["percent"]}%\n\n<b>Volume</b>\nLevel: {100*system_volume}%', parse_mode='HTML')                  
                         case 'python':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the Python command you want me to execute\nOr use /cancel to cancel the command.')
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>Python</b> command you want me to execute\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
                             fursuitbot.answerCallbackQuery(query_id, text='Enter Python command')
                         case 'shell':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the Shell command you want me to execute\nOr use /cancel to cancel the command.')
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>Shell</b> command you want me to execute\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
                             fursuitbot.answerCallbackQuery(query_id, text='Enter Shell command')
                 else:
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
@@ -424,23 +428,23 @@ def thread_function_query(msg):
                     if 'input' in query_data:
                         for device in Windows.input_audio_devices:
                             audiodevice_keyboard.append([{'text': device['Name'], 'callback_data': f'audiodevice input {device["Name"]}'}])
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Select new INPUT audio device\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard})
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Select new INPUT audio device</b>\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard}, parse_mode='HTML')
                     elif 'output' in query_data:
                         for device in Windows.output_audio_devices:
                             audiodevice_keyboard.append([{'text': device['Name'], 'callback_data': f'audiodevice output {device["Name"]}'}])
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Select new OUTPUT audio device\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard})
+                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Select new OUTPUT audio device</b>\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard}, parse_mode='HTML')
             case 'shutdown':
                 if int(from_id) == int(fursuitbot_ownerID):
                     fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
                     match ' '.join(query_data.split()[1:]):
                         case 'turnoff':
-                            fursuitbot.sendMessage(from_id, '>>>Shutting down...')
+                            fursuitbot.sendMessage(from_id, '<i>>>Shutting down...</i>', parse_mode='HTML')
                             Windows.shutdown()
                         case 'reboot':
-                            fursuitbot.sendMessage(from_id, '>>>Rebooting...')
+                            fursuitbot.sendMessage(from_id, '<i>>>Rebooting...</i>', parse_mode='HTML')
                             Windows.restart()
                         case 'kill':
-                            fursuitbot.sendMessage(from_id, '>>>Killing software...')
+                            fursuitbot.sendMessage(from_id, '<i>>>Killing software...</i>', parse_mode='HTML')
                             Windows.kill_process('Unity.exe')
                             Windows.kill_process('VoicemodDesktop.exe') 
                             os._exit(0)

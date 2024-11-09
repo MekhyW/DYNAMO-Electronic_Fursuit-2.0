@@ -88,7 +88,7 @@ The file `voidemod-presets.vs2` contains the presets used for the project. You c
 ### 6. Install and Configure AnyDesk
 
 Download and install AnyDesk from the official [AnyDesk website](https://anydesk.com/) in the default directory (C:\Program Files (x86)\AnyDesk). 
-Open AnyDesk, login/create account and set to connect with password (note down the password). Do NOT enable the option to start AnyDesk with Windows, also you don´t need to note down the ID/address as it can be obtained via the control bot.
+Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests. Do NOT enable the option to start AnyDesk with Windows, also you don´t need to note down the ID/address as it can be obtained via the control bot.
 
 ### 7. Clone Repositories to Documents Folder
 
@@ -122,23 +122,15 @@ openai_key = "YOUR_OPENAI_API_KEY"
 porcupine_key = "YOUR_PORCUPINE_API_KEY"
 ```
 
-### 10. AVR_software
-
-Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
-
-- FreeRTOS
-- Adafruit NeoPixel
-- Adafruit BNO055
-
-### 11. Set Launch.bat to Run on Boot
+### 10. Set Launch.bat to Run on Boot
 
 Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
 
-### 12. Setup Displays
+### 11. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
 
-### 13. Setup 4G Module
+### 12. Setup 4G Module
 
 To allow the suit to connect to the internet outside of WiFi range, I use a 4G LTE Wifi USB modem with a SIM card. Make sure that the LattePanda recognizes the modem and remembers the connection!
 

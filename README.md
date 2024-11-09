@@ -122,15 +122,25 @@ openai_key = "YOUR_OPENAI_API_KEY"
 porcupine_key = "YOUR_PORCUPINE_API_KEY"
 ```
 
-### 10. Set Launch.bat to Run on Boot
+### 10. AVR_software
+
+Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
+
+- FreeRTOS
+- Adafruit NeoPixel
+- Adafruit BNO055
+
+Then, upload the code to the LattePanda's AVR (COM3, Leonardo board).
+
+### 11. Set Launch.bat to Run on Boot
 
 Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
 
-### 11. Setup Displays
+### 12. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
 
-### 12. Setup 4G Module
+### 13. Setup 4G Module
 
 To allow the suit to connect to the internet outside of WiFi range, I use a 4G LTE Wifi USB modem with a SIM card. Make sure that the LattePanda recognizes the modem and remembers the connection!
 

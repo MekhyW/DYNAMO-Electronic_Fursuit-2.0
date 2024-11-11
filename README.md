@@ -55,62 +55,27 @@ This is made possible by combining the following key features:
 To setup the project software on a LattePanda Delta 3 board, follow the steps below for required environment and configurations. It should be running Windows 10 and have a stable internet connection.
 I also recommend updating to the latest update of Windows 10, and removing any bloat software from the system (such as Cortana, Office 365, etc).
 
-### 1. Install Git Bash
+### 1. Install Git Bash and clone this repository
 
 You can download it from [Git for Windows](https://gitforwindows.org/).
-Optionally, you can also install [GitHub Desktop](https://desktop.github.com/) for a GUI interface.
+Then run the following commands in Git Bash:
+```bash
+cd C:\Users\LattePanda\Documents\GitHub
+git clone https://github.com/MekhyW/DYNAMO-Electronic_Fursuit-2.0
+```
 
 ### 2. Install Python 3.11
 
 Download and install Python 3.11 from the official [Python website](https://www.python.org/). During installation, make sure to check the option to add Python to the system PATH and include pip.
 
-### 3. Install FFMPEG
-
-Open the Windows Command Shell with administrator privileges and run the following commands:
+### 3. Run Setup.bat
 
 ```bash
-@"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -InputFormat None -ExecutionPolicy Bypass -Command " [System.Net.ServicePointManager]::SecurityProtocol = 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))" && SET "PATH=%PATH%;%ALLUSERSPROFILE%\chocolatey\bin"
-choco install ffmpeg
+cd C:\Users\LattePanda\Documents\GitHub\DYNAMO-Electronic_Fursuit-2.0
+.\Setup.bat
 ```
 
-### 4. Install Voicemod
-
-Download and install Voicemod from the official [Voicemod website](https://www.voicemod.net/). Install it in the `C:\Program Files` directory. Then log in to your Voicemod account and activate the Pro license if not already activated.
-
-DO NOT use the same account as another device, as it will log out the other device or vice versa!!
-
-### 5. Configure Audio Settings in Voicemod
-
-Open Voicemod and configure the audio settings, including reduction (I recommend leaving at a high value, like 80%) and set it to update without asking. Also, set it to use the default output device. Make sure that the option to auto-start with Windows is checked and it is set to start minimized to the system tray.
-
-The file `voidemod-presets.vs2` contains the presets used for the project. You can import it into Voicemod to use the same settings.
-
-### 6. Install and Configure AnyDesk
-
-Download and install AnyDesk from the official [AnyDesk website](https://anydesk.com/) in the default directory (C:\Program Files (x86)\AnyDesk). 
-Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests. Do NOT enable the option to start AnyDesk with Windows, also you don´t need to note down the ID/address as it can be obtained via the control bot.
-
-### 7. Clone Repositories to Documents Folder
-
-Clone the project repositories to `C:\Users\LattePanda\Documents\GitHub` folder using the following commands in Git Bash:
-
-```bash
-cd C:\Users\LattePanda\Documents\GitHub
-git clone https://github.com/MekhyW/DYNAMO-Electronic_Fursuit-2.0
-git clone https://github.com/MekhyW/Eye-Graphics
-# Optionally, you can also clone the following repository to see the machine vision model training pipeline:
-git clone https://github.com/MekhyW/Facial-Emotion-Classification
-```
-
-### 8. Install Requirements.txt
-
-Navigate to the project's main directory in Git Bash and install the required Python packages using the following command:
-
-```bash
-pip install -r requirements.txt
-```
-
-### 9. Provide credentials
+### 4. Provide credentials
 
 Create a `.env` file in the root folder of the project's main repository, with the following contents:
 
@@ -122,25 +87,26 @@ openai_key = "YOUR_OPENAI_API_KEY"
 porcupine_key = "YOUR_PORCUPINE_API_KEY"
 ```
 
-### 10. AVR_software
+### 5. Install and Configure Voicemod
 
-Open the `AVR_software/AVR_software.ino` file in the Arduino IDE. Install the following libraries via the Arduino IDE Library Manager (with dependencies):
+Download and install Voicemod from the official [Voicemod website](https://www.voicemod.net/). Install it in the `C:\Program Files` directory. Then log in to your Voicemod account and activate the Pro license if not already activated.
 
-- FreeRTOS
-- Adafruit NeoPixel
-- Adafruit BNO055
+DO NOT use the same account as another device, as it will log out the other device or vice versa!!
 
-Then, upload the code to the LattePanda's AVR (COM3, Leonardo board).
+Configure the audio settings, including reduction (I recommend leaving at a high value, like 80%) and set it to update without asking. Also, set it to use the default output device. Make sure that the option to auto-start with Windows is checked and it is set to start minimized to the system tray.
 
-### 11. Set Launch.bat to Run on Boot
+The file `voidemod-presets.vs2` contains the presets used for the project. You can import it into Voicemod to use the same settings.
 
-Edit the `Launch.bat` file to run on boot. You can achieve this by placing a shortcut to the batch file in the Windows Startup folder.
+### 6. Install and Configure AnyDesk
 
-### 12. Setup Displays
+Download and install AnyDesk from the official [AnyDesk website](https://anydesk.com/) in the default directory (C:\Program Files (x86)\AnyDesk). 
+Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests. Do NOT enable the option to start AnyDesk with Windows, also you don´t need to note down the ID/address as it can be obtained via the control bot.
+
+### 7. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
 
-### 13. Setup 4G Module
+### 8. Setup 4G Module
 
 To allow the suit to connect to the internet outside of WiFi range, I use a 4G LTE Wifi USB modem with a SIM card. Make sure that the LattePanda recognizes the modem and remembers the connection!
 
@@ -149,11 +115,3 @@ In the case of my modem, the IP address is 192.168.100.1, the default username a
 Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6. Also, it should contain the username and password of the SIM card, as expected by the carrier.
 
 If possible, use 4G/3G mode instead of just 4G. This is because 4G mode can be unstable in some areas and the system will not be able to connect to the internet.
-
-
-## Preparations before each use
-
-1) Recharge the batteries of the system
-2) Check if SIM card has enough data, if not, recharge it
-3) Make sure all hardware is connected
-4) Open Telegram on phone or have a friend use the bot for control

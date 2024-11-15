@@ -31,8 +31,9 @@ struct ServosTaskInput
 };
 
 void setupServos() {
+  servos[0].attach(6);
+  servos[1].attach(11);
   for (int i = 0; i < NUM_SERVOS; i++) {
-    servos[i].attach(i + 4);
     previousServoPositions[i] = 90;
     lastChangeTime[i] = 0;
   }

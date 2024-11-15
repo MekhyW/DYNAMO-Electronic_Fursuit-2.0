@@ -445,7 +445,7 @@ def thread_function_query(msg):
                             Windows.restart()
                         case 'kill':
                             fursuitbot.sendMessage(from_id, '<i>>>Killing software...</i>', parse_mode='HTML')
-                            Windows.kill_process('Unity.exe')
+                            Windows.kill_process('Eye-Graphics.exe')
                             Windows.kill_process('VoicemodDesktop.exe') 
                             os._exit(0)
                 else:

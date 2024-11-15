@@ -55,7 +55,7 @@ def close_audio_stream(stream):
 def gibberish(filename, silence_threshold_percent=50):
     global stop_gibberish_flag
     stop_gibberish_flag = False
-    wf = wave.open(f"resources/gibberish_voices/{filename}.wav", 'rb')
+    wf = wave.open(f"sfx/gibberish_voices/{filename}.wav", 'rb')
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()), channels=wf.getnchannels(), rate=wf.getframerate(), output=True)
     while True:
         if stop_gibberish_flag:
@@ -84,9 +84,9 @@ def play_audio(filename, delete=False):
 def TTS_generate(text):
     language = langdetect.detect(text)
     tts = gTTS(text=text, lang=language, slow=False)
-    tts.save("resources/tts.mp3")
-    subprocess.call(["ffmpeg", "-i", "resources/tts.mp3", "-filter:a", "atempo=1.5,aecho=0.8:0.9:20:0.6,asetrate=22050", "resources/tts_faster.mp3", "-y"])
-    os.remove("resources/tts.mp3")
+    tts.save("sfx/tts.mp3")
+    subprocess.call(["ffmpeg", "-i", "sfx/tts.mp3", "-filter:a", "atempo=1.5,aecho=0.8:0.9:20:0.6,asetrate=22050", "sfx/tts_faster.mp3", "-y"])
+    os.remove("sfx/tts.mp3")
 
 def TTS_play():
-    play_audio("resources/tts_faster.mp3", delete=True)
+    play_audio("sfx/tts_faster.mp3", delete=True)

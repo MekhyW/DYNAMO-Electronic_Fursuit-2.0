@@ -25,10 +25,10 @@ def assistant_thread():
             Assistant.refresh()
             if Assistant.triggered:
                 Waveform.stop_flag = True
-                Waveform.play_audio("resources/assistant_listening.wav")
+                Waveform.play_audio("sfx/assistant_listening.wav")
                 time.sleep(0.5)
                 Assistant.record_query()
-                Waveform.play_audio("resources/assistant_ok.wav")
+                Waveform.play_audio("sfx/assistant_ok.wav")
                 transcript = Assistant.process_query()
                 answer = Assistant.assistant_query(transcript)
                 Assistant.start()

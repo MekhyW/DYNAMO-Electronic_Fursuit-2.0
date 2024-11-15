@@ -11,7 +11,7 @@ import Serial
 import Windows
 
 openai_client = openai.OpenAI(api_key=openai_key)
-keyword_paths = ["resources/Cookie-Bot_en_windows_v2_1_0.ppn"]
+keyword_paths = ["models/Cookie-Bot_en_windows_v2_1_0.ppn"]
 porcupine = pvporcupine.create(access_key=porcupine_key, keyword_paths=keyword_paths)
 recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
 whisper_model = whisper.load_model("base")
@@ -68,7 +68,7 @@ def assistant_hard_commands(query):
 
 def record_query(silence_window_s=2, silence_threshold_percent=50):
     print("Recording")
-    wavfile = wave.open("resources/query.wav", "wb")
+    wavfile = wave.open("sfx/query.wav", "wb")
     wavfile.setparams((1, 2, 16000, 512, "NONE", "NONE"))
     pcms = []
     remaining = int(16000 / 512 * silence_window_s)
@@ -87,8 +87,8 @@ def record_query(silence_window_s=2, silence_threshold_percent=50):
 
 def process_query():
     print("Transcribing")
-    transcript = whisper_model.transcribe("resources/query.wav")['text']
-    os.remove("resources/query.wav")
+    transcript = whisper_model.transcribe("sfx/query.wav")['text']
+    os.remove("sfx/query.wav")
     print(transcript)
     return transcript
 

@@ -57,7 +57,7 @@ async def getVoices():
             for voice in response:
                 if voice["favorited"]:
                     voices.append({"name": voice["friendlyName"], "id": voice["id"]})
-            for gibberish_voice in os.listdir("resources/gibberish_voices"):
+            for gibberish_voice in os.listdir("sfx/gibberish_voices"):
                 name = gibberish_voice.replace(".wav", "")
                 gibberish_voices.append({"name": name, "id": f"gibberish-{name}"})
             voices = sorted(voices, key=lambda k: k['name'])

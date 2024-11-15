@@ -12,9 +12,9 @@ mp_face_mesh = mp.solutions.face_mesh
 mp_drawing = mp.solutions.drawing_utils
 drawSpec = mp_drawing.DrawingSpec(thickness=1, circle_radius=2)
 face_mesh = mp_face_mesh.FaceMesh(max_num_faces=1, refine_landmarks=True, min_detection_confidence=0.5, min_tracking_confidence=0.5)
-emotion_model = pickle.load(open('resources/emotion_model.pkl', 'rb'))
-pca_model = joblib.load('resources/pca_model.pkl')
-eye_closeness_model = pickle.load(open('resources/eyecloseness_model.pkl', 'rb'))
+emotion_model = pickle.load(open('models/emotion_model.pkl', 'rb'))
+pca_model = joblib.load('models/pca_model.pkl')
+eye_closeness_model = pickle.load(open('models/eyecloseness_model.pkl', 'rb'))
 RIGHT_EYE = [362, 382, 381, 380, 374, 373, 390, 249, 263, 466, 388, 387, 386, 385, 384, 398, 362]
 LEFT_EYE = [33, 7, 163, 144, 145, 153, 154, 155, 133, 173, 157, 158, 159, 160, 161, 246, 33] 
 LEFT_IRIS = [468, 469, 470, 471, 472]

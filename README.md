@@ -93,9 +93,9 @@ Download and install Voicemod from the official [Voicemod website](https://www.v
 
 DO NOT use the same account as another device, as it will log out the other device or vice versa!!
 
-Configure the audio settings, including reduction (I recommend leaving at a high value, like 80%) and set it to update without asking. Also, set it to use the default output device. Make sure that the option to auto-start with Windows is checked and it is set to start minimized to the system tray.
+Configure the audio settings, including noise reduction (I recommend leaving at a high value, like 80%) and set it to update without asking. Also, set it to use the default output device. Make sure that the option to auto-start with Windows is checked and it is set to start minimized to the system tray.
 
-The file `voidemod-presets.vs2` contains the presets used for the project. You can import it into Voicemod to use the same settings.
+The file `voidemod-presets.vs2` contains the effects presets used for the project. You can import it into Voicemod to use the same settings.
 
 ### 6. Install and Configure AnyDesk
 

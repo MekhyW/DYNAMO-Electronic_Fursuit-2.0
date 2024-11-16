@@ -1,5 +1,8 @@
 @echo off
 
+:: Start AnyDesk
+start "" "C:\Program Files (x86)\AnyDesk\AnyDesk.exe" || echo AnyDesk failed to start
+
 :: Update the "Eye-Graphics" repository
 cd "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics"
 git pull || echo Git pull failed
@@ -11,9 +14,6 @@ git pull || echo Git pull failed
 
 :: Minimize the command prompt window
 powershell -window minimized -command ""
-
-:: Start AnyDesk
-start "" "C:\Program Files (x86)\AnyDesk\AnyDesk.exe" || echo AnyDesk failed to start
 
 :: Start Eye-Graphics.exe
 start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Build\Eye-Graphics.exe" || echo Eye-Graphics failed to start

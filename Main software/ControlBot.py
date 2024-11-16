@@ -419,9 +419,10 @@ def thread_function_query(msg):
                     fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
             case 'audiodevice':
                 if len(query_data.split()) >= 3:
+                    direction = query_data.split()[1]
                     device_name = ' '.join(query_data.split()[2:])
-                    Windows.set_default_sound_device(device_name)
-                    ConfirmSuccess(from_id, msg, f'Sound {query_data.split()[1]} device set to {device_name}', query_id)
+                    Windows.set_default_sound_device(device_name, direction)
+                    ConfirmSuccess(from_id, msg, f'Sound {direction} device set to {device_name}', query_id)
                 else:
                     Windows.refresh_sound_devices()
                     audiodevice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'debugging goback'}]]

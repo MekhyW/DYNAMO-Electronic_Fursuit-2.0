@@ -81,18 +81,21 @@ def refresh_sound_devices():
         else:
             output_audio_devices.append({'Name': audiodevice["Device Name"][:30], 'ID': audiodevice["Item ID"]})
 
-def set_default_sound_device(device_name):
-    def find_device_id(devices, name):
+def set_default_sound_device(device_name, direction):
+    def find_device_id(devices, name, direction):
         global default_input_device, default_output_device
         for device in devices:
             if device['Name'] == name:
-                if device["Default"] == "Capture":
-                    default_input_device = device["Item ID"]
-                elif device["Default"] == "Render":
-                    default_output_device = device["Item ID"]
+                if direction == "input":
+                    default_input_device = device["ID"]
+                elif direction == "output":
+                    default_output_device = device["ID"]
                 return device['ID']
         return None
-    device_id = find_device_id(input_audio_devices, device_name) or find_device_id(output_audio_devices, device_name)
+    if direction == "input":
+        device_id = find_device_id(input_audio_devices, device_name, "input")
+    elif direction == "output":
+        device_id = find_device_id(output_audio_devices, device_name, "output")
     if device_id is None:
         raise ValueError(f"Device '{device_name}' not found in input or output devices.")
     subprocess.call(["SoundVolumeView.exe", "/SetDefault", device_id, "all"], shell=True)

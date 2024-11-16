@@ -70,15 +70,16 @@ def refresh_sound_devices():
     input_audio_devices = []
     output_audio_devices = []
     for audiodevice in audiodevices:
-        if "Device State" in audiodevice and len(audiodevice["Device State"]):
-            if audiodevice["Default"] == "Capture":
-                default_input_device = audiodevice["Item ID"]
-            elif audiodevice["Default"] == "Render":
-                default_output_device = audiodevice["Item ID"]
-            if audiodevice["Direction"] == "Capture":
-                input_audio_devices.append({'Name': audiodevice["Name"], 'ID': audiodevice["Item ID"]})
-            else:
-                output_audio_devices.append({'Name': audiodevice["Name"], 'ID': audiodevice["Item ID"]})
+        if audiodevice["Type"] != "Device":
+            continue
+        if audiodevice["Default"] == "Capture":
+            default_input_device = audiodevice["Item ID"]
+        elif audiodevice["Default"] == "Render":
+            default_output_device = audiodevice["Item ID"]
+        if audiodevice["Direction"] == "Capture":
+            input_audio_devices.append({'Name': audiodevice["Device Name"][:30], 'ID': audiodevice["Item ID"]})
+        else:
+            output_audio_devices.append({'Name': audiodevice["Device Name"][:30], 'ID': audiodevice["Item ID"]})
 
 def set_default_sound_device(device_name):
     def find_device_id(devices, name):

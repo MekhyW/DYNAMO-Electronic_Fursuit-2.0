@@ -1,8 +1,5 @@
 @echo off
 
-:: Start AnyDesk
-start "" "C:\Program Files (x86)\AnyDesk\AnyDesk.exe" || echo AnyDesk failed to start
-
 :: Update the "Eye-Graphics" repository
 cd "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics"
 git pull || echo Git pull failed

@@ -100,7 +100,8 @@ The file `voidemod-presets.vs2` contains the effects presets used for the projec
 ### 6. Install and Configure AnyDesk
 
 Download and install AnyDesk from the official [AnyDesk website](https://anydesk.com/) in the default directory (C:\Program Files (x86)\AnyDesk). 
-Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests. Do NOT enable the option to start AnyDesk with Windows, also you don´t need to note down the ID/address as it can be obtained via the control bot.
+Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests.
+Make sure that the service is set to start automatically.
 
 ### 7. Setup Displays
 

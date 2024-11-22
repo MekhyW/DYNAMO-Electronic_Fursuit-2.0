@@ -37,6 +37,7 @@ last_message_chat = {}
 lock_outsider_commands = True
 
 def PlayMusic(fursuitbot, chat_id, text):
+    Waveform.play_audio("sfx/received_music.wav")
     fursuitbot.sendMessage(chat_id, '<i>>>>Downloading song with query "{}"...</i>'.format(text), parse_mode='HTML')
     command = 'spotdl "{}" --format wav --preload --no-cache'.format(text)
     os.system(command)
@@ -60,6 +61,7 @@ def PlayAudioMessage(fursuitbot, chat_id, msg):
     Waveform.play_audio(file_name, delete=True)
 
 def TextToSpeech(fursuitbot, chat_id, text):
+    Waveform.play_audio("sfx/assistant_ok.wav")
     fursuitbot.sendMessage(chat_id, '<i>>>Generating audio...</i>', parse_mode='HTML')
     Waveform.TTS_generate(text)
     fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Speaking now</i>', parse_mode='HTML')
@@ -74,8 +76,10 @@ def ToggleOutsiderCommands(fursuitbot, chat_id):
         return
     lock_outsider_commands = not lock_outsider_commands
     if lock_outsider_commands:
+        Waveform.play_audio("sfx/cmds_locked.wav")
         fursuitbot.sendMessage(chat_id, 'Outsider commands are now <b>LOCKED</b>', parse_mode='HTML')
     else:
+        Waveform.play_audio("sfx/cmds_unlocked.wav")
         fursuitbot.sendMessage(chat_id, 'Outsider commands are now <b>UNLOCKED</b>', parse_mode='HTML')
 
 def DiscardPreviousUpdates():
@@ -197,9 +201,11 @@ def thread_function_query(msg):
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
                         Waveform.stop_flag = True
+                        Waveform.play_audio("sfx/media_stop.wav")
                         ConfirmSuccess(from_id, msg, 'Media Stopped', query_id)
                     case 'pause':
                         Waveform.is_paused = True
+                        Waveform.play_audio("sfx/media_pause.wav")
                         ConfirmSuccess(from_id, msg, 'Media Paused', query_id)
                     case 'resume':
                         Waveform.is_paused = False
@@ -220,6 +226,7 @@ def thread_function_query(msg):
                     fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
                 else:
                     Windows.set_system_volume(int(query_data.split()[1]) / 100)
+                    Waveform.play_audio("sfx/volume_set.wav")
                     ConfirmSuccess(from_id, msg, 'Volume set to {}%'.format(query_data.split()[1]), query_id)
             case 'expression':
                 match query_data.split()[1]:
@@ -248,10 +255,38 @@ def thread_function_query(msg):
                             MachineVision.expression_manual_id = int(query_data.split()[2])
                             if MachineVision.expression_manual_id == 6:
                                 Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
+                            match MachineVision.expression_manual_id:
+                                case 0:
+                                    Waveform.play_audio("sfx/expr_angry.wav")
+                                case 1:
+                                    Waveform.play_audio("sfx/expr_disgusted.wav")
+                                case 2:
+                                    Waveform.play_audio("sfx/expr_happy.wav")
+                                case 3:
+                                    Waveform.play_audio("sfx/expr_neutral.wav")
+                                case 4:
+                                    Waveform.play_audio("sfx/expr_sad.wav")
+                                case 5:
+                                    Waveform.play_audio("sfx/expr_surprised.wav")
+                                case 6:
+                                    Waveform.play_audio("sfx/expr_hypnotic.wav")
+                                case 7:
+                                    Waveform.play_audio("sfx/expr_heart.wav")
+                                case 8:
+                                    Waveform.play_audio("sfx/expr_rainbow.wav")
+                                case 9:
+                                    Waveform.play_audio("sfx/expr_nightmare.wav")
+                                case 10:
+                                    Waveform.play_audio("sfx/expr_gear.wav")
+                                case 11:
+                                    Waveform.play_audio("sfx/expr_sans.wav")
+                                case 12:
+                                    Waveform.play_audio("sfx/expr_mischievous.wav")
                             ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), query_id)
                     case 'auto':
                         MachineVision.expression_manual_mode = False
                         MachineVision.force_crossed_eye = False
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
                     case 'sillymode':
                         if len(query_data.split()) == 2:
@@ -263,6 +298,7 @@ def thread_function_query(msg):
                             fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
                         elif query_data.split()[2] == 'on':
                             MachineVision.force_crossed_eye = True
+                            Waveform.play_audio("sfx/expr_silly.wav")
                             ConfirmSuccess(from_id, msg, 'Silly Mode set to ON', query_id)
                         elif query_data.split()[2] == 'off':
                             MachineVision.force_crossed_eye = False
@@ -272,17 +308,21 @@ def thread_function_query(msg):
                     case 'on':
                         MachineVision.eye_tracking_mode = True
                         MachineVision.force_crossed_eye = False
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Eye Tracking set to ON', query_id)
                     case 'off':
                         MachineVision.eye_tracking_mode = False
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Eye Tracking set to OFF', query_id)
             case 'animatronic':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':
                         Serial.animatronics_on = 1
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Animatronic set to ON', query_id)
                     case 'off':
                         Serial.animatronics_on = 0
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Animatronic set to OFF', query_id)
             case 'leds':
                 match query_data.split()[1]:
@@ -298,6 +338,7 @@ def thread_function_query(msg):
                         else:
                             Serial.leds_on = 1
                             Serial.leds_effect = int(query_data.split()[2])
+                            Waveform.play_audio("sfx/leds_effect.wav")
                             ConfirmSuccess(from_id, msg, 'LEDs Effect set to {}'.format(Serial.leds_effects_options[Serial.leds_effect].capitalize()), query_id)
                     case 'color':
                         if len(query_data.split()) == 2:
@@ -311,6 +352,7 @@ def thread_function_query(msg):
                         else:
                             Serial.leds_on = 1
                             Serial.leds_color = int(query_data.split()[2])
+                            Waveform.play_audio("sfx/leds_color.wav")
                             ConfirmSuccess(from_id, msg, 'LEDs Color set to {}'.format(Serial.leds_color_options[Serial.leds_color].capitalize()), query_id)
                     case 'brightness':
                         if len(query_data.split()) == 2:
@@ -324,12 +366,15 @@ def thread_function_query(msg):
                         else:
                             Serial.leds_on = 1
                             Serial.leds_brightness = int(query_data.split()[2])
+                            Waveform.play_audio("sfx/leds_state.wav")
                             ConfirmSuccess(from_id, msg, 'LEDs Brightness set to {}'.format(Serial.leds_brightness), query_id)
                     case 'on':
                         Serial.leds_on = 1
+                        Waveform.play_audio("sfx/leds_state.wav")
                         ConfirmSuccess(from_id, msg, 'LEDs set to ON', query_id)
                     case 'off':
                         Serial.leds_on = 0
+                        Waveform.play_audio("sfx/leds_state.wav")
                         ConfirmSuccess(from_id, msg, 'LEDs set to OFF', query_id)
             case 'voice':
                 match query_data.split()[1]:
@@ -356,16 +401,19 @@ def thread_function_query(msg):
                         Waveform.stop_gibberish_flag = True
                         Voicemod.desired_status = query_data.split()[2] == 'on'
                         Voicemod.toggle_voice_changer_flag = True
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Voice Changer Toggled', query_id)
                     case 'hear':
                         Waveform.stop_gibberish_flag = True
                         Voicemod.desired_status = query_data.split()[2] == 'on'
                         Voicemod.toggle_hear_my_voice_flag = True
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Hear My Voice Toggled', query_id)
                     case 'bg':
                         Waveform.stop_gibberish_flag = True
                         Voicemod.desired_status = query_data.split()[2] == 'on'
                         Voicemod.toggle_background_flag = True
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Background FX Toggled', query_id)
             case 'assistant':
                 match ' '.join(query_data.split()[1:]):
@@ -374,9 +422,11 @@ def thread_function_query(msg):
                         ConfirmSuccess(from_id, msg, 'Triggered!', query_id)
                     case 'hotword on':
                         Assistant.hotword_detection_enabled = True
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Hotword Detection set to ON\n\nNOTE: If the voice changer is ON, hotword detection may not work depending on the effect.', query_id)
                     case 'hotword off':
                         Assistant.hotword_detection_enabled = False
+                        Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Hotword Detection set to OFF', query_id)
             case 'misc':
                 match ' '.join(query_data.split()[1:]):
@@ -422,6 +472,7 @@ def thread_function_query(msg):
                     direction = query_data.split()[1]
                     device_name = ' '.join(query_data.split()[2:])
                     Windows.set_default_sound_device(device_name, direction)
+                    Waveform.play_audio("sfx/sounddevice_set.wav")
                     ConfirmSuccess(from_id, msg, f'Sound {direction} device set to {device_name}', query_id)
                 else:
                     Windows.refresh_sound_devices()
@@ -440,9 +491,11 @@ def thread_function_query(msg):
                     match ' '.join(query_data.split()[1:]):
                         case 'turnoff':
                             fursuitbot.sendMessage(from_id, '<i>>>Shutting down...</i>', parse_mode='HTML')
+                            Waveform.play_audio("sfx/system_down.wav")
                             Windows.shutdown()
                         case 'reboot':
                             fursuitbot.sendMessage(from_id, '<i>>>Rebooting...</i>', parse_mode='HTML')
+                            Waveform.play_audio("sfx/system_down.wav")
                             Windows.restart()
                         case 'kill':
                             fursuitbot.sendMessage(from_id, '<i>>>Killing software...</i>', parse_mode='HTML')
@@ -485,6 +538,7 @@ def StartBot():
         try:
             DiscardPreviousUpdates()
             MessageLoop(fursuitbot, {'chat': handle, 'callback_query': handle_query}).run_as_thread()
+            Waveform.play_audio("sfx/bot_online.wav")
             fursuitbot.sendMessage(fursuitbot_ownerID, '>>> READY! <<<')
             print("Control bot online!")
             return True

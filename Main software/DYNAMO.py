@@ -8,6 +8,7 @@ import Assistant
 import Voicemod
 import Serial
 import ControlBot
+import Environment
 
 def machine_vision_thread():
     MachineVision.open_camera(MachineVision.cap_id)
@@ -35,8 +36,8 @@ def assistant_thread():
                 if len(answer):
                     Waveform.TTS_generate(answer)
                     Waveform.TTS_play()
-                    ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'QUERY:\n{transcript}')
-                    ControlBot.fursuitbot.sendMessage(ControlBot.ownerID, f'RESPONSE:\n{answer}')
+                    ControlBot.fursuitbot.sendMessage(Environment.fursuitbot_ownerID, f'QUERY:\n{transcript}')
+                    ControlBot.fursuitbot.sendMessage(Environment.fursuitbot_ownerID, f'RESPONSE:\n{answer}')
                 Assistant.triggered = False
         except Exception as e:
             print(e)

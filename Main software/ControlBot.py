@@ -339,7 +339,7 @@ def thread_function_query(msg):
                             Serial.leds_on = 1
                             Serial.leds_effect = int(query_data.split()[2])
                             Waveform.play_audio("sfx/leds_effect.wav")
-                            ConfirmSuccess(from_id, msg, 'LEDs Effect set to {}'.format(Serial.leds_effects_options[Serial.leds_effect].capitalize()), query_id)
+                            ConfirmSuccess(from_id, msg, 'Altered LEDs Effect', query_id)
                     case 'color':
                         if len(query_data.split()) == 2:
                             options = []

@@ -80,7 +80,7 @@ def unity_thread():
                 Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
                         MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, MachineVision.emotion_scores, 
                         MachineVision.expression_manual_mode, MachineVision.expression_manual_id, 
-                        MachineVision.force_crossed_eye or MachineVision.cross_eyedness > MachineVision.cross_eyedness_threshold)
+                        MachineVision.force_crossed_eye or MachineVision.cross_eyedness > MachineVision.CROSS_EYEDNESS_THRESHOLD)
         except Exception as e:
             print(e)
         time.sleep(0.01)

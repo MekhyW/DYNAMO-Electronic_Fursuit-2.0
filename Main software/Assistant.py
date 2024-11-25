@@ -29,9 +29,9 @@ def assistant_hard_commands(query):
     elif all(term in query for term in ["expression", "manual"]):
         MachineVision.expression_manual_mode = True
         return True
-    elif all(term in query for term in ["set", "expression"]) and any(emotion in query for emotion in MachineVision.emotion_labels + MachineVision.emotion_labels_extra):
+    elif all(term in query for term in ["set", "expression"]) and any(emotion in query for emotion in MachineVision.EMOTION_LABELS + MachineVision.EMOTION_LABELS_EXTRA):
         MachineVision.expression_manual_mode = True
-        MachineVision.expression_manual_id = next((i for i, emotion in enumerate(MachineVision.emotion_labels + MachineVision.emotion_labels_extra) if emotion in query), None)
+        MachineVision.expression_manual_id = next((i for i, emotion in enumerate(MachineVision.EMOTION_LABELS + MachineVision.EMOTION_LABELS_EXTRA) if emotion in query), None)
         if MachineVision.expression_manual_id in [6, 8]:
             Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'Rainbow' in effect)
         return True

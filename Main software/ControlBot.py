@@ -12,6 +12,7 @@ import MachineVision
 import Windows
 import Assistant
 import Voicemod
+import Unity
 import Serial
 
 fursuitbot = telepot.Bot(fursuitbot_token)
@@ -20,14 +21,15 @@ refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
 stickerpack = 'https://t.me/addstickers/MekhyW'
 stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgUWYjKWFS6B-MTAE'
 
-main_menu_buttons = ['🎵 Media / Sound', '😁 Expression', '👀 Eye Tracking', '⚙️ Animatronic', '💡 LEDs', '🎙️ Voice', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
+main_menu_buttons = ['🎵 Music / Sound', '🎙️ Voice', '😁 Expression', '👀 Eye Tracking', '📺 Displays', '⚙️ Animatronic', '💡 LEDs', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
 inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}], [{'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Text to Speech', 'callback_data': 'tts'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': '🔈', 'callback_data': 'voice hear on'}, {'text': '🔇', 'callback_data': 'voice hear off'}], [{'text': 'Background fx ON', 'callback_data': 'voice bg on'}, {'text': 'Background fx OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}], [{'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}], [{'text': 'Silly Mode', 'callback_data': 'expression sillymode'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_eyetracking = [[{'text': 'ON', 'callback_data': 'eyetracking on'}, {'text': 'OFF', 'callback_data': 'eyetracking off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
+inline_keyboard_displays = [[{'text': 'Brightness', 'callback_data': 'displays brightness'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_animatronic = [[{'text': 'ON', 'callback_data': 'animatronic on'}, {'text': 'OFF', 'callback_data': 'animatronic off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_leds = [[{'text': 'ON', 'callback_data': 'leds on'}, {'text': 'OFF', 'callback_data': 'leds off'}], [{'text': 'Effect', 'callback_data': 'leds effect'}, {'text': 'Color', 'callback_data': 'leds color'}], [{'text': 'Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': '🔈', 'callback_data': 'voice hear on'}, {'text': '🔇', 'callback_data': 'voice hear off'}], [{'text': 'Background fx ON', 'callback_data': 'voice bg on'}, {'text': 'Background fx OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_debugging = [[{'text': 'Remote Desktop', 'callback_data': 'debugging anydesk'}], [{'text': 'Resources', 'callback_data': 'debugging resources'}], [{'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Set audio input', 'callback_data': 'audiodevice input'}, {'text': 'Set audio output', 'callback_data': 'audiodevice output'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
@@ -141,12 +143,14 @@ def thread_function(msg):
                 fursuitbot.sendMessage(chat_id, '<i>>>Awaiting -Command- or -Audio-</i>', parse_mode='HTML', reply_markup=main_menu_keyboard)
             else:
                 match msg['text']:
-                    case '🎵 Media / Sound':
-                        fursuitbot.sendMessage(chat_id, '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
+                    case '🎵 Music / Sound':
+                        fursuitbot.sendMessage(chat_id, '<b>Sound</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
                     case '😁 Expression':
                         fursuitbot.sendMessage(chat_id, '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
                     case '👀 Eye Tracking':
                         fursuitbot.sendMessage(chat_id, '<b>Eye Tracking</b>', reply_markup={'inline_keyboard': inline_keyboard_eyetracking}, parse_mode='HTML')
+                    case '📺 Displays':
+                        fursuitbot.sendMessage(chat_id, '<b>Displays</b>', reply_markup={'inline_keyboard': inline_keyboard_displays}, parse_mode='HTML')
                     case '⚙️ Animatronic':
                         fursuitbot.sendMessage(chat_id, '<b>Animatronic</b>', reply_markup={'inline_keyboard': inline_keyboard_animatronic}, parse_mode='HTML')
                     case '💡 LEDs':
@@ -314,6 +318,23 @@ def thread_function_query(msg):
                         MachineVision.eye_tracking_mode = False
                         Waveform.play_audio("sfx/settings_toggle.wav")
                         ConfirmSuccess(from_id, msg, 'Eye Tracking set to OFF', query_id)
+            case 'displays':
+                match query_data.split()[1]:
+                    case 'brightness':
+                        if len(query_data.split()) == 2:
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Brightness</b>', reply_markup={'inline_keyboard': 
+                                [[{'text': '⬅️ Go back', 'callback_data': 'displays brightness goback'}], 
+                                [{'text': '10%', 'callback_data': 'displays brightness 10'}], 
+                                [{'text': '25%', 'callback_data': 'displays brightness 25'}], 
+                                [{'text': '50%', 'callback_data': 'displays brightness 50'}], 
+                                [{'text': '75%', 'callback_data': 'displays brightness 75'}], 
+                                [{'text': '100%', 'callback_data': 'displays brightness 100'}]]}, parse_mode='HTML')
+                        elif query_data.split()[2] == 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Displays</b>', reply_markup={'inline_keyboard': inline_keyboard_displays}, parse_mode='HTML')
+                        else:
+                            Unity.screen_brightness = int(query_data.split()[2])
+                            Waveform.play_audio("sfx/leds_state.wav")
+                            ConfirmSuccess(from_id, msg, 'Screen Brightness set to {}%'.format(Unity.screen_brightness), query_id)
             case 'animatronic':
                 match ' '.join(query_data.split()[1:]):
                     case 'on':

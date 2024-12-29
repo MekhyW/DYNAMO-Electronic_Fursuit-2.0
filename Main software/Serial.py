@@ -33,8 +33,8 @@ def connect():
         print("Unexpected error on serial connection:", e)
     return ser
 
-def send(expression_scores_list):
-    expression_scores_str = ",".join(map(lambda score: str(int(score * 100)), expression_scores_list))
+def send(expression_scores):
+    expression_scores_str = ",".join(map(lambda score: str(int(score * 100)), expression_scores))
     data_to_send = f"{animatronics_on},{leds_on},{leds_brightness},{leds_color},{leds_effect},{leds_level},{expression_scores_str}\n"
     response = None
     if ser is not None:

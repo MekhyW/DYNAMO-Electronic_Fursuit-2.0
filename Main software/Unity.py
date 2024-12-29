@@ -5,6 +5,8 @@ port = 50000
 client_socket = None
 connected = False
 
+screen_brightness = 100
+
 def connect():
     global client_socket, connected
     try:
@@ -33,6 +35,7 @@ def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right
     message = f"{displacement_eye_x} {displacement_eye_y} {closeness_left} {closeness_right} {emotion_scores_string}"
     message += f" {manual_id}" if manual_mode and manual_id >= len(emotion_scores) else " -1"
     message += " 1" if silly_mode else " 0"
+    message += f" {screen_brightness}"
     response = None
     try:
         client_socket.sendall(message.encode())

@@ -31,12 +31,10 @@ mesh_points = None
 displacement_eye = (0,0)
 left_eye_closeness = 0
 right_eye_closeness = 0
-mouth_closedness = 0
 cross_eyedness = 0
 emotion_scores = [0] * len(EMOTION_LABELS)
 left_eye_closeness_noisy = [0, 0, 0, 0, 0]
 right_eye_closeness_noisy = [0, 0, 0, 0, 0]
-mouth_closedness_noisy = [0, 0, 0, 0, 0]
 cross_eyedness_noisy = [0, 0, 0, 0, 0]
 eye_tracking_mode = True
 force_crossed_eye = False
@@ -130,18 +128,6 @@ def calculate_width_over_height_eye(mesh_points):
     except ZeroDivisionError:
         reason_right = 20
     return reason_left, reason_right
-
-def calculate_width_over_height_mouth(mesh_points):
-    ex1 = mesh_points[78]
-    ex2 = mesh_points[308]
-    ey1 = mesh_points[13]
-    ey2 = mesh_points[14]
-    try:
-        reason = math.sqrt((ex1[0]-ex2[0])**2+(ex1[1]-ex2[1])**2+(ex1[2]-ex2[2])**2)/math.sqrt((ey1[0]-ey2[0])**2+(ey1[1]-ey2[1])**2+(ey1[2]-ey2[2])**2)
-        if reason > 100: reason = 100
-    except ZeroDivisionError:
-        reason = 100
-    return reason
 
 def update_mesh_points(frame):
     global results_mesh, mesh_points

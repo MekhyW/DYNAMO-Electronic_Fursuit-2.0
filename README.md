@@ -77,15 +77,7 @@ cd C:\Users\LattePanda\Documents\GitHub\DYNAMO-Electronic_Fursuit-2.0
 
 ### 4. Provide credentials
 
-Create a `.env` file in the root folder of the project's main repository, with the following contents:
-
-```bash
-voicemod_key = "YOUR_VOICEMOD_KEY"
-fursuitbot_token = "YOUR_TELEGRAM_BOT_TOKEN"
-fursuitbot_ownerID = "YOUR_TELEGRAM_USER_ID"
-openai_key = "YOUR_OPENAI_API_KEY"
-porcupine_key = "YOUR_PORCUPINE_API_KEY"
-```
+Create a `.env` file in the root folder of the project's main repository, and use `.env.example` as a reference template.
 
 ### 5. Install and Configure Voicemod
 
@@ -100,12 +92,15 @@ The file `voidemod-presets.vs2` contains the effects presets used for the projec
 ### 6. Install and Configure AnyDesk
 
 Download and install AnyDesk from the official [AnyDesk website](https://anydesk.com/) in the default directory (C:\Program Files (x86)\AnyDesk). 
+
 Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests.
 Make sure that the service is set to start automatically.
 
 ### 7. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
+
+If a display is recognized but at an incorrect active signal resolution or refresh rate, try using [Custom Resolution Utility (CRU)](https://customresolutionutility.net/) to add a new mode (CVT-RB 800x480@60Hz), then set the video adapter to use this mode.
 
 ### 8. Setup 4G Module
 

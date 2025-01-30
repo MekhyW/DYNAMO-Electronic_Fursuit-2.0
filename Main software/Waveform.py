@@ -73,7 +73,8 @@ def gibberish(filename, silence_threshold_percent=50):
 
 def play_audio(filename, delete=False):
     filename = convert_to_wav(filename)
-    normalize_audio(filename)
+    if delete:
+        normalize_audio(filename)
     wf = wave.open(filename, 'rb')
     stream = p.open(format=p.get_format_from_width(wf.getsampwidth()), channels=wf.getnchannels(), rate=wf.getframerate(), output=True)
     play_audio_stream(wf, stream)

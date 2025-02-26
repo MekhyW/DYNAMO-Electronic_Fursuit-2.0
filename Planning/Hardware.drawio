@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="423" dy="366" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="604" dy="523" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -157,7 +157,7 @@
                 <mxCell id="108" value="USB hub" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="280" y="488" width="80" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="120" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.717;entryY=1;entryDx=0;entryDy=0;strokeColor=#FAFAFA;strokeWidth=1;startArrow=none;startFill=0;entryPerimeter=0;" parent="1" source="112" target="13" edge="1">
+                <mxCell id="120" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.717;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#FAFAFA,#FFFFFF);strokeWidth=1;startArrow=none;startFill=0;entryPerimeter=0;" parent="1" source="112" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="391" y="593"/>
@@ -167,7 +167,7 @@
                 <mxCell id="112" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;eDP-HDMI adapter&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="310" y="578" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="121" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#FAFAFA;strokeWidth=1;startArrow=none;startFill=0;" parent="1" source="114" target="14" edge="1">
+                <mxCell id="121" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#FAFAFA,#EDEDED);strokeWidth=1;startArrow=none;startFill=0;" parent="1" source="114" target="14" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="490" y="623"/>
@@ -177,7 +177,7 @@
                 <mxCell id="114" value="HDMI port" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="310" y="608" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="139" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;strokeColor=#FAFAFA;strokeWidth=1;fontSize=8;startArrow=none;startFill=0;" parent="1" source="118" target="8" edge="1">
+                <mxCell id="139" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#2D7600,#FFFFFF);strokeWidth=1;fontSize=8;startArrow=none;startFill=0;fillColor=#60a917;" parent="1" source="118" target="8" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="380" y="653"/>
@@ -187,7 +187,7 @@
                 <mxCell id="118" value="USB port" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="310" y="638" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="141" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#FAFAFA;strokeWidth=1;fontSize=8;startArrow=none;startFill=0;" parent="1" source="119" edge="1">
+                <mxCell id="141" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=light-dark(#FAFAFA,#F7F7F7);strokeWidth=1;fontSize=8;startArrow=none;startFill=0;" parent="1" source="119" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="469" y="683"/>

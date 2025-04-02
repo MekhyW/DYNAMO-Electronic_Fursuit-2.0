@@ -22,7 +22,6 @@ This is made possible by combining the following key features:
 ## Directory Structure
 
 ```
-├───AVR_software
 ├───CAD
 │   ├───Electronics
 │   ├───Mechanics
@@ -37,12 +36,12 @@ This is made possible by combining the following key features:
 └───Test scripts
 ```
 
-- AVR_software: C++ code for the AVR microcontroller responsible for controlling the servos, fan(s) and LEDs of the suit
 - CAD: Design files for the components of the project
 - Logos: Logos used in the project
 - Main software: Python code for the main software of the project. The 'resources' folder contains the machine learning models and other resources used by the software
 - Planning: Diagrams and planning documents
 - Test scripts: Some scripts used for testing the project
+(C++ code for the AVR microcontroller, eye rendering C# scripts and facial recognition model pipeline notebooks are all available in separate repositories and are installed via the Setup script)
 
 ## Hardware Assembly
 

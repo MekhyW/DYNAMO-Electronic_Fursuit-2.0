@@ -15,7 +15,7 @@ git clone https://github.com/MekhyW/Eye-Graphics
 git clone https://github.com/MekhyW/Facial-Emotion-Classification
 
 :: Compile and upload the AVR software
-cd "../DYNAMO-AVR/AVR_software"
+cd "DYNAMO-AVR/AVR_software"
 set "ARDUINO_CLI=.\arduino-cli.exe"
 "%ARDUINO_CLI%" core update-index
 "%ARDUINO_CLI%" lib update-index

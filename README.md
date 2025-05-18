@@ -1,6 +1,6 @@
 # DYNAMO (Main Repository)
 
-Improved modular computing platform for wearable costumes, with animatronic support, facial/eye tracking, sound processing and more
+Improved modular computing platform for wearable costumes, with animatronic support, facial/eye tracking, sound processing and mobile network control application.
 
 ## Overview
 
@@ -22,26 +22,31 @@ This is made possible by combining the following key features:
 ## Directory Structure
 
 ```
-├───CAD
-│   ├───Electronics
-│   ├───Mechanics
-│       └───Component box
-│       └───Example head
-│       └───Mask
-│       └───Hinge
-├───Logos
 ├───Main software
+│   ├───models
 │   ├───resources
+│   ├───sfx
 ├───Planning
 └───Test scripts
 ```
 
-- CAD: Design files for the components of the project
-- Logos: Logos used in the project
-- Main software: Python code for the main software of the project. The 'resources' folder contains the machine learning models and other resources used by the software
+- Main software: Python code for the main software of the project with associated artifacts
 - Planning: Diagrams and planning documents
 - Test scripts: Some scripts used for testing the project
-(C++ code for the AVR microcontroller, eye rendering C# scripts and facial recognition model pipeline notebooks are all available in separate repositories and are installed via the Setup script)
+
+## Associated Repositories
+
+[Eye Graphics Unity C#](https://github.com/MekhyW/DYNAMO-Eye-Graphics)
+
+[AVR C++ Firmware](https://github.com/MekhyW/DYNAMO-AVR)
+
+[Image processing pipeline](https://github.com/MekhyW/Facial-Emotion-Classification)
+
+[Control App](https://github.com/MekhyW/DYNAMO-Control-App)
+
+[App onboarding](https://github.com/MekhyW/control-app-onboarding)
+
+[Schematics and PCB](https://github.com/MekhyW/DYNAMO-PCB)
 
 ## Hardware Assembly
 
@@ -111,3 +116,7 @@ In the case of my modem, the IP address is 192.168.100.1, the default username a
 Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6. Also, it should contain the username and password of the SIM card, as expected by the carrier.
 
 If possible, use 4G/3G mode instead of just 4G. This is because 4G mode can be unstable in some areas and the system will not be able to connect to the internet.
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request. Or, if you have any suggestions or feedback contact me directly via Telegram @MekhyW.

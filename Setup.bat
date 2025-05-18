@@ -12,7 +12,6 @@ choco install ffmpeg
 cd C:\Users\LattePanda\Documents\GitHub
 git clone https://github.com/MekhyW/DYNAMO-AVR.git
 git clone https://github.com/MekhyW/Eye-Graphics
-git clone https://github.com/MekhyW/Facial-Emotion-Classification
 
 :: Compile and upload the AVR software
 cd "DYNAMO-AVR/AVR_software"

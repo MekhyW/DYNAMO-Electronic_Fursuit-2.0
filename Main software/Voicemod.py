@@ -42,7 +42,6 @@ async def send_message(websocket, command, payload):
             await websocket.send(json.dumps(message))
             response = await websocket.recv()
             response = json.loads(response)
-            
             if command in valid_response_actions and 'action' in response and response['action'] not in valid_response_actions[command]:
                 continue
             return response

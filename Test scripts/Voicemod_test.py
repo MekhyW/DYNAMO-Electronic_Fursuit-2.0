@@ -52,7 +52,8 @@ async def main():
                         if voices is not None and 'voices' in voices:
                             voices = voices["voices"]
                             for voice in voices:
-                                print(voice["friendlyName"], voice["id"])
+                                if voice.get("favorited"):
+                                    print(voice["friendlyName"], voice["id"])
                         else:
                             print("Error getting voices")
                     case "getMemes":

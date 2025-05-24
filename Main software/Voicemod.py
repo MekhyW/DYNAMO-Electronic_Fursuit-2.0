@@ -19,6 +19,21 @@ desired_status = True
 voice_id = 'nofx'
 voices = []
 gibberish_voices = []
+sounds = []
+
+valid_response_actions = {
+    'getHearMyselfStatus': ['getHearMyselfStatus'],
+    'getVoiceChangerStatus': ['getVoiceChangerStatus'],
+    'getBackgroundEffectStatus': ['getBackgroundEffectStatus'],
+    'toggleHearMyVoice': ['hearMySelfEnabledEvent', 'hearMySelfDisabledEvent'],
+    'toggleVoiceChanger': ['voiceChangerEnabledEvent', 'voiceChangerDisabledEvent'],
+    'toggleBackground': ['backgroundEffectsEnabledEvent', 'backgroundEffectsDisabledEvent'],
+    'getVoices': ['getVoices'],
+    'loadVoice': ['loadVoice', 'voiceLoadedEvent'],
+    'getMemes': ['getMemes'],
+    'playMeme': ['playMeme'],
+    'getBitmap': ['getBitmap']
+}
 
 async def send_message(websocket, command, payload):
     while True:
@@ -27,16 +42,7 @@ async def send_message(websocket, command, payload):
             await websocket.send(json.dumps(message))
             response = await websocket.recv()
             response = json.loads(response)
-            valid_response_actions = {
-                'getHearMyselfStatus': ['getHearMyselfStatus'],
-                'getVoiceChangerStatus': ['getVoiceChangerStatus'],
-                'getBackgroundEffectStatus': ['getBackgroundEffectStatus'],
-                'toggleHearMyVoice': ['hearMySelfEnabledEvent', 'hearMySelfDisabledEvent'],
-                'toggleVoiceChanger': ['voiceChangerEnabledEvent', 'voiceChangerDisabledEvent'],
-                'toggleBackground': ['backgroundEffectsEnabledEvent', 'backgroundEffectsDisabledEvent'],
-                'getVoices': ['getVoices'],
-                'loadVoice': ['loadVoice']
-            }
+            
             if command in valid_response_actions and 'action' in response and response['action'] not in valid_response_actions[command]:
                 continue
             return response
@@ -47,7 +53,7 @@ async def send_message(websocket, command, payload):
 
 async def getVoices():
     global voices, gibberish_voices
-    for attempt in range(3):
+    for _ in range(3):
         voices = []
         gibberish_voices = []
         response = await send_message(voicemod_websocket, 'getVoices', {})

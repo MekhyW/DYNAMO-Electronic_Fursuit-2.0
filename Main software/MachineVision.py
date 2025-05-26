@@ -11,13 +11,17 @@ import joblib
 import warnings
 warnings.filterwarnings("ignore")
 
-detector = vision.FaceLandmarker.create_from_options(
-    vision.FaceLandmarkerOptions(base_options=python.BaseOptions(model_asset_path='models/face_landmarker_v2_with_blendshapes.task'),
-    output_face_blendshapes=True,
-    num_faces=1
-))
-emotion_model = pickle.load(open('models/emotion_model.pkl', 'rb'))
-pca_model = joblib.load('models/pca_model.pkl')
+try:
+    detector = vision.FaceLandmarker.create_from_options(
+        vision.FaceLandmarkerOptions(base_options=python.BaseOptions(model_asset_path='models/face_landmarker_v2_with_blendshapes.task'),
+        output_face_blendshapes=True,
+        num_faces=1
+    ))
+    emotion_model = pickle.load(open('models/emotion_model.pkl', 'rb'))
+    pca_model = joblib.load('models/pca_model.pkl')
+except Exception as e:
+    print(f"MachineVision constructor failed with error: {e}")
+
 LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
 EMOTION_LABELS = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']

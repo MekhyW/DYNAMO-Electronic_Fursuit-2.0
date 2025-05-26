@@ -15,12 +15,14 @@ import Voicemod
 import Unity
 import Serial
 
-fursuitbot = telepot.Bot(fursuitbot_token)
+try:
+    fursuitbot = telepot.Bot(fursuitbot_token)
+except Exception as e:
+    print(f"ControlBot constructor failed with error: {e}")
 
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
 stickerpack = 'https://t.me/addstickers/MekhyW'
 stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgUWYjKWFS6B-MTAE'
-
 main_menu_buttons = ['🎵 Music / Sound', '🎙️ Voice', '😁 Expression', '👀 Eye Tracking', '📺 Displays', '⚙️ Animatronic', '💡 LEDs', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
 main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
 inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}], [{'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Text to Speech', 'callback_data': 'tts'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
@@ -34,7 +36,6 @@ inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistan
 inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_debugging = [[{'text': 'Remote Desktop', 'callback_data': 'debugging anydesk'}], [{'text': 'Resources', 'callback_data': 'debugging resources'}], [{'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Set audio input', 'callback_data': 'audiodevice input'}, {'text': 'Set audio output', 'callback_data': 'audiodevice output'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
 inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-
 last_message_chat = {}
 lock_outsider_commands = True
 
@@ -564,7 +565,6 @@ def handle_query(msg):
 
 
 def StartBot():
-    global bot_online
     while True:
         try:
             DiscardPreviousUpdates()

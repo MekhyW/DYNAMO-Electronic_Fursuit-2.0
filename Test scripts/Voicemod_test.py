@@ -61,7 +61,8 @@ async def main():
                         if sounds is not None and 'actionObject' in sounds and 'listOfMemes' in sounds['actionObject']:
                             sounds = sounds["actionObject"]["listOfMemes"]
                             for sound in sounds:
-                                print(sound["name"], sound["FileName"])
+                                if sound.get("profile") == "Fursuit":
+                                    print(sound["name"], sound["FileName"])
                         else:
                             print("Error getting sounds")
                     case "getAllSoundboard":
@@ -92,6 +93,18 @@ async def main():
                         await send_message(websocket_voicemod, message)
                     case "stopAllMemeSounds":
                         await send_message(websocket_voicemod, message)
+                    case "getBitmapVoice" | "getBitmapMeme":
+                        id_type = "voiceID" if command == "getBitmapVoice" else "memeId"
+                        prompt = "Enter id of voice or sound: " if command == "getBitmapVoice" else "Enter id of meme: "
+                        id_value = input(prompt)
+                        message["payload"][id_type] = id_value
+                        message["action"] = "getBitmap"
+                        bitmap = await send_message(websocket_voicemod, message)
+                        if bitmap is not None and 'actionObject' in bitmap and 'result' in bitmap['actionObject']:
+                            bitmap = bitmap["actionObject"]["result"]["default"]
+                            print(bitmap)
+                        else:
+                            print("Error getting bitmap")
                     case _:
                         print("Invalid command")
     except ConnectionRefusedError:

@@ -15,8 +15,11 @@ toggle_hear_my_voice_flag = False
 toggle_voice_changer_flag = False
 toggle_background_flag = False
 load_voice_flag = True
+play_sound_flag = False
+stop_sounds_flag = False
 desired_status = True
 voice_id = 'nofx'
+sound_id = ''
 voices = []
 gibberish_voices = []
 sounds = []
@@ -31,7 +34,6 @@ valid_response_actions = {
     'getVoices': ['getVoices'],
     'loadVoice': ['loadVoice', 'voiceLoadedEvent'],
     'getMemes': ['getMemes'],
-    'playMeme': ['playMeme'],
     'getBitmap': ['getBitmap']
 }
 
@@ -68,6 +70,18 @@ async def getVoices():
             voices = sorted(voices, key=lambda k: k['name'])
             gibberish_voices = sorted(gibberish_voices, key=lambda k: k['name'])
             return
+
+async def getSounds():
+    global sounds
+    for _ in range(3):
+        sounds = []
+        response = await send_message(voicemod_websocket, 'getMemes', {})
+        if response is not None and 'actionObject' in response and 'listOfMemes' in response['actionObject']:
+            for sound in response["actionObject"]["listOfMemes"]:
+                if sound.get("profile") == "Fursuit":
+                    sounds.append({"name": sound["name"], "id": sound["FileName"]})
+            sounds = sorted(sounds, key=lambda k: k['name'])
+            return
         
 async def getStatus(command):
     status = await send_message(voicemod_websocket, command, {})
@@ -94,9 +108,21 @@ async def toggleBackground(desired_status):
 async def setVoice(voice_id):
     await send_message(voicemod_websocket, 'loadVoice', {"voiceId": voice_id})
 
+async def playSound(meme_id):
+    await send_message(voicemod_websocket, 'playMeme', {"FileName": meme_id, "IsKeyDown": True})
+
+async def stopSounds():
+    await send_message(voicemod_websocket, 'stopAllMemeSounds', {})
+
+async def getBitmap(type, id):
+    id_type = "voiceID" if type == "voice" else "memeId"
+    for _ in range(3):
+        response = await send_message(voicemod_websocket, 'getBitmap', {id_type: id})
+        if response is not None and 'actionObject' in response and 'result' in response['actionObject']:
+            return response['actionObject']['result']['default']
+
 async def connect():
-    global voicemod_websocket
-    global toggle_hear_my_voice_flag, toggle_voice_changer_flag, toggle_background_flag, load_voice_flag
+    global voicemod_websocket, toggle_hear_my_voice_flag, toggle_voice_changer_flag, toggle_background_flag, load_voice_flag, play_sound_flag, stop_sounds_flag, desired_status, voice_id, sound_id
     try:
         async with websockets.connect(url, ping_interval=5, max_size=2**30) as websocket_voicemod:
             await send_message(websocket_voicemod, "registerClient", {"clientKey": voicemod_key})
@@ -104,6 +130,8 @@ async def connect():
             print("Voicemod connected!")
             await getVoices()
             print("Voices loaded")
+            await getSounds()
+            print("Soundboard loaded")
             while True:
                 time.sleep(0.1)
                 if toggle_hear_my_voice_flag:
@@ -128,6 +156,12 @@ async def connect():
                             await toggleHearMyVoice(True)
                         if not await getStatus('getVoiceChangerStatus'):
                             await toggleVoiceChanger(True)
+                if play_sound_flag:
+                    play_sound_flag = False
+                    await playSound(sound_id)
+                if stop_sounds_flag:
+                    stop_sounds_flag = False
+                    await stopSounds()
                 try:
                     await asyncio.wait_for(websocket_voicemod.recv(), timeout=1)
                 except asyncio.TimeoutError:

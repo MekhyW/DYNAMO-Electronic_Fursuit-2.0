@@ -197,19 +197,29 @@ def thread_function_query(msg):
                 fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>song name</b> or <b>YouTube link</b> you want me to play!\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
                 fursuitbot.answerCallbackQuery(query_id, text='Enter name or link')
             case 'sfx':
-                fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
-                with open('resources/soundtutorial.mp4', 'rb') as video:
-                    fursuitbot.sendVideo(from_id, video, caption='You can forward me an audio or use an inline bot to search one!\n<blockquote>EXAMPLE:\n"@myinstantsbot {SOUND NAME}"</blockquote>', parse_mode='HTML')
-                fursuitbot.answerCallbackQuery(query_id, text='Search SFX')
+                if len(query_data.split()) == 1:
+                    sound_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'sfx goback'}]]
+                    for sound in Voicemod.sounds:
+                        sound_keyboard.append([{'text': sound['name'], 'callback_data': 'sfx play {}'.format(sound['id'])}])
+                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Soundboard</b>', reply_markup={'inline_keyboard': sound_keyboard}, parse_mode='HTML')
+                else:
+                    match query_data.split()[1]:
+                        case 'play':
+                            Voicemod.sound_id = query_data.split()[2]
+                            Voicemod.play_sound_flag = True
+                            ConfirmSuccess(from_id, msg, 'Sound Played', query_id)
+                        case 'goback':
+                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
             case 'media':
                 match ' '.join(query_data.split()[1:]):
                     case 'stop':
                         Waveform.stop_flag = True
-                        Waveform.play_audio("sfx/media_stop.wav")
+                        Voicemod.stop_sounds_flag = True
                         ConfirmSuccess(from_id, msg, 'Media Stopped', query_id)
                     case 'pause':
                         Waveform.is_paused = True
                         Waveform.play_audio("sfx/media_pause.wav")
+                        Voicemod.stop_sounds_flag = True
                         ConfirmSuccess(from_id, msg, 'Media Paused', query_id)
                     case 'resume':
                         Waveform.is_paused = False

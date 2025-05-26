@@ -86,14 +86,17 @@ def unity_thread():
         time.sleep(0.01)
 
 def main():
-    Waveform.play_audio("sfx/system_up.wav")
+    try:
+        Waveform.play_audio("sfx/system_up.wav")
+    except:
+        print("System up sound not found")
     threads = []
-    threads.append(threading.Thread(target=machine_vision_thread))
+    #threads.append(threading.Thread(target=machine_vision_thread))
     threads.append(threading.Thread(target=assistant_thread))
-    threads.append(threading.Thread(target=voicemod_thread))
-    threads.append(threading.Thread(target=controlbot_thread))
-    threads.append(threading.Thread(target=serial_thread))
-    threads.append(threading.Thread(target=unity_thread))
+    #threads.append(threading.Thread(target=voicemod_thread))
+    #threads.append(threading.Thread(target=controlbot_thread))
+    #threads.append(threading.Thread(target=serial_thread))
+    #threads.append(threading.Thread(target=unity_thread))
     for thread in threads:
         thread.start()
     for thread in threads:

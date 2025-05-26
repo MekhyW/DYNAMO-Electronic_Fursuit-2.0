@@ -12,10 +12,14 @@ import Windows
 
 try:
     openai_client = openai.OpenAI(api_key=openai_key)
-    porcupine = pvporcupine.create(access_key=porcupine_key, keyword_paths=["models/Cookie-Bot_en_windows_v2_1_0.ppn"])
+    porcupine = pvporcupine.create(access_key=porcupine_key, keyword_paths=["models/Cookie-Bot_en_windows_v3_0_0.ppn"])
     recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
     whisper_model = whisper.load_model("base")
 except Exception as e:
+    openai_client = None
+    porcupine = None
+    recorder = None
+    whisper_model = None
     print(f"Assistant constructor failed with error: {e}")
 
 previous_questions = ["who won the world series in 2020?", "você é fofo!"]
@@ -130,11 +134,15 @@ def trigger():
     print("Assistant Triggered")
 
 def start():
+    if not recorder:
+        return
     print("Assistant started!")
     recorder.start()
 
 def refresh():
     global current_pcm
+    if not recorder:
+        return
     current_pcm = recorder.read()
     if triggered or not hotword_detection_enabled:
         return

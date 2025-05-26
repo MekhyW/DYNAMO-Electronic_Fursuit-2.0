@@ -18,6 +18,7 @@ import Serial
 try:
     fursuitbot = telepot.Bot(fursuitbot_token)
 except Exception as e:
+    fursuitbot = None
     print(f"ControlBot constructor failed with error: {e}")
 
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'

@@ -20,6 +20,9 @@ try:
     emotion_model = pickle.load(open('models/emotion_model.pkl', 'rb'))
     pca_model = joblib.load('models/pca_model.pkl')
 except Exception as e:
+    detector = None
+    emotion_model = None
+    pca_model = None
     print(f"MachineVision constructor failed with error: {e}")
 
 LEFT_IRIS = [468, 469, 470, 471, 472]
@@ -189,6 +192,8 @@ def eye_track(frame, scores, draw=False):
     return frame
 
 def main(draw=False):
+    if not detector:
+        return None
     _, frame = cap.read()
     if frame is not None:
         frame = undistort_image(frame)

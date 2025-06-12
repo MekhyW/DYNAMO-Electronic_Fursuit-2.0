@@ -1,58 +1,386 @@
 import telepot
 from telepot.loop import MessageLoop
-from telepot.namedtuple import ReplyKeyboardMarkup, KeyboardButton
+import paho.mqtt.client as mqtt
+import threading
+import time
 import traceback
-from contextlib import redirect_stdout
-from io import StringIO
-import subprocess, threading
-import os, time
-from Environment import fursuitbot_token, fursuitbot_ownerID
+import json
+import os
+from Environment import fursuitbot_token, fursuitbot_ownerID, mqtt_host, mqtt_port, mqtt_username, mqtt_password
 import Waveform
 import MachineVision
 import Windows
 import Assistant
 import Voicemod
-import Unity
 import Serial
 
+refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
+stickerpack = 'https://t.me/addstickers/MekhyW'
+mychatpath = 'https://t.me/MekhyW'
+mqtt_client = None
+is_mqtt_connected = False
 try:
     fursuitbot = telepot.Bot(fursuitbot_token)
 except Exception as e:
     fursuitbot = None
     print(f"ControlBot constructor failed with error: {e}")
 
-refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
-stickerpack = 'https://t.me/addstickers/MekhyW'
-stickerexample = 'CAACAgEAAx0CcLzKZQACARtlFhtPqWsRwL8jMwTuhZELz6-jjAACxAMAAvBwgUWYjKWFS6B-MTAE'
-main_menu_buttons = ['🎵 Music / Sound', '🎙️ Voice', '😁 Expression', '👀 Eye Tracking', '📺 Displays', '⚙️ Animatronic', '💡 LEDs', '🍪 Cookiebot (Assistant AI)', '🖼️ Refsheet / Sticker Pack', '🔒 Lock/Unlock Outsiders', '🔧 Debugging', '🛑 Shutdown']
-main_menu_keyboard = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=button)] for button in main_menu_buttons], resize_keyboard=True)
-inline_keyboard_mediasound = [[{'text': 'Play Music', 'callback_data': 'music'}], [{'text': 'Play Sound Effect', 'callback_data': 'sfx'}], [{'text': '⏹️', 'callback_data': 'media stop'}, {'text': '⏸️', 'callback_data': 'media pause'}, {'text': '▶️', 'callback_data': 'media resume'}], [{'text': 'Text to Speech', 'callback_data': 'tts'}], [{'text': 'Volume', 'callback_data': 'volume'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_voice = [[{'text': 'Change Voice', 'callback_data': 'voice change'}], [{'text': 'Voice Changer ON', 'callback_data': 'voice changer on'}, {'text': 'Voice Changer OFF', 'callback_data': 'voice changer off'}], [{'text': '🔈', 'callback_data': 'voice hear on'}, {'text': '🔇', 'callback_data': 'voice hear off'}], [{'text': 'Background fx ON', 'callback_data': 'voice bg on'}, {'text': 'Background fx OFF', 'callback_data': 'voice bg off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_expression = [[{'text': 'Change Expression', 'callback_data': 'expression set'}], [{'text': 'Set to AUTOMATIC', 'callback_data': 'expression auto'}], [{'text': 'Silly Mode', 'callback_data': 'expression sillymode'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_eyetracking = [[{'text': 'ON', 'callback_data': 'eyetracking on'}, {'text': 'OFF', 'callback_data': 'eyetracking off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_displays = [[{'text': 'Brightness', 'callback_data': 'displays brightness'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_animatronic = [[{'text': 'ON', 'callback_data': 'animatronic on'}, {'text': 'OFF', 'callback_data': 'animatronic off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_leds = [[{'text': 'ON', 'callback_data': 'leds on'}, {'text': 'OFF', 'callback_data': 'leds off'}], [{'text': 'Effect', 'callback_data': 'leds effect'}, {'text': 'Color', 'callback_data': 'leds color'}], [{'text': 'Brightness', 'callback_data': 'leds brightness'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_cookiebot = [[{'text': 'Trigger Now', 'callback_data': 'assistant trigger'}], [{'text': 'Hotword Detection ON', 'callback_data': 'assistant hotword on'}, {'text': 'Hotword Detection OFF', 'callback_data': 'assistant hotword off'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_refsheet = [[{'text': 'Send Refsheet', 'callback_data': 'misc refsheet'}, {'text': 'Send Sticker Pack', 'callback_data': 'misc stickerpack'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_debugging = [[{'text': 'Remote Desktop', 'callback_data': 'debugging anydesk'}], [{'text': 'Resources', 'callback_data': 'debugging resources'}], [{'text': 'Python Command', 'callback_data': 'debugging python'}, {'text': 'Shell Command', 'callback_data': 'debugging shell'}], [{'text': 'Set audio input', 'callback_data': 'audiodevice input'}, {'text': 'Set audio output', 'callback_data': 'audiodevice output'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-inline_keyboard_shutdown = [[{'text': 'Shutdown', 'callback_data': 'shutdown turnoff'}, {'text': 'Reboot', 'callback_data': 'shutdown reboot'}, {'text': 'Kill Software', 'callback_data': 'shutdown kill'}], [{'text': 'Close Menu', 'callback_data': 'close'}]]
-last_message_chat = {}
-lock_outsider_commands = True
+def on_mqtt_connect(client, userdata, flags, rc, properties=None):
+    global is_mqtt_connected
+    if rc == 0:
+        print("Connected to MQTT broker")
+        is_mqtt_connected = True
+        def setup_subscriptions(): # Use a separate thread for post-connection setup to avoid blocking
+            try:
+                time.sleep(1)  # Brief delay to ensure connection is stable
+                command_topics = [
+                    'dynamo/commands/play-sound-effect',
+                    'dynamo/commands/set-voice-effect',
+                    'dynamo/commands/set-output-volume',
+                    'dynamo/commands/microphone-toggle',
+                    'dynamo/commands/voice-changer-toggle',
+                    'dynamo/commands/leds-toggle',
+                    'dynamo/commands/leds-color',
+                    'dynamo/commands/leds-effect',
+                    'dynamo/commands/hotword-detection-toggle',
+                    'dynamo/commands/hotword-trigger',
+                    'dynamo/commands/text-to-speech',
+                    'dynamo/commands/set-expression',
+                    'dynamo/commands/face-expression-tracking-toggle',
+                    'dynamo/commands/eye-tracking-toggle',
+                    'dynamo/commands/eyebrows-toggle',
+                    'dynamo/commands/external-commands-lock',
+                    'dynamo/commands/shutdown',
+                    'dynamo/commands/reboot',
+                    'dynamo/commands/kill-software'
+                ]
+                for topic in command_topics:
+                    try:
+                        result = client.subscribe(topic)
+                        if result[0] == mqtt.MQTT_ERR_SUCCESS:
+                            print(f"Subscribed to {topic}")
+                        else:
+                            print(f"Failed to subscribe to {topic}: {result}")
+                        time.sleep(0.1)
+                    except Exception as e:
+                        print(f"Error subscribing to {topic}: {e}")
+                try:
+                    time.sleep(0.5)
+                    publish_device_data()
+                except Exception as e:
+                    print(f"Error publishing device data: {e}")
+                try:
+                    Waveform.play_audio("sfx/bot_online.wav")
+                    print("MQTT Control bot online!")
+                    if fursuitbot:
+                        fursuitbot.sendMessage(fursuitbot_ownerID, '>>> MQTT CONTROL BOT READY! <<<')
+                except Exception as e:
+                    print(f"Error in post-connection setup: {e}")
+            except Exception as e:
+                print(f"Error in subscription setup: {e}")
+        setup_thread = threading.Thread(target=setup_subscriptions, daemon=True)
+        setup_thread.start()
+    else:
+        print(f"Failed to connect to MQTT broker, return code {rc}")
+        is_mqtt_connected = False
 
-def PlayMusic(fursuitbot, chat_id, text):
-    Waveform.play_audio("sfx/received_music.wav")
-    fursuitbot.sendMessage(chat_id, '<i>>>>Downloading song with query "{}"...</i>'.format(text), parse_mode='HTML')
-    command = 'spotdl "{}" --format wav --preload --no-cache'.format(text)
-    os.system(command)
-    Waveform.stop_flag = True
-    time.sleep(1)
-    for file in os.listdir('.'):
-        if file.endswith('.wav'):
-            file_name = file
-            break
-    fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Playing now</i>', parse_mode='HTML')
-    Waveform.play_audio(file_name, delete=True)
+def on_mqtt_disconnect(client, userdata, rc):
+    global is_mqtt_connected
+    is_mqtt_connected = False
+    if rc == 0:
+        print("MQTT: Disconnected cleanly")
+    else:
+        print(f"MQTT: Unexpected disconnection (code: {rc})")
+        if rc == 1:
+            print("MQTT: Incorrect protocol version - check broker compatibility")
+        elif rc == 2:
+            print("MQTT: Invalid client identifier")
+        elif rc == 3:
+            print("MQTT: Server unavailable - broker may be down")
+        elif rc == 4:
+            print("MQTT: Check username and password")
+        elif rc == 5:
+            print("MQTT: Authorization failed")
+        elif rc == 7:
+            print("MQTT: Connection lost - network issue detected")
+            print("MQTT: This usually indicates unstable network or broker overload")
+        else:
+            print(f"MQTT: Unknown disconnect reason: {rc}")
+        try:
+            client.loop_stop()
+        except:
+            pass
+
+def send_telegram_log(command_description, user_info):
+    """Send log message to both command issuer and owner via Telegram"""
+    if not fursuitbot:
+        return
+    try:
+        user_id = user_info.get('id')
+        user_name = user_info.get('first_name', 'Unknown User')
+        log_message = f"✅ {command_description}\n👤 Requested by: {user_name}"
+        if user_id:
+            try:
+                fursuitbot.sendMessage(user_id, log_message)
+            except Exception as e:
+                print(f"Failed to send message to user {user_id}: {e}")
+        if user_id != fursuitbot_ownerID:
+            try:
+                owner_message = f"🤖 MQTT Command Executed:\n{log_message}"
+                fursuitbot.sendMessage(fursuitbot_ownerID, owner_message)
+            except Exception as e:
+                print(f"Failed to send message to owner: {e}")
+    except Exception as e:
+        print(f"Error in telegram logging: {e}")
+
+def on_mqtt_message(client, userdata, msg):
+    try:
+        topic = msg.topic
+        payload = json.loads(msg.payload.decode())
+        print(f"Received MQTT message on {topic}: {payload}")
+        user_info = payload.get('user', {})
+        user_name = user_info.get('first_name', 'Unknown')
+        if topic == 'dynamo/commands/play-sound-effect':
+            effect_id = payload.get('effectId')
+            if effect_id is not None:
+                Voicemod.sound_id = str(effect_id)
+                Voicemod.play_sound_flag = True
+                print(f"Playing sound effect {effect_id} (requested by {user_name})")
+                send_telegram_log(f"🔊 Playing sound effect #{effect_id}", user_info)
+        elif topic == 'dynamo/commands/set-voice-effect':
+            effect_id = payload.get('effectId')
+            if effect_id is not None:
+                Waveform.stop_gibberish_flag = True
+                Voicemod.voice_id = str(effect_id)
+                Voicemod.load_voice_flag = True
+                print(f"Setting voice effect {effect_id} (requested by {user_name})")
+                send_telegram_log(f"🎤 Voice effect changed to #{effect_id}", user_info)   
+        elif topic == 'dynamo/commands/set-output-volume':
+            volume = payload.get('volume')
+            if volume is not None:
+                Windows.set_system_volume(volume / 100.0)
+                Waveform.play_audio("sfx/volume_set.wav")
+                print(f"Setting output volume to {volume}% (requested by {user_name})")
+                send_telegram_log(f"🔊 Output volume set to {volume}%", user_info)
+        elif topic == 'dynamo/commands/microphone-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                Voicemod.desired_status = enabled
+                Voicemod.toggle_hear_my_voice_flag = True
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Microphone {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"🎙️ Microphone {status}", user_info)
+        elif topic == 'dynamo/commands/voice-changer-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                Waveform.stop_gibberish_flag = True
+                Voicemod.desired_status = enabled
+                Voicemod.toggle_voice_changer_flag = True
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Voice changer {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"🎤 Voice changer {status}", user_info)
+        elif topic == 'dynamo/commands/leds-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                Serial.leds_on = 1 if enabled else 0
+                Waveform.play_audio("sfx/leds_state.wav")
+                print(f"LEDs {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"💡 LEDs {status}", user_info)
+        elif topic == 'dynamo/commands/leds-color':
+            color = payload.get('color')
+            if color is not None:
+                try:
+                    color_index = Serial.leds_color_options.index(color.lower())
+                    Serial.leds_on = 1
+                    Serial.leds_color = color_index
+                    Waveform.play_audio("sfx/leds_color.wav")
+                    print(f"LEDs color set to {color} (requested by {user_name})")
+                    send_telegram_log(f"🌈 LEDs color changed to {color.title()}", user_info)
+                except ValueError:
+                    print(f"Unknown LED color: {color}")
+                    send_telegram_log(f"❌ Unknown LED color: {color}", user_info)
+        elif topic == 'dynamo/commands/leds-effect':
+            effect = payload.get('effect')
+            if effect is not None:
+                try:
+                    effect_index = Serial.leds_effects_options.index(effect.lower())
+                    Serial.leds_on = 1
+                    Serial.leds_effect = effect_index
+                    Waveform.play_audio("sfx/leds_effect.wav")
+                    print(f"LEDs effect set to {effect} (requested by {user_name})")
+                    send_telegram_log(f"✨ LEDs effect changed to {effect.title()}", user_info)
+                except ValueError:
+                    print(f"Unknown LED effect: {effect}")
+                    send_telegram_log(f"❌ Unknown LED effect: {effect}", user_info)  
+        elif topic == 'dynamo/commands/hotword-detection-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                Assistant.hotword_detection_enabled = enabled
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Hotword detection {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"🗣️ Hotword detection {status}", user_info)
+        elif topic == 'dynamo/commands/hotword-trigger':
+            Assistant.trigger()
+            print(f"Hotword triggered (requested by {user_name})")
+            send_telegram_log(f"🗣️ Assistant hotword triggered", user_info)
+        elif topic == 'dynamo/commands/text-to-speech':
+            text = payload.get('text')
+            if text:
+                TextToSpeech(text, user_name)
+                send_telegram_log(f"🗣️ Text-to-speech: '{text[:50]}{'...' if len(text) > 50 else ''}'", user_info)
+        elif topic == 'dynamo/commands/set-expression':
+            expression = payload.get('expression')
+            if expression is not None:
+                expression_map = {
+                    'angry': 0, 'disgusted': 1, 'happy': 2, 'neutral': 3,
+                    'sad': 4, 'surprised': 5, 'hypnotic': 6, 'heart': 7,
+                    'rainbow': 8, 'nightmare': 9, 'gear': 10, 'sans': 11, 'mischievous': 12
+                }
+                if expression.lower() in expression_map:
+                    expr_id = expression_map[expression.lower()]
+                    MachineVision.expression_manual_mode = True
+                    MachineVision.expression_manual_id = expr_id
+                    if expr_id == 6:
+                        Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
+                    sound_files = {
+                        0: "sfx/expr_angry.wav", 1: "sfx/expr_disgusted.wav", 2: "sfx/expr_happy.wav",
+                        3: "sfx/expr_neutral.wav", 4: "sfx/expr_sad.wav", 5: "sfx/expr_surprised.wav",
+                        6: "sfx/expr_hypnotic.wav", 7: "sfx/expr_heart.wav", 8: "sfx/expr_rainbow.wav",
+                        9: "sfx/expr_nightmare.wav", 10: "sfx/expr_gear.wav", 11: "sfx/expr_sans.wav",
+                        12: "sfx/expr_mischievous.wav"
+                    }
+                    if expr_id in sound_files:
+                        Waveform.play_audio(sound_files[expr_id])
+                    print(f"Expression set to {expression} (ID: {expr_id}) (requested by {user_name})")
+                    send_telegram_log(f"😊 Expression changed to {expression.title()}", user_info)
+                elif expression.lower() == 'auto':
+                    MachineVision.expression_manual_mode = False
+                    MachineVision.force_crossed_eye = False
+                    Waveform.play_audio("sfx/settings_toggle.wav")
+                    print(f"Expression set to automatic (requested by {user_name})")
+                    send_telegram_log(f"🤖 Expression set to automatic mode", user_info)
+        elif topic == 'dynamo/commands/face-expression-tracking-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                MachineVision.expression_manual_mode = not enabled
+                if enabled:
+                    MachineVision.force_crossed_eye = False
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Face expression tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"😊 Face expression tracking {status}", user_info)
+        elif topic == 'dynamo/commands/eye-tracking-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                MachineVision.eye_tracking_mode = enabled
+                if enabled:
+                    MachineVision.force_crossed_eye = False
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Eye tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"👁️ Eye tracking {status}", user_info)
+        elif topic == 'dynamo/commands/eyebrows-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                Serial.animatronics_on = 1 if enabled else 0
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Eyebrows {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"🤨 Eyebrows {status}", user_info)
+        elif topic == 'dynamo/commands/shutdown':
+            print(f"Shutdown requested by {user_name}")
+            send_telegram_log(f"⚠️ System shutdown initiated", user_info)
+            Waveform.play_audio("sfx/system_down.wav")
+            Windows.shutdown()
+        elif topic == 'dynamo/commands/reboot':
+            print(f"Reboot requested by {user_name}")
+            send_telegram_log(f"🔄 System reboot initiated", user_info)
+            Waveform.play_audio("sfx/system_down.wav")
+            Windows.restart()
+        elif topic == 'dynamo/commands/kill-software':
+            print(f"Software kill requested by {user_name}")
+            send_telegram_log(f"💀 Software termination initiated", user_info)
+            Windows.kill_process('Eye-Graphics.exe')
+            Windows.kill_process('VoicemodDesktop.exe')
+            os._exit(0)
+    except Exception as e:
+        print(f"Error processing MQTT message: {e}")
+        traceback.print_exc()
+
+def publish_device_data():
+    """Publish device information to MQTT data topics"""
+    try:
+        sound_effects = []
+        for i, sound in enumerate(Voicemod.sounds):
+            sound_effects.append({
+                'id': i,
+                'name': sound['name'],
+                'filename': sound.get('filename', '')
+            })
+        mqtt_client.publish('dynamo/data/sound_effects', json.dumps(sound_effects), retain=True)
+        voice_effects = []
+        for voice in Voicemod.voices:
+            voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'voice'})
+        for voice in Voicemod.gibberish_voices:
+            voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'gibberish'})
+        mqtt_client.publish('dynamo/data/voice_effects', json.dumps(voice_effects), retain=True)
+        Windows.refresh_sound_devices()
+        sound_devices = []
+        for device in Windows.input_audio_devices:
+            sound_devices.append(f"INPUT: {device['Name']}")
+        for device in Windows.output_audio_devices:
+            sound_devices.append(f"OUTPUT: {device['Name']}")
+        mqtt_client.publish('dynamo/data/sound_devices', json.dumps(sound_devices), retain=True)
+        try:
+            anydesk_id = os.popen('for /f "tokens=*" %A in (\'"C:\Program Files (x86)\AnyDesk\AnyDesk.exe" --get-id\') do @echo %A').read().strip()
+            mqtt_client.publish('dynamo/data/anydesk_id', json.dumps({'id': anydesk_id}), retain=True)
+        except:
+            pass
+        print("Published device data to MQTT")
+    except Exception as e:
+        print(f"Error publishing device data: {e}")
+
+def TextToSpeech(text, user_name="Unknown"):
+    """Text to speech function for MQTT commands"""
+    try:
+        Waveform.play_audio("sfx/assistant_ok.wav")
+        print(f"Generating TTS for: {text} (requested by {user_name})")
+        Waveform.TTS_generate(text)
+        Waveform.TTS_play()
+        Assistant.previous_questions.append("")
+        Assistant.previous_answers.append(text)
+    except Exception as e:
+        print(f"Error in TTS: {e}")
+
+def setup_mqtt():
+    """Setup MQTT client and connection"""
+    global mqtt_client
+    try:
+        mqtt_client = mqtt.Client(userdata=None, protocol=mqtt.MQTTv5)
+        mqtt_client.tls_set(tls_version=mqtt.ssl.PROTOCOL_TLS)
+        mqtt_client.username_pw_set(mqtt_username, mqtt_password)
+        mqtt_client.on_connect = on_mqtt_connect
+        mqtt_client.on_disconnect = on_mqtt_disconnect
+        mqtt_client.on_message = on_mqtt_message
+        mqtt_client.keepalive = 30 
+        mqtt_client.reconnect_delay_set(min_delay=5, max_delay=300)
+        mqtt_client.socket_timeout = 10
+        mqtt_client.socket_keepalive = True
+        print(f"Connecting to MQTT broker at {mqtt_host}:{mqtt_port}")
+        result = mqtt_client.connect(mqtt_host, mqtt_port, 30)
+        if result == 0:
+            mqtt_client.loop_start()
+            return True
+        else:
+            print(f"MQTT connection failed with result code: {result}")
+            return False
+    except Exception as e:
+        print(f"Failed to setup MQTT: {e}")
+        return False
 
 def PlayAudioMessage(fursuitbot, chat_id, msg):
     fursuitbot.sendMessage(chat_id, '<i>>>Downloading sound...</i>', parse_mode='HTML')
@@ -64,111 +392,28 @@ def PlayAudioMessage(fursuitbot, chat_id, msg):
     fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Playing now</i>', parse_mode='HTML')
     Waveform.play_audio(file_name, delete=True)
 
-def TextToSpeech(fursuitbot, chat_id, text):
-    Waveform.play_audio("sfx/assistant_ok.wav")
-    fursuitbot.sendMessage(chat_id, '<i>>>Generating audio...</i>', parse_mode='HTML')
-    Waveform.TTS_generate(text)
-    fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Speaking now</i>', parse_mode='HTML')
-    Waveform.TTS_play()
-    Assistant.previous_questions.append("")
-    Assistant.previous_answers.append(text)
-
-def ToggleOutsiderCommands(fursuitbot, chat_id):
-    global lock_outsider_commands
-    if int(chat_id) != int(fursuitbot_ownerID):
-        fursuitbot.sendMessage(chat_id, '<b>You are not the owner of this suit!</b>', parse_mode='HTML')
-        return
-    lock_outsider_commands = not lock_outsider_commands
-    if lock_outsider_commands:
-        Waveform.play_audio("sfx/cmds_locked.wav")
-        fursuitbot.sendMessage(chat_id, 'Outsider commands are now <b>LOCKED</b>', parse_mode='HTML')
-    else:
-        Waveform.play_audio("sfx/cmds_unlocked.wav")
-        fursuitbot.sendMessage(chat_id, 'Outsider commands are now <b>UNLOCKED</b>', parse_mode='HTML')
-
 def DiscardPreviousUpdates():
-    updates = fursuitbot.getUpdates(timeout=-29)
-    if updates:
-        last_update_id = updates[-1]['update_id']
-        fursuitbot.getUpdates(offset=last_update_id+1)
-
-def ConfirmSuccess(from_id, msg, edit_text, query_id):
-    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<i>>>>'+edit_text+'</i>', parse_mode='HTML')
-    fursuitbot.answerCallbackQuery(query_id, text='Success!')
-    if int(from_id) != int(fursuitbot_ownerID):
-        sender = fursuitbot.getChat(from_id)['first_name']
-        fursuitbot.sendMessage(fursuitbot_ownerID, f'{edit_text}\n(Command sent by {sender})')
-
+    if fursuitbot:
+        updates = fursuitbot.getUpdates(timeout=-29)
+        if updates:
+            last_update_id = updates[-1]['update_id']
+            fursuitbot.getUpdates(offset=last_update_id+1)
 
 def thread_function(msg):
     try:
         content_type, chat_type, chat_id = telepot.glance(msg)
         print(content_type, chat_type, chat_id, msg['message_id'])
-        if lock_outsider_commands and int(chat_id) != int(fursuitbot_ownerID):
-            fursuitbot.sendMessage(chat_id, 'Outsider commands are currently <b>LOCKED</b>', parse_mode='HTML')
-            return
-        elif content_type == 'text':
-            if chat_id in last_message_chat and 'data' in last_message_chat[chat_id] and last_message_chat[chat_id]['data'] in ['music', 'tts', 'debugging python', 'debugging shell']:
-                data = last_message_chat[chat_id]['data']
-                last_message_chat[chat_id] = msg
-                if msg['text'] == '/cancel':
-                    fursuitbot.sendMessage(chat_id, '<i>Command was cancelled</i>', parse_mode='HTML')
-                elif data == 'music':
-                    PlayMusic(fursuitbot, chat_id, msg['text'])
-                elif data == 'tts':
-                    TextToSpeech(fursuitbot, chat_id, msg['text'])
-                elif data == 'debugging python':
-                    output_buffer = StringIO()
-                    with redirect_stdout(output_buffer):
-                        try:
-                            exec(msg['text'])
-                            output = output_buffer.getvalue()
-                            if output:
-                                fursuitbot.sendMessage(chat_id, f'<i>>>{output}</i>', parse_mode='HTML')
-                            else:
-                                fursuitbot.sendMessage(chat_id, '<i>(no output)</i>', parse_mode='HTML')
-                        except:
-                            fursuitbot.sendMessage(chat_id, traceback.format_exc(), parse_mode='HTML')
-                elif data == 'debugging shell':
-                    result = subprocess.run(msg['text'], shell=True, capture_output=True)
-                    if result.stderr:
-                        fursuitbot.sendMessage(chat_id, result.stderr.decode('utf-8', errors='ignore'))
-                    elif result.stdout:
-                        fursuitbot.sendMessage(chat_id, result.stdout.decode('utf-8', errors='ignore'))
-                    else:
-                        fursuitbot.sendMessage(chat_id, '(no output)')
-            elif msg['text'].startswith('/privacy'):
+        if content_type == 'text':
+            if msg['text'].startswith('/privacy'):
                 with open('resources/privacy.html', 'r') as file:
                     privacy_text = file.read()
                 fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
-            if msg['text'] not in main_menu_buttons:
-                fursuitbot.sendMessage(chat_id, '<i>>>Awaiting -Command- or -Audio-</i>', parse_mode='HTML', reply_markup=main_menu_keyboard)
             else:
-                match msg['text']:
-                    case '🎵 Music / Sound':
-                        fursuitbot.sendMessage(chat_id, '<b>Sound</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
-                    case '😁 Expression':
-                        fursuitbot.sendMessage(chat_id, '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
-                    case '👀 Eye Tracking':
-                        fursuitbot.sendMessage(chat_id, '<b>Eye Tracking</b>', reply_markup={'inline_keyboard': inline_keyboard_eyetracking}, parse_mode='HTML')
-                    case '📺 Displays':
-                        fursuitbot.sendMessage(chat_id, '<b>Displays</b>', reply_markup={'inline_keyboard': inline_keyboard_displays}, parse_mode='HTML')
-                    case '⚙️ Animatronic':
-                        fursuitbot.sendMessage(chat_id, '<b>Animatronic</b>', reply_markup={'inline_keyboard': inline_keyboard_animatronic}, parse_mode='HTML')
-                    case '💡 LEDs':
-                        fursuitbot.sendMessage(chat_id, '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
-                    case '🎙️ Voice':
-                        fursuitbot.sendMessage(chat_id, '<b>Voice</b>', reply_markup={'inline_keyboard': inline_keyboard_voice}, parse_mode='HTML')
-                    case '🍪 Cookiebot (Assistant AI)':
-                        fursuitbot.sendMessage(chat_id, '<b>Cookiebot</b>', reply_markup={'inline_keyboard': inline_keyboard_cookiebot}, parse_mode='HTML')
-                    case '🖼️ Refsheet / Sticker Pack':
-                        fursuitbot.sendMessage(chat_id, '<b>Refsheet / Sticker Pack</b>', reply_markup={'inline_keyboard': inline_keyboard_refsheet}, parse_mode='HTML')
-                    case '🔒 Lock/Unlock Outsiders':
-                        ToggleOutsiderCommands(fursuitbot, chat_id)
-                    case '🔧 Debugging':
-                        fursuitbot.sendMessage(chat_id, '<b>Debugging</b>', reply_markup={'inline_keyboard': inline_keyboard_debugging}, parse_mode='HTML')
-                    case '🛑 Shutdown':
-                        fursuitbot.sendMessage(chat_id, '<b>Shutdown</b>', reply_markup={'inline_keyboard': inline_keyboard_shutdown}, parse_mode='HTML')
+                fursuitbot.sendMessage(chat_id, "Open the App to control the suit\nIf you don't know how, click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
+                    [{'text': 'Check out my Refsheet!', 'url': refsheetpath}], 
+                    [{'text': 'Check out my Stickers!', 'url': stickerpack}],
+                    [{'text': 'Send me a private message', 'url': mychatpath}]
+                ]})
         elif content_type in ['voice', 'audio']:
             PlayAudioMessage(fursuitbot, chat_id, msg)
         else:
@@ -178,409 +423,88 @@ def thread_function(msg):
         if 'ConnectionResetError' in traceback.format_exc():
             fursuitbot.sendMessage(chat_id, 'Connection Error, please try again')
         else:
-            fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
-            fursuitbot.sendMessage(fursuitbot_ownerID, str(msg))
-            fursuitbot.sendMessage(chat_id, 'An error occurred, please try again')
-    finally:
-        last_message_chat[chat_id] = msg
-
-
-def thread_function_query(msg):
-    try:
-        query_id, from_id, query_data = telepot.glance(msg, flavor='callback_query')
-        print('Callback Query:', query_id, from_id, query_data)
-        if lock_outsider_commands and int(from_id) != int(fursuitbot_ownerID):
-            fursuitbot.answerCallbackQuery(query_id, text='Outsider commands are currently <b>LOCKED</b>', parse_mode='HTML')
-            return
-        match query_data.split()[0]:
-            case 'close':
-                fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
-            case 'music':
-                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>song name</b> or <b>YouTube link</b> you want me to play!\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
-                fursuitbot.answerCallbackQuery(query_id, text='Enter name or link')
-            case 'sfx':
-                if len(query_data.split()) == 1:
-                    sound_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'sfx goback'}]]
-                    for sound in Voicemod.sounds:
-                        sound_keyboard.append([{'text': sound['name'], 'callback_data': 'sfx play {}'.format(sound['id'])}])
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Soundboard</b>', reply_markup={'inline_keyboard': sound_keyboard}, parse_mode='HTML')
-                else:
-                    match query_data.split()[1]:
-                        case 'play':
-                            Voicemod.sound_id = query_data.split()[2]
-                            Voicemod.play_sound_flag = True
-                            ConfirmSuccess(from_id, msg, 'Sound Played', query_id)
-                        case 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
-            case 'media':
-                match ' '.join(query_data.split()[1:]):
-                    case 'stop':
-                        Waveform.stop_flag = True
-                        Voicemod.stop_sounds_flag = True
-                        ConfirmSuccess(from_id, msg, 'Media Stopped', query_id)
-                    case 'pause':
-                        Waveform.is_paused = True
-                        Waveform.play_audio("sfx/media_pause.wav")
-                        Voicemod.stop_sounds_flag = True
-                        ConfirmSuccess(from_id, msg, 'Media Paused', query_id)
-                    case 'resume':
-                        Waveform.is_paused = False
-                        ConfirmSuccess(from_id, msg, 'Media Resumed', query_id)
-            case 'tts':
-                fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>text</b> you want Cookiebot to say!\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
-                fursuitbot.answerCallbackQuery(query_id, text='Enter text')
-            case 'volume':
-                if len(query_data.split()) == 1:
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Volume</b>', reply_markup={'inline_keyboard': 
-                        [[{'text': '⬅️ Go back', 'callback_data': 'volume goback'}], 
-                            [{'text': '0%', 'callback_data': 'volume 0'}], 
-                            [{'text': '25%', 'callback_data': 'volume 25'}], 
-                            [{'text': '50%', 'callback_data': 'volume 50'}], 
-                            [{'text': '75%', 'callback_data': 'volume 75'}], 
-                            [{'text': '100%', 'callback_data': 'volume 100'}]]}, parse_mode='HTML')
-                elif query_data.split()[1] == 'goback':
-                    fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Media</b>', reply_markup={'inline_keyboard': inline_keyboard_mediasound}, parse_mode='HTML')
-                else:
-                    Windows.set_system_volume(int(query_data.split()[1]) / 100)
-                    Waveform.play_audio("sfx/volume_set.wav")
-                    ConfirmSuccess(from_id, msg, 'Volume set to {}%'.format(query_data.split()[1]), query_id)
-            case 'expression':
-                match query_data.split()[1]:
-                    case 'set':
-                        if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Expression</b>', reply_markup={'inline_keyboard': 
-                                [[{'text': '⬅️ Go back', 'callback_data': 'expression set goback'}], 
-                                 [{'text': '🙂  Neutral  🙂', 'callback_data': 'expression set 3'}], 
-                                 [{'text': '🤩   Happy   🤩', 'callback_data': 'expression set 2'}], 
-                                 [{'text': '😢    Sad    😢', 'callback_data': 'expression set 4'}], 
-                                 [{'text': '😡   Angry   😡', 'callback_data': 'expression set 0'}], 
-                                 [{'text': '😱 Surprised 😱', 'callback_data': 'expression set 5'}],
-                                 [{'text': '😒 Disgusted 😒', 'callback_data': 'expression set 1'}],
-                                 [{'text': '😏Mischievous😏', 'callback_data': 'expression set 12'}],
-                                 [{'text': '😵‍💫  Hypnotic 😵‍💫', 'callback_data': 'expression set 6'}],
-                                 [{'text': '❤️   Heart   ❤️', 'callback_data': 'expression set 7'}],
-                                 [{'text': '🌈  Rainbow  🌈', 'callback_data': 'expression set 8'}],
-                                 [{'text': '😈 Nightmare 😈', 'callback_data': 'expression set 9'}],
-                                 [{'text': '⚙️ Gear eyes ⚙️', 'callback_data': 'expression set 10'}],
-                                 [{'text': '💀   SANS    💀', 'callback_data': 'expression set 11'}]
-                                ]}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
-                        else:
-                            MachineVision.expression_manual_mode = True
-                            MachineVision.expression_manual_id = int(query_data.split()[2])
-                            if MachineVision.expression_manual_id == 6:
-                                Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
-                            match MachineVision.expression_manual_id:
-                                case 0:
-                                    Waveform.play_audio("sfx/expr_angry.wav")
-                                case 1:
-                                    Waveform.play_audio("sfx/expr_disgusted.wav")
-                                case 2:
-                                    Waveform.play_audio("sfx/expr_happy.wav")
-                                case 3:
-                                    Waveform.play_audio("sfx/expr_neutral.wav")
-                                case 4:
-                                    Waveform.play_audio("sfx/expr_sad.wav")
-                                case 5:
-                                    Waveform.play_audio("sfx/expr_surprised.wav")
-                                case 6:
-                                    Waveform.play_audio("sfx/expr_hypnotic.wav")
-                                case 7:
-                                    Waveform.play_audio("sfx/expr_heart.wav")
-                                case 8:
-                                    Waveform.play_audio("sfx/expr_rainbow.wav")
-                                case 9:
-                                    Waveform.play_audio("sfx/expr_nightmare.wav")
-                                case 10:
-                                    Waveform.play_audio("sfx/expr_gear.wav")
-                                case 11:
-                                    Waveform.play_audio("sfx/expr_sans.wav")
-                                case 12:
-                                    Waveform.play_audio("sfx/expr_mischievous.wav")
-                            ConfirmSuccess(from_id, msg, 'Expression set to ID {}'.format(MachineVision.expression_manual_id), query_id)
-                    case 'auto':
-                        MachineVision.expression_manual_mode = False
-                        MachineVision.force_crossed_eye = False
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Expression set to AUTOMATIC', query_id)
-                    case 'sillymode':
-                        if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Silly Mode</b>', reply_markup={'inline_keyboard': 
-                                [[{'text': '⬅️ Go back', 'callback_data': 'expression sillymode goback'}], 
-                                 [{'text': 'ON', 'callback_data': 'expression sillymode on'}], 
-                                 [{'text': 'OFF', 'callback_data': 'expression sillymode off'}]]}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Expression</b>', reply_markup={'inline_keyboard': inline_keyboard_expression}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'on':
-                            MachineVision.force_crossed_eye = True
-                            Waveform.play_audio("sfx/expr_silly.wav")
-                            ConfirmSuccess(from_id, msg, 'Silly Mode set to ON', query_id)
-                        elif query_data.split()[2] == 'off':
-                            MachineVision.force_crossed_eye = False
-                            ConfirmSuccess(from_id, msg, 'Silly Mode set to OFF', query_id)
-            case 'eyetracking':
-                match ' '.join(query_data.split()[1:]):
-                    case 'on':
-                        MachineVision.eye_tracking_mode = True
-                        MachineVision.force_crossed_eye = False
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Eye Tracking set to ON', query_id)
-                    case 'off':
-                        MachineVision.eye_tracking_mode = False
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Eye Tracking set to OFF', query_id)
-            case 'displays':
-                match query_data.split()[1]:
-                    case 'brightness':
-                        if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Brightness</b>', reply_markup={'inline_keyboard': 
-                                [[{'text': '⬅️ Go back', 'callback_data': 'displays brightness goback'}], 
-                                [{'text': '10%', 'callback_data': 'displays brightness 10'}], 
-                                [{'text': '25%', 'callback_data': 'displays brightness 25'}], 
-                                [{'text': '50%', 'callback_data': 'displays brightness 50'}], 
-                                [{'text': '75%', 'callback_data': 'displays brightness 75'}], 
-                                [{'text': '100%', 'callback_data': 'displays brightness 100'}]]}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Displays</b>', reply_markup={'inline_keyboard': inline_keyboard_displays}, parse_mode='HTML')
-                        else:
-                            Unity.screen_brightness = int(query_data.split()[2])
-                            Waveform.play_audio("sfx/leds_state.wav")
-                            ConfirmSuccess(from_id, msg, 'Screen Brightness set to {}%'.format(Unity.screen_brightness), query_id)
-            case 'animatronic':
-                match ' '.join(query_data.split()[1:]):
-                    case 'on':
-                        Serial.animatronics_on = 1
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Animatronic set to ON', query_id)
-                    case 'off':
-                        Serial.animatronics_on = 0
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Animatronic set to OFF', query_id)
-            case 'leds':
-                match query_data.split()[1]:
-                    case 'effect':
-                        if len(query_data.split()) == 2:
-                            options = []
-                            for effect_id in range(len(Serial.leds_effects_options)):
-                                options.append([{'text': Serial.leds_effects_options[effect_id].capitalize(), 'callback_data': 'leds effect {}'.format(effect_id)}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Effect</b>', reply_markup={'inline_keyboard':
-                                [[{'text': '⬅️ Go back', 'callback_data': 'leds effect goback'}]] + options}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
-                        else:
-                            Serial.leds_on = 1
-                            Serial.leds_effect = int(query_data.split()[2])
-                            Waveform.play_audio("sfx/leds_effect.wav")
-                            ConfirmSuccess(from_id, msg, 'Altered LEDs Effect', query_id)
-                    case 'color':
-                        if len(query_data.split()) == 2:
-                            options = []
-                            for color_id in range(len(Serial.leds_color_options)):
-                                options.append([{'text': Serial.leds_color_options[color_id].capitalize(), 'callback_data': 'leds color {}'.format(color_id)}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Color</b>', reply_markup={'inline_keyboard':
-                                [[{'text': '⬅️ Go back', 'callback_data': 'leds color goback'}]] + options}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
-                        else:
-                            Serial.leds_on = 1
-                            Serial.leds_color = int(query_data.split()[2])
-                            Waveform.play_audio("sfx/leds_color.wav")
-                            ConfirmSuccess(from_id, msg, 'LEDs Color set to {}'.format(Serial.leds_color_options[Serial.leds_color].capitalize()), query_id)
-                    case 'brightness':
-                        if len(query_data.split()) == 2:
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Set Brightness</b>', reply_markup={'inline_keyboard':
-                                [[{'text': '⬅️ Go back', 'callback_data': 'leds brightness goback'}],
-                                 [{'text': 'Weak', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default/2)}'}],
-                                 [{'text': 'Medium (default)', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default)}'}],
-                                 [{'text': 'Strong', 'callback_data': f'leds brightness {int(Serial.leds_brightness_default*2)}'}]]}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>LEDs</b>', reply_markup={'inline_keyboard': inline_keyboard_leds}, parse_mode='HTML')
-                        else:
-                            Serial.leds_on = 1
-                            Serial.leds_brightness = int(query_data.split()[2])
-                            Waveform.play_audio("sfx/leds_state.wav")
-                            ConfirmSuccess(from_id, msg, 'LEDs Brightness set to {}'.format(Serial.leds_brightness), query_id)
-                    case 'on':
-                        Serial.leds_on = 1
-                        Waveform.play_audio("sfx/leds_state.wav")
-                        ConfirmSuccess(from_id, msg, 'LEDs set to ON', query_id)
-                    case 'off':
-                        Serial.leds_on = 0
-                        Waveform.play_audio("sfx/leds_state.wav")
-                        ConfirmSuccess(from_id, msg, 'LEDs set to OFF', query_id)
-            case 'voice':
-                match query_data.split()[1]:
-                    case 'change':
-                        if len(query_data.split()) == 2:
-                            voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change goback'}], 
-                                              [{'text': 'More ➡️', 'callback_data': 'voice change gibberish'}]]
-                            for voice in Voicemod.voices:
-                                voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Voice Keyboard</b>', reply_markup={'inline_keyboard': voice_keyboard}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'load':
-                            Waveform.stop_gibberish_flag = True
-                            Voicemod.voice_id = query_data.split()[3]
-                            Voicemod.load_voice_flag = True
-                            ConfirmSuccess(from_id, msg, 'Voice loaded ID {}'.format(Voicemod.voice_id), query_id)
-                        elif query_data.split()[2] == 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Voice</b>', reply_markup={'inline_keyboard': inline_keyboard_voice}, parse_mode='HTML')
-                        elif query_data.split()[2] == 'gibberish':
-                            voice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'voice change'}]]
-                            for voice in Voicemod.gibberish_voices:
-                                voice_keyboard.append([{'text': voice['name'], 'callback_data': 'voice change load {}'.format(voice['id'])}])
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Gibberish Voice Keyboard</b>', reply_markup={'inline_keyboard': voice_keyboard}, parse_mode='HTML')
-                    case 'changer':
-                        Waveform.stop_gibberish_flag = True
-                        Voicemod.desired_status = query_data.split()[2] == 'on'
-                        Voicemod.toggle_voice_changer_flag = True
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Voice Changer Toggled', query_id)
-                    case 'hear':
-                        Waveform.stop_gibberish_flag = True
-                        Voicemod.desired_status = query_data.split()[2] == 'on'
-                        Voicemod.toggle_hear_my_voice_flag = True
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Hear My Voice Toggled', query_id)
-                    case 'bg':
-                        Waveform.stop_gibberish_flag = True
-                        Voicemod.desired_status = query_data.split()[2] == 'on'
-                        Voicemod.toggle_background_flag = True
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Background FX Toggled', query_id)
-            case 'assistant':
-                match ' '.join(query_data.split()[1:]):
-                    case 'trigger':
-                        Assistant.trigger()
-                        ConfirmSuccess(from_id, msg, 'Triggered!', query_id)
-                    case 'hotword on':
-                        Assistant.hotword_detection_enabled = True
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Hotword Detection set to ON\n\nNOTE: If the voice changer is ON, hotword detection may not work depending on the effect.', query_id)
-                    case 'hotword off':
-                        Assistant.hotword_detection_enabled = False
-                        Waveform.play_audio("sfx/settings_toggle.wav")
-                        ConfirmSuccess(from_id, msg, 'Hotword Detection set to OFF', query_id)
-            case 'misc':
-                match ' '.join(query_data.split()[1:]):
-                    case 'refsheet':
-                        fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
-                        fursuitbot.sendChatAction(from_id, 'upload_photo')
-                        while True:
-                            try:
-                                fursuitbot.sendPhoto(from_id, refsheetpath, caption='Here is my reference sheet!\n\nMekhy is a raccoon-wolf engineer who creates robots and performs experiments. He is very evil and unreliable/unpredictable (cartoon villain vibe *twirls mustache*), but despite this he manages to be very cute/charismatic and "soften" around friends and people he trusts! ;3')
-                                break
-                            except ConnectionResetError:
-                                pass
-                    case 'stickerpack':
-                        fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
-                        fursuitbot.sendSticker(from_id, stickerexample)
-                        fursuitbot.sendMessage(from_id, 'Add the sticker pack to your Telegram here: {}'.format(stickerpack))
-            case 'debugging':
-                if int(from_id) == int(fursuitbot_ownerID):
-                    match ' '.join(query_data.split()[1:]):
-                        case 'goback':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Debugging</b>', reply_markup={'inline_keyboard': inline_keyboard_debugging}, parse_mode='HTML')
-                        case 'anydesk':
-                            anydesk_id = os.popen('for /f "tokens=*" %A in (\'"C:\Program Files (x86)\AnyDesk\AnyDesk.exe" --get-id\') do @echo %A').read().strip()
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 
-                                f'<b>AnyDesk ID:</b> <code>{anydesk_id}</code><blockquote>Copy this ID and paste it on the AnyDesk app to connect to remote access this suit</blockquote>', parse_mode='HTML')
-                        case 'resources':
-                            cpu_info = Windows.get_cpu_info()
-                            memory_info = Windows.get_memory_info()
-                            disk_info = Windows.get_disk_info()
-                            system_volume = Windows.get_system_volume()
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 
-                                f'<b>CPU</b> \n Physical cores: {cpu_info["physical_cores"]}\nTotal cores: {cpu_info["total_cores"]}\nMax frequency: {cpu_info["max_frequency"]}\nMin frequency: {cpu_info["min_frequency"]}\nCurrent frequency: {cpu_info["current_frequency"]}\nUsage: {cpu_info["usage"]}%\n\n<b>RAM</b> \n Total: {memory_info["total"]}\nAvailable: {memory_info["available"]}\nUsed: {memory_info["used"]}\nUsage: {memory_info["percent"]}%\n\n<b>Disk</b> \n Total: {disk_info["total"]}\nUsed: {disk_info["used"]}\nFree: {disk_info["free"]}\nUsage: {disk_info["percent"]}%\n\n<b>Volume</b>\nLevel: {100*system_volume}%', parse_mode='HTML')                  
-                        case 'python':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>Python</b> command you want me to execute\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
-                            fursuitbot.answerCallbackQuery(query_id, text='Enter Python command')
-                        case 'shell':
-                            fursuitbot.editMessageText((from_id, msg['message']['message_id']), 'Type the <b>Shell</b> command you want me to execute\n<blockquote>Or use /cancel to cancel the command.</blockquote>', parse_mode='HTML')
-                            fursuitbot.answerCallbackQuery(query_id, text='Enter Shell command')
-                else:
-                    fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
-            case 'audiodevice':
-                if len(query_data.split()) >= 3:
-                    direction = query_data.split()[1]
-                    device_name = ' '.join(query_data.split()[2:])
-                    Windows.set_default_sound_device(device_name, direction)
-                    Waveform.play_audio("sfx/sounddevice_set.wav")
-                    ConfirmSuccess(from_id, msg, f'Sound {direction} device set to {device_name}', query_id)
-                else:
-                    Windows.refresh_sound_devices()
-                    audiodevice_keyboard = [[{'text': '⬅️ Go back', 'callback_data': 'debugging goback'}]]
-                    if 'input' in query_data:
-                        for device in Windows.input_audio_devices:
-                            audiodevice_keyboard.append([{'text': device['Name'], 'callback_data': f'audiodevice input {device["Name"]}'}])
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Select new INPUT audio device</b>\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard}, parse_mode='HTML')
-                    elif 'output' in query_data:
-                        for device in Windows.output_audio_devices:
-                            audiodevice_keyboard.append([{'text': device['Name'], 'callback_data': f'audiodevice output {device["Name"]}'}])
-                        fursuitbot.editMessageText((from_id, msg['message']['message_id']), '<b>Select new OUTPUT audio device</b>\n\n', reply_markup={'inline_keyboard': audiodevice_keyboard}, parse_mode='HTML')
-            case 'shutdown':
-                if int(from_id) == int(fursuitbot_ownerID):
-                    fursuitbot.deleteMessage((from_id, msg['message']['message_id']))
-                    match ' '.join(query_data.split()[1:]):
-                        case 'turnoff':
-                            fursuitbot.sendMessage(from_id, '<i>>>Shutting down...</i>', parse_mode='HTML')
-                            Waveform.play_audio("sfx/system_down.wav")
-                            Windows.shutdown()
-                        case 'reboot':
-                            fursuitbot.sendMessage(from_id, '<i>>>Rebooting...</i>', parse_mode='HTML')
-                            Waveform.play_audio("sfx/system_down.wav")
-                            Windows.restart()
-                        case 'kill':
-                            fursuitbot.sendMessage(from_id, '<i>>>Killing software...</i>', parse_mode='HTML')
-                            Windows.kill_process('Eye-Graphics.exe')
-                            Windows.kill_process('VoicemodDesktop.exe') 
-                            os._exit(0)
-                else:
-                    fursuitbot.answerCallbackQuery(query_id, text='FORBIDDEN')
-    except Exception as e:
-        print(e)
-        if 'ConnectionResetError' in traceback.format_exc():
-            fursuitbot.answerCallbackQuery(query_id, text='CONNECTION ERROR')
-        else:
-            fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
-            fursuitbot.sendMessage(fursuitbot_ownerID, str(msg))
-            fursuitbot.answerCallbackQuery(query_id, text='ERROR')
-    finally:
-        last_message_chat[from_id] = msg
-
+            if fursuitbot:
+                fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
+                fursuitbot.sendMessage(fursuitbot_ownerID, str(msg))
+                fursuitbot.sendMessage(chat_id, 'An error occurred, please try again')
 
 def handle(msg):
     try:
         new_thread = threading.Thread(target=thread_function, args=(msg,))
         new_thread.start()
     except:
-        fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
+        if fursuitbot:
+            fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
 
-
-def handle_query(msg):
-    try:
-        new_thread = threading.Thread(target=thread_function_query, args=(msg,))
-        new_thread.start()
-    except:
-        fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
-
-
-def StartBot():
+def StartTelegramBot():
+    if not fursuitbot:
+        return False
     while True:
         try:
             DiscardPreviousUpdates()
-            MessageLoop(fursuitbot, {'chat': handle, 'callback_query': handle_query}).run_as_thread()
-            Waveform.play_audio("sfx/bot_online.wav")
-            fursuitbot.sendMessage(fursuitbot_ownerID, '>>> READY! <<<')
-            print("Control bot online!")
+            MessageLoop(fursuitbot, {'chat': handle}).run_as_thread()
+            print("Telegram bot online!")
             return True
         except Exception as e:
             print(e)
-            print("Failed to start Control bot, retrying in 1 second...")
+            print("Failed to start Telegram bot, retrying in 1 second...")
             time.sleep(1)
-    
+
+def StartBot():
+    """Start the control bot with MQTT"""
+    print("Starting DYNAMO Control Bot...")
+    mqtt_success = setup_mqtt()
+    if mqtt_success:
+        print("MQTT setup successful")
+        connection_timeout = 10
+        start_time = time.time()
+        while not is_mqtt_connected and (time.time() - start_time) < connection_timeout:
+            time.sleep(0.1)
+        if is_mqtt_connected:
+            print("MQTT Control Bot is ready!")
+        else:
+            print("MQTT connection timeout, but will keep trying in background")
+    else:
+        print("MQTT setup failed")
+    if fursuitbot:
+        telegram_thread = threading.Thread(target=StartTelegramBot, daemon=True)
+        telegram_thread.start()
+    return True
 
 if __name__ == '__main__':
     StartBot()
-    while True:
-        pass
+    last_reconnect_attempt = 0
+    reconnect_interval = 30
+    reconnect_attempts = 0
+    max_reconnect_interval = 300
+    try:
+        while True:
+            time.sleep(1)
+            current_time = time.time()
+            if not is_mqtt_connected and mqtt_client and (current_time - last_reconnect_attempt) >= reconnect_interval:
+                try:
+                    print(f"Attempting to reconnect to MQTT... (attempt {reconnect_attempts + 1})")
+                    mqtt_client.loop_stop()
+                    time.sleep(2)
+                    result = mqtt_client.connect(mqtt_host, mqtt_port, 30)
+                    if result == 0:
+                        mqtt_client.loop_start()
+                        print("MQTT reconnection initiated")
+                        reconnect_attempts = 0
+                        reconnect_interval = 30
+                    else:
+                        print(f"MQTT reconnection failed with code: {result}")
+                        reconnect_attempts += 1
+                    last_reconnect_attempt = current_time
+                except Exception as e:
+                    print(f"MQTT reconnection failed: {e}")
+                    reconnect_attempts += 1
+                    last_reconnect_attempt = current_time
+                if reconnect_attempts > 0:
+                    reconnect_interval = min(30 * (2 ** min(reconnect_attempts - 1, 4)), max_reconnect_interval)
+                    print(f"Next reconnection attempt in {reconnect_interval} seconds")
+    except KeyboardInterrupt:
+        print("Shutting down Control Bot...")
+        if mqtt_client:
+            mqtt_client.loop_stop()
+            mqtt_client.disconnect()

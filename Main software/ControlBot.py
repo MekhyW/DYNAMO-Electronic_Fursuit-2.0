@@ -75,7 +75,7 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     Waveform.play_audio("sfx/bot_online.wav")
                     print("MQTT Control bot online!")
                     if fursuitbot:
-                        fursuitbot.sendMessage(fursuitbot_ownerID, '>>> MQTT CONTROL BOT READY! <<<')
+                        fursuitbot.sendMessage(fursuitbot_ownerID, '>>> CONTROL BOT READY! <<<')
                 except Exception as e:
                     print(f"Error in post-connection setup: {e}")
             except Exception as e:
@@ -117,15 +117,15 @@ def send_telegram_log(command_description, user_info):
     try:
         user_id = user_info.get('id')
         user_name = user_info.get('first_name', 'Unknown User')
-        log_message = f"✅ {command_description}\n👤 Requested by: {user_name}"
+        log_message = f">>> {command_description}"
         if user_id:
             try:
                 fursuitbot.sendMessage(user_id, log_message)
             except Exception as e:
                 print(f"Failed to send message to user {user_id}: {e}")
-        if user_id != fursuitbot_ownerID:
+        if str(user_id) != str(fursuitbot_ownerID):
             try:
-                owner_message = f"🤖 MQTT Command Executed:\n{log_message}"
+                owner_message = f"🤖 MQTT Command Executed:\n{log_message}\n👤 Requested by: {user_name}"
                 fursuitbot.sendMessage(fursuitbot_ownerID, owner_message)
             except Exception as e:
                 print(f"Failed to send message to owner: {e}")

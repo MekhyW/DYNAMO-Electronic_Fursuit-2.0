@@ -4,6 +4,8 @@ import paho.mqtt.client as mqtt
 import ssl
 import threading
 import time
+import uuid
+from datetime import datetime
 import traceback
 import json
 import os
@@ -338,18 +340,6 @@ def publish_device_data():
     except Exception as e:
         print(f"Error publishing device data: {e}")
 
-def TextToSpeech(text, user_name="Unknown"):
-    """Text to speech function for MQTT commands"""
-    try:
-        Waveform.play_audio("sfx/assistant_ok.wav")
-        print(f"Generating TTS for: {text} (requested by {user_name})")
-        Waveform.TTS_generate(text)
-        Waveform.TTS_play()
-        Assistant.previous_questions.append("")
-        Assistant.previous_answers.append(text)
-    except Exception as e:
-        print(f"Error in TTS: {e}")
-
 def setup_mqtt():
     """Setup MQTT client and connection"""
     global mqtt_client
@@ -372,6 +362,18 @@ def setup_mqtt():
         print(f"Failed to setup MQTT: {e}")
         return False
 
+def TextToSpeech(text, user_name="Unknown"):
+    """Text to speech function for MQTT commands"""
+    try:
+        Waveform.play_audio("sfx/assistant_ok.wav")
+        print(f"Generating TTS for: {text} (requested by {user_name})")
+        Waveform.TTS_generate(text)
+        Waveform.TTS_play()
+        Assistant.previous_questions.append("")
+        Assistant.previous_answers.append(text)
+    except Exception as e:
+        print(f"Error in TTS: {e}")
+
 def PlayAudioMessage(fursuitbot, chat_id, msg):
     fursuitbot.sendMessage(chat_id, '<i>>>Downloading sound...</i>', parse_mode='HTML')
     file_name = '{}.ogg'.format(msg['message_id'])
@@ -381,6 +383,21 @@ def PlayAudioMessage(fursuitbot, chat_id, msg):
         fursuitbot.download_file(msg['audio']['file_id'], file_name)
     fursuitbot.sendMessage(chat_id, '<b>Done!</b>\n<i>>>Playing now</i>', parse_mode='HTML')
     Waveform.play_audio(file_name, delete=True)
+
+def LogAIMessage(query, answer):
+    """Log AI conversation messages to MQTT chat_logs topic"""
+    try:
+        if not mqtt_client or not mqtt_client.is_connected():
+            return
+        timestamp = datetime.now(datetime.timezone.utc).isoformat()
+        if query:
+            prompt_message = {"id": str(uuid.uuid4()), "content": query, "type": "prompt", "timestamp": timestamp}
+            mqtt_client.publish('dynamo/data/chat_logs', json.dumps(prompt_message), retain=False)
+        if answer:
+            response_message = {"id": str(uuid.uuid4()), "content": answer, "type": "response", "timestamp": timestamp}
+            mqtt_client.publish('dynamo/data/chat_logs', json.dumps(response_message), retain=False)
+    except Exception as e:
+        print(f"Error logging AI message: {e}")
 
 def DiscardPreviousUpdates():
     if fursuitbot:

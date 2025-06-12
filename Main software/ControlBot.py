@@ -205,12 +205,14 @@ def on_mqtt_message(client, userdata, msg):
             color = payload.get('color')
             if color is not None:
                 try:
-                    color_index = Serial.leds_color_options.index(color.lower())
                     Serial.leds_on = 1
-                    Serial.leds_color = color_index
+                    color = color.lstrip('#')
+                    Serial.leds_color_r = int(color[0:2], 16)
+                    Serial.leds_color_g = int(color[2:4], 16)
+                    Serial.leds_color_b = int(color[4:6], 16)
                     Waveform.play_audio("sfx/leds_color.wav")
                     print(f"LEDs color set to {color} (requested by {user_name})")
-                    send_telegram_log(f"🌈 LEDs color changed to {color.title()}", user_info)
+                    send_telegram_log(f"🌈 LEDs color changed to ({Serial.leds_color_r}, {Serial.leds_color_g}, {Serial.leds_color_b})", user_info)
                 except ValueError:
                     print(f"Unknown LED color: {color}")
                     send_telegram_log(f"❌ Unknown LED color: {color}", user_info)

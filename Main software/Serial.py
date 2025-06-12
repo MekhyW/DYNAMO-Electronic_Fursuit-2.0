@@ -5,13 +5,14 @@ baud = 9600
 ser = None
 
 leds_brightness_default = 25
-leds_color_options = ['white', 'red', 'purple', 'yellow', 'pink', 'deep blue', 'light blue', 'orange', 'green']
 leds_effects_options = ['solid color', 'fade', 'wipe', 'theater chase', 'rainbow', 'strobe', 'moving substrips', 'none (off)']
 
 animatronics_on = 1
 leds_on = 1
 leds_brightness = leds_brightness_default
-leds_color = 0
+leds_color_r = 0
+leds_color_g = 0
+leds_color_b = 0
 leds_effect = 0
 leds_level = 0
 
@@ -35,7 +36,7 @@ def connect():
 
 def send(expression_scores):
     expression_scores_str = ",".join(map(lambda score: str(int(score * 100)), expression_scores))
-    data_to_send = f"{animatronics_on},{leds_on},{leds_brightness},{leds_color},{leds_effect},{leds_level},{expression_scores_str}\n"
+    data_to_send = f"{animatronics_on},{leds_on},{leds_brightness},{leds_color_r},{leds_color_g},{leds_color_b},{leds_effect},{leds_level},{expression_scores_str}\n"
     response = None
     if ser is not None:
         try:

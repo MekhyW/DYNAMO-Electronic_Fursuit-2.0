@@ -320,7 +320,7 @@ def publish_device_data():
         mqtt_client.publish('dynamo/data/sound_effects', json.dumps(sound_effects), retain=True)
         voice_effects = []
         for voice in Voicemod.voices:
-            voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'voice'})
+            voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'modulation'})
         for voice in Voicemod.gibberish_voices:
             voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'gibberish'})
         mqtt_client.publish('dynamo/data/voice_effects', json.dumps(voice_effects), retain=True)

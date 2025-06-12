@@ -12,6 +12,7 @@ import MachineVision
 import Windows
 import Assistant
 import Voicemod
+import Unity
 import Serial
 
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
@@ -40,6 +41,8 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     'dynamo/commands/microphone-toggle',
                     'dynamo/commands/voice-changer-toggle',
                     'dynamo/commands/leds-toggle',
+                    'dynamo/commands/leds-brightness',
+                    'dynamo/commands/eyes-brightness',
                     'dynamo/commands/leds-color',
                     'dynamo/commands/leds-effect',
                     'dynamo/commands/hotword-detection-toggle',
@@ -189,6 +192,18 @@ def on_mqtt_message(client, userdata, msg):
                 print(f"LEDs {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"💡 LEDs {status}", user_info)
+        elif topic == 'dynamo/commands/leds-brightness':
+            brightness = payload.get('brightness')
+            if brightness is not None:
+                Serial.leds_brightness = brightness
+                print(f"LEDs brightness set to {brightness}% (requested by {user_name})")
+                send_telegram_log(f"💡 LEDs brightness set to {brightness}%", user_info)
+        elif topic == 'dynamo/commands/eyes-brightness':
+            brightness = payload.get('brightness')
+            if brightness is not None:
+                Unity.screen_brightness = brightness
+                print(f"Eyes brightness set to {brightness}% (requested by {user_name})")
+                send_telegram_log(f"👁️ Eyes brightness set to {brightness}%", user_info)
         elif topic == 'dynamo/commands/leds-color':
             color = payload.get('color')
             if color is not None:

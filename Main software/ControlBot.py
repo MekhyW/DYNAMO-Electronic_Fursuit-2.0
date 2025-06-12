@@ -50,7 +50,6 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     'dynamo/commands/face-expression-tracking-toggle',
                     'dynamo/commands/eye-tracking-toggle',
                     'dynamo/commands/eyebrows-toggle',
-                    'dynamo/commands/external-commands-lock',
                     'dynamo/commands/shutdown',
                     'dynamo/commands/reboot',
                     'dynamo/commands/kill-software'
@@ -246,41 +245,29 @@ def on_mqtt_message(client, userdata, msg):
         elif topic == 'dynamo/commands/set-expression':
             expression = payload.get('expression')
             if expression is not None:
-                expression_map = {
-                    'angry': 0, 'disgusted': 1, 'happy': 2, 'neutral': 3,
-                    'sad': 4, 'surprised': 5, 'hypnotic': 6, 'heart': 7,
-                    'rainbow': 8, 'nightmare': 9, 'gear': 10, 'sans': 11, 'mischievous': 12
+                expr_id = int(expression)
+                MachineVision.expression_manual_mode = True
+                MachineVision.expression_manual_id = expr_id
+                if expr_id == 6:
+                    Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
+                sound_files = {
+                    0: "sfx/expr_angry.wav", 1: "sfx/expr_disgusted.wav", 2: "sfx/expr_happy.wav",
+                    3: "sfx/expr_neutral.wav", 4: "sfx/expr_sad.wav", 5: "sfx/expr_surprised.wav",
+                    6: "sfx/expr_hypnotic.wav", 7: "sfx/expr_heart.wav", 8: "sfx/expr_rainbow.wav",
+                    9: "sfx/expr_nightmare.wav", 10: "sfx/expr_gear.wav", 11: "sfx/expr_sans.wav",
+                    12: "sfx/expr_mischievous.wav"
                 }
-                if expression.lower() in expression_map:
-                    expr_id = expression_map[expression.lower()]
-                    MachineVision.expression_manual_mode = True
-                    MachineVision.expression_manual_id = expr_id
-                    if expr_id == 6:
-                        Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
-                    sound_files = {
-                        0: "sfx/expr_angry.wav", 1: "sfx/expr_disgusted.wav", 2: "sfx/expr_happy.wav",
-                        3: "sfx/expr_neutral.wav", 4: "sfx/expr_sad.wav", 5: "sfx/expr_surprised.wav",
-                        6: "sfx/expr_hypnotic.wav", 7: "sfx/expr_heart.wav", 8: "sfx/expr_rainbow.wav",
-                        9: "sfx/expr_nightmare.wav", 10: "sfx/expr_gear.wav", 11: "sfx/expr_sans.wav",
-                        12: "sfx/expr_mischievous.wav"
-                    }
-                    if expr_id in sound_files:
-                        Waveform.play_audio(sound_files[expr_id])
-                    print(f"Expression set to {expression} (ID: {expr_id}) (requested by {user_name})")
-                    send_telegram_log(f"😊 Expression changed to {expression.title()}", user_info)
-                elif expression.lower() == 'auto':
-                    MachineVision.expression_manual_mode = False
-                    MachineVision.force_crossed_eye = False
-                    Waveform.play_audio("sfx/settings_toggle.wav")
-                    print(f"Expression set to automatic (requested by {user_name})")
-                    send_telegram_log(f"🤖 Expression set to automatic mode", user_info)
+                if expr_id in sound_files:
+                    Waveform.play_audio(sound_files[expr_id])
+                print(f"Expression set to {expression} (ID: {expr_id}) (requested by {user_name})")
+                send_telegram_log(f"😊 Expression changed to {expression.title()}", user_info)
         elif topic == 'dynamo/commands/face-expression-tracking-toggle':
             enabled = payload.get('enabled')
             if enabled is not None:
                 MachineVision.expression_manual_mode = not enabled
                 if enabled:
                     MachineVision.force_crossed_eye = False
-                Waveform.play_audio("sfx/settings_toggle.wav")
+                    Waveform.play_audio("sfx/settings_toggle.wav")
                 print(f"Face expression tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"😊 Face expression tracking {status}", user_info)

@@ -7,6 +7,7 @@ import time
 import os
 from Environment import voicemod_key
 import Waveform
+import ControlBot
 
 voicemod_websocket = None
 url = "ws://localhost:59129/v1"
@@ -132,6 +133,7 @@ async def connect():
             print("Voices loaded")
             await getSounds()
             print("Soundboard loaded")
+            ControlBot.publish_voicemod_data()
             while True:
                 time.sleep(0.1)
                 if toggle_hear_my_voice_flag:

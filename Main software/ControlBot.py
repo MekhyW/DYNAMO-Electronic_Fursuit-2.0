@@ -311,8 +311,8 @@ def on_mqtt_message(client, userdata, msg):
         print(f"Error processing MQTT message: {e}")
         traceback.print_exc()
 
-def publish_device_data():
-    """Publish device information to MQTT data topics"""
+def publish_voicemod_data():
+    """Publish Voicemod data to MQTT"""
     try:
         sound_effects = []
         for i, sound in enumerate(Voicemod.sounds):
@@ -324,6 +324,12 @@ def publish_device_data():
         for voice in Voicemod.gibberish_voices:
             voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'gibberish'})
         mqtt_client.publish('dynamo/data/voice_effects', json.dumps(voice_effects), retain=True)
+    except Exception as e:
+        print(f"Error publishing Voicemod data: {e}")
+
+def publish_device_data():
+    """Publish device information to MQTT data topics"""
+    try:
         Windows.refresh_sound_devices()
         sound_devices = []
         for device in Windows.input_audio_devices:

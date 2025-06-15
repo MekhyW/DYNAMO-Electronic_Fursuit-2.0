@@ -91,19 +91,19 @@ async def getStatus(command):
 async def toggleHearMyVoice(desired_status):
     while True:
         response = await send_message(voicemod_websocket, 'toggleHearMyVoice', {})
-        if (desired_status and response['action'] == 'hearMySelfEnabledEvent') or (not desired_status and response['action'] == 'hearMySelfDisabledEvent'):
+        if (desired_status and 'action' in response and response['action'] == 'hearMySelfEnabledEvent') or ((not desired_status) and 'action' in response and response['action'] == 'hearMySelfDisabledEvent'):
             break
 
 async def toggleVoiceChanger(desired_status):
     while True:
         response = await send_message(voicemod_websocket, 'toggleVoiceChanger', {})
-        if (desired_status and response['action'] == 'voiceChangerEnabledEvent') or (not desired_status and response['action'] == 'voiceChangerDisabledEvent'):
+        if (desired_status and 'action' in response and response['action'] == 'voiceChangerEnabledEvent') or ((not desired_status) and 'action' in response and response['action'] == 'voiceChangerDisabledEvent'):
             break
 
 async def toggleBackground(desired_status):
     while True:
         response = await send_message(voicemod_websocket, 'toggleBackground', {})
-        if (desired_status and response['action'] == 'backgroundEffectsEnabledEvent') or (not desired_status and response['action'] == 'backgroundEffectsDisabledEvent'):
+        if (desired_status and 'action' in response and response['action'] == 'backgroundEffectsEnabledEvent') or ((not desired_status) and 'action' in response and response['action'] == 'backgroundEffectsDisabledEvent'):
             break
 
 async def setVoice(voice_id):

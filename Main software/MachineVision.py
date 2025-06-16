@@ -12,11 +12,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 try:
-    detector = vision.FaceLandmarker.create_from_options(
-        vision.FaceLandmarkerOptions(base_options=python.BaseOptions(model_asset_path='models/face_landmarker_v2_with_blendshapes.task'),
-        output_face_blendshapes=True,
-        num_faces=1
-    ))
+    detector = vision.FaceLandmarker.create_from_options(vision.FaceLandmarkerOptions(base_options=python.BaseOptions(model_asset_path='models/face_landmarker_v2_with_blendshapes.task'), output_face_blendshapes=True, num_faces=1))
     emotion_model = pickle.load(open('models/emotion_model.pkl', 'rb'))
     pca_model = joblib.load('models/pca_model.pkl')
 except Exception as e:
@@ -55,8 +51,12 @@ def open_camera(camera_id):
         cap = cv2.VideoCapture(camera_id)
         if not cap.isOpened():
             print("Camera failure")
-        else:
-            return cap
+            return None
+        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
+        cap.set(cv2.CAP_PROP_FPS, 30)
+        return cap
 
 def undistort_image(image, k1=-1, k2=1, k3=0.05):
     if UPSIDE_DOWN:
@@ -64,9 +64,7 @@ def undistort_image(image, k1=-1, k2=1, k3=0.05):
     height, width = image.shape[:2]
     focal_length = width
     center = (width/2, height/2)
-    camera_matrix = np.array([[focal_length, 0, center[0]],
-                              [0, focal_length, center[1]],
-                              [0, 0, 1]], dtype=np.float32)
+    camera_matrix = np.array([[focal_length, 0, center[0]], [0, focal_length, center[1]], [0, 0, 1]], dtype=np.float32)
     distortion_coefficients = np.array([k1, k2, k3, 0, 0], dtype=np.float32)
     undistorted_image = cv2.undistort(image, camera_matrix, distortion_coefficients)
     if width > height:
@@ -133,17 +131,17 @@ def draw_tracking(rgb_image):
 
 def draw_emotion(frame, emotion):
     if emotion:
-        cv2.putText(frame, f"Expr: {emotion.capitalize()}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, f"Expr: {emotion.capitalize()}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
     return frame
 
 def draw_eyecloseness(frame, left_eye_closeness, right_eye_closeness):
-    cv2.putText(frame, f"L eye closed: {round(left_eye_closeness, 2)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-    cv2.putText(frame, f"R eye closed: {round(right_eye_closeness, 2)}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"L eye closed: {round(left_eye_closeness, 2)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"R eye closed: {round(right_eye_closeness, 2)}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
     return frame
 
 def draw_gaze(frame, displacement_eye, cross_eyedness):
-    cv2.putText(frame, f"Gaze: {round(displacement_eye[0], 2)} {round(displacement_eye[1], 2)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
-    cv2.putText(frame, f"Crosseyed: {round(cross_eyedness, 2)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"Gaze: {round(displacement_eye[0], 2)} {round(displacement_eye[1], 2)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"Crosseyed: {round(cross_eyedness, 2)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
     return frame
 
 def predict_emotion(frame, scores, draw=False):
@@ -194,22 +192,21 @@ def eye_track(frame, scores, draw=False):
 def main(draw=False):
     if not detector:
         return None
-    _, frame = cap.read()
-    if frame is not None:
-        frame = undistort_image(frame)
-        scores = inference(frame)
-        frame = eye_track(frame, scores, draw=draw)
-        frame = predict_emotion(frame, scores, draw=draw)
-        if draw:
-            try:
-                cv2.imshow('frame', frame)
-            except cv2.error:
-                print("Frame not ready")
-        cv2.waitKey(1)
-        return frame
-    else:
+    ret, frame = cap.read()
+    if not ret or frame is None:
         open_camera(cap_id)
         return None
+    frame = undistort_image(frame)
+    scores = inference(frame)
+    frame = eye_track(frame, scores, draw=draw)
+    frame = predict_emotion(frame, scores, draw=draw)
+    if draw:
+        try:
+            cv2.imshow('frame', frame)
+        except cv2.error:
+            print("Frame not ready")
+    cv2.waitKey(1)
+    return frame
 
 if __name__ == "__main__":
     open_camera(cap_id)

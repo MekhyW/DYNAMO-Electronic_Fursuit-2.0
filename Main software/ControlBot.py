@@ -250,10 +250,7 @@ def on_mqtt_message(client, userdata, msg):
             expression = payload.get('expression')
             if expression is not None:
                 if not text.isdigit():
-                    if text == "SillyON":
-                        MachineVision.force_crossed_eye = True
-                    else:
-                        MachineVision.force_crossed_eye = False
+                    MachineVision.force_crossed_eye = True if text == "SillyON" else False
                     return
                 expr_id = int(expression)
                 MachineVision.expression_manual_mode = True

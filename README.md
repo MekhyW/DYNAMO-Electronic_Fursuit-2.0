@@ -103,6 +103,12 @@ Download and install AnyDesk from the official [AnyDesk website](https://anydesk
 Open AnyDesk, login/create account and set to connect with password (note down the password), then turn off the option to show notifications for incoming connection requests.
 Make sure that the service is set to start automatically.
 
+### 7. Install and Configure Spotify
+
+Download and install Spotify from the official [Spotify website](https://www.spotify.com/download/windows/).
+
+Open Spotify, login/create account (Premium not required but recommended), and make sure that the service is set to start automatically.
+
 ### 7. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.

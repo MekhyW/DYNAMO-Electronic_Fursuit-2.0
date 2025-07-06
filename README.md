@@ -109,21 +109,19 @@ Download and install Spotify from the official [Spotify website](https://www.spo
 
 Open Spotify, login/create account (Premium not required but recommended), and make sure that the service is set to start automatically.
 
-### 7. Setup Displays
+### 8. Setup Displays
 
 Set the second display to be an extended display and confirm that both displays are recognized by the system and have the correct resolution.
 
 If a display is recognized but at an incorrect active signal resolution or refresh rate, try using [Custom Resolution Utility (CRU)](https://customresolutionutility.net/) to add a new mode (CVT-RB 800x480@60Hz), then set the video adapter to use this mode.
 
-### 8. Setup 4G Module
+### 9. Setup 4G Module
 
-To allow the suit to connect to the internet outside of WiFi range, I use a 4G LTE Wifi USB modem with a SIM card. Make sure that the LattePanda recognizes the modem and remembers the connection!
+To allow the suit to connect to the internet outside of WiFi range, I use 4G/5G tethering from my phone. Make sure that the LattePanda recognizes and remembers the connection, and that it has some layer of authentication security!
 
-In the case of my modem, the IP address is 192.168.100.1, the default username and password are admin/admin, and the default WiFi access point password is 1234567890. Change these settings to your own for security reasons.
+Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6.
 
-Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is important since Telegram servers do not support ipv6 and will not work if the APN is set to ipv4/ipv6. Also, it should contain the username and password of the SIM card, as expected by the carrier.
-
-If possible, use 4G/3G mode instead of just 4G. This is because 4G mode can be unstable in some areas and the system will not be able to connect to the internet.
+![APN Settings](Planning/apn.jpg)
 
 ## Contributing
 

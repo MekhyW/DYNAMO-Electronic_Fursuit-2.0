@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="633" dy="484" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="1038" dy="820" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -31,7 +31,7 @@
                     <mxGeometry x="430" y="254" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="15" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
-                    <mxGeometry x="63" y="488" width="307" height="362" as="geometry"/>
+                    <mxGeometry x="63" y="510" width="307" height="340" as="geometry"/>
                 </mxCell>
                 <mxCell id="16" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
                     <mxGeometry x="526.5" y="675.5" width="247" height="89" as="geometry"/>
@@ -47,10 +47,10 @@
                 <mxCell id="17" value="PD 30Ah Battery" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" parent="1" vertex="1">
                     <mxGeometry x="70" y="588" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="109" style="edgeStyle=none;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#B20000;strokeWidth=2;startArrow=none;startFill=0;fillColor=#e51400;" parent="1" source="18" target="108" edge="1">
+                <mxCell id="109" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#B20000;strokeWidth=2;startArrow=none;startFill=0;fillColor=#e51400;" parent="1" source="18" target="108" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="320" y="570"/>
+                            <mxPoint x="320" y="560"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -107,12 +107,12 @@
                 <mxCell id="13" value="Bigtreetech 5-inch HDMI Display" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;" parent="1" vertex="1">
                     <mxGeometry x="305" y="254" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="56" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="17" target="26" edge="1">
+                <mxCell id="56" style="edgeStyle=none;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="18" target="26" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="240" y="658" as="targetPoint"/>
                         <mxPoint x="240.22000000000003" y="608.6899999999999" as="sourcePoint"/>
                         <Array as="points">
-                            <mxPoint x="220" y="608"/>
+                            <mxPoint x="220" y="570"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
@@ -156,7 +156,7 @@
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
                 <mxCell id="108" value="USB hub" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="280" y="488" width="80" height="30" as="geometry"/>
+                    <mxGeometry x="280" y="510" width="80" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="120" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.717;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#FAFAFA,#FFFFFF);strokeWidth=1;startArrow=none;startFill=0;entryPerimeter=0;" parent="1" source="112" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -216,18 +216,6 @@
                 </mxCell>
                 <mxCell id="22" value="&lt;font style=&quot;&quot;&gt;Speaker&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="570" y="558" width="160" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="144" value="4G Modem" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" parent="1" vertex="1">
-                    <mxGeometry x="204" y="488" width="57" height="34" as="geometry"/>
-                </mxCell>
-                <mxCell id="145" style="edgeStyle=none;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#B20000;strokeWidth=2;startArrow=none;startFill=0;fillColor=#e51400;" parent="1" source="18" target="144" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="232" y="550"/>
-                        </Array>
-                        <mxPoint x="200" y="580" as="sourcePoint"/>
-                        <mxPoint x="330" y="528" as="targetPoint"/>
-                    </mxGeometry>
                 </mxCell>
                 <mxCell id="146" value="40mm cooler fan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
                     <mxGeometry x="440" y="153" width="120" height="33" as="geometry"/>

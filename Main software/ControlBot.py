@@ -142,11 +142,13 @@ def on_mqtt_message(client, userdata, msg):
         user_name = user_info.get('first_name', 'Unknown')
         if topic == 'dynamo/commands/play-sound-effect':
             effect_id = payload.get('effectId')
-            if effect_id is not None:
-                Voicemod.sound_id = str(effect_id)
-                Voicemod.play_sound_flag = True
-                print(f"Playing sound effect {effect_id} (requested by {user_name})")
-                send_telegram_log(f"🔊 Playing sound effect #{effect_id}", user_info)
+            if not effect_id:
+                Voicemod.stop_sounds_flag = True
+                return
+            Voicemod.sound_id = str(effect_id)
+            Voicemod.play_sound_flag = True
+            print(f"Playing sound effect {effect_id} (requested by {user_name})")
+            send_telegram_log(f"🔊 Playing sound effect #{effect_id}", user_info)
         elif topic == 'dynamo/commands/set-voice-effect':
             effect_id = payload.get('effectId')
             if effect_id is not None:

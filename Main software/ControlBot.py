@@ -423,7 +423,7 @@ def thread_function(msg):
         print(content_type, chat_type, chat_id, msg['message_id'])
         if content_type == 'text':
             if msg['text'].startswith('/privacy'):
-                with open('resources/privacy.html', 'r') as file:
+                with open('privacy.html', 'r') as file:
                     privacy_text = file.read()
                 fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
             else:

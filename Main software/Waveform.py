@@ -72,6 +72,9 @@ def gibberish(filename, silence_threshold_percent=50):
     close_audio_stream(stream)
 
 def play_audio(filename, delete=False):
+    if not os.path.isfile(filename):
+        print(f"File {filename} does not exist")
+        return
     filename = convert_to_wav(filename)
     if delete:
         normalize_audio(filename)

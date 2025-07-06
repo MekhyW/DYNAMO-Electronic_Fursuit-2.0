@@ -115,7 +115,7 @@ Set the second display to be an extended display and confirm that both displays 
 
 If a display is recognized but at an incorrect active signal resolution or refresh rate, try using [Custom Resolution Utility (CRU)](https://customresolutionutility.net/) to add a new mode (CVT-RB 800x480@60Hz), then set the video adapter to use this mode.
 
-### 9. Setup 4G Module
+### 9. Setup 4G/5G Access
 
 To allow the suit to connect to the internet outside of WiFi range, I use 4G/5G tethering from my phone. Make sure that the LattePanda recognizes and remembers the connection, and that it has some layer of authentication security!
 

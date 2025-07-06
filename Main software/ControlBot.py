@@ -320,8 +320,8 @@ def publish_voicemod_data():
     """Publish Voicemod data to MQTT"""
     try:
         sound_effects = []
-        for i, sound in enumerate(Voicemod.sounds):
-            sound_effects.append({'id': i, 'name': sound['name'], 'filename': sound.get('filename', '')})
+        for sound in Voicemod.sounds:
+            sound_effects.append({'id': sound['id'], 'name': sound['name']})
         mqtt_client.publish('dynamo/data/sound_effects', json.dumps(sound_effects), retain=True)
         voice_effects = []
         for voice in Voicemod.voices:

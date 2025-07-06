@@ -9,9 +9,13 @@ voicemod_key = ''
 url = "ws://localhost:59129/v1"
 
 async def send_message(websocket, message):
+    await websocket.send(json.dumps(message))
+    no_response_commands = ['playMeme', 'stopAllMemeSounds']
+    if message['action'] in no_response_commands:
+        print(f"Command '{message['action']}' sent successfully (no response expected)")
+        return None
     while True:
         try:
-            await websocket.send(json.dumps(message))
             response = await websocket.recv()
             response = json.loads(response)
             print(response)

@@ -39,10 +39,13 @@ valid_response_actions = {
 }
 
 async def send_message(websocket, command, payload):
+    no_response_commands = ['playMeme', 'stopAllMemeSounds']
+    message = {"action": command, "id": ''.join(random.choice(string.ascii_lowercase) for i in range(36)), "payload": payload}
+    await websocket.send(json.dumps(message))
+    if command in no_response_commands:
+        return True
     while True:
         try:
-            message = {"action": command, "id": ''.join(random.choice(string.ascii_lowercase) for i in range(36)), "payload": payload}
-            await websocket.send(json.dumps(message))
             response = await websocket.recv()
             response = json.loads(response)
             if command in valid_response_actions and 'action' in response and response['action'] not in valid_response_actions[command]:

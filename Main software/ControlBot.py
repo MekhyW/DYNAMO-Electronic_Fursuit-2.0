@@ -1,3 +1,4 @@
+import Windows
 import telepot
 from telepot.loop import MessageLoop
 import paho.mqtt.client as mqtt
@@ -12,7 +13,6 @@ import os
 from Environment import fursuitbot_token, fursuitbot_ownerID, mqtt_host, mqtt_port, mqtt_username, mqtt_password
 import Waveform
 import MachineVision
-import Windows
 import Assistant
 import Voicemod
 import Unity

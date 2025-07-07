@@ -1,14 +1,14 @@
-import threading
-import asyncio
-import time
+import Voicemod
 import Waveform
 import MachineVision
 import Unity
 import Assistant
-import Voicemod
 import Serial
 import ControlBot
 import Environment
+import threading
+import asyncio
+import time
 
 def machine_vision_thread():
     MachineVision.open_camera(MachineVision.cap_id)

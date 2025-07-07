@@ -251,8 +251,8 @@ def on_mqtt_message(client, userdata, msg):
         elif topic == 'dynamo/commands/set-expression':
             expression = payload.get('expression')
             if expression is not None:
-                if not text.isdigit():
-                    MachineVision.force_crossed_eye = True if text == "SillyON" else False
+                if not expression.isdigit():
+                    MachineVision.force_crossed_eye = True if expression == "SillyON" else False
                     return
                 expr_id = int(expression)
                 MachineVision.expression_manual_mode = True

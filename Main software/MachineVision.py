@@ -25,7 +25,7 @@ LEFT_IRIS = [468, 469, 470, 471, 472]
 RIGHT_IRIS = [473, 474, 475, 476, 477]
 EMOTION_LABELS = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
 EMOTION_LABELS_EXTRA = ['hypnotic', 'heart', 'rainbow', 'nightmare', 'gears', 'sans', 'mischievous']
-CROSS_EYEDNESS_THRESHOLD = 0.4
+CROSS_EYEDNESS_THRESHOLD = 0.3
 UPSIDE_DOWN = True
 
 cap = None
@@ -37,9 +37,9 @@ left_eye_closeness = 0
 right_eye_closeness = 0
 cross_eyedness = 0
 emotion_scores = [0] * len(EMOTION_LABELS)
-left_eye_closeness_noisy = [0, 0, 0, 0, 0]
-right_eye_closeness_noisy = [0, 0, 0, 0, 0]
-cross_eyedness_noisy = [0, 0, 0, 0, 0]
+left_eye_closeness_noisy = [0, 0, 0, 0]
+right_eye_closeness_noisy = [0, 0, 0, 0]
+cross_eyedness_noisy = [0, 0, 0, 0]
 eye_tracking_mode = True
 force_crossed_eye = False
 expression_manual_mode = False
@@ -53,7 +53,6 @@ def open_camera(camera_id):
             print("Camera failure")
             return None
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
         cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
         cap.set(cv2.CAP_PROP_FPS, 30)
         return cap

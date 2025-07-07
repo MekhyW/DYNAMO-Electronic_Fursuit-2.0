@@ -499,7 +499,7 @@ def StartBot():
                     print("MQTT reconnected successfully")
                     reconnect_attempts = 0
                 else:
-                    print(f"MQTT reconnection failed with code: {result}")
+                    print(f"MQTT reconnection failed")
                     reconnect_attempts += 1
             except Exception as e:
                 print(f"MQTT reconnection failed: {e}")

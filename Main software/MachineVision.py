@@ -53,18 +53,19 @@ def open_camera(camera_id):
             print("Camera failure")
             return None
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 320)
         cap.set(cv2.CAP_PROP_FPS, 30)
         return cap
 
-def undistort_image(image, k1=-1, k2=1, k3=0.05):
+def undistort_image(image, draw):
+    height, width = image.shape[:2]
+    desired_width = 320 if draw else 160
+    image = cv2.resize(image, (desired_width, int(height*(desired_width/width))), interpolation=cv2.INTER_NEAREST)
+    height, width = image.shape[:2]
     if UPSIDE_DOWN:
         image = cv2.rotate(image, cv2.ROTATE_180)
-    height, width = image.shape[:2]
-    focal_length = width
     center = (width/2, height/2)
-    camera_matrix = np.array([[focal_length, 0, center[0]], [0, focal_length, center[1]], [0, 0, 1]], dtype=np.float32)
-    distortion_coefficients = np.array([k1, k2, k3, 0, 0], dtype=np.float32)
+    camera_matrix = np.array([[width, 0, center[0]], [0, width, center[1]], [0, 0, 1]], dtype=np.float32)
+    distortion_coefficients = np.array([-1, 1, 0.05, 0, 0], dtype=np.float32)
     undistorted_image = cv2.undistort(image, camera_matrix, distortion_coefficients)
     if width > height:
         undistorted_image = undistorted_image[:, int((width-height)/2):int((width+height)/2)]
@@ -195,7 +196,7 @@ def main(draw=False):
     if not ret or frame is None:
         open_camera(cap_id)
         return None
-    frame = undistort_image(frame)
+    frame = undistort_image(frame, draw)
     scores = inference(frame)
     frame = eye_track(frame, scores, draw=draw)
     frame = predict_emotion(frame, scores, draw=draw)

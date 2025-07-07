@@ -1,5 +1,4 @@
 import openai
-import whisper
 import pvporcupine
 from pvrecorder import PvRecorder
 import struct
@@ -12,12 +11,10 @@ try:
     openai_client = openai.OpenAI(api_key=openai_key)
     porcupine = pvporcupine.create(access_key=porcupine_key, keyword_paths=["models/Cookie-Bot_en_windows_v3_0_0.ppn"])
     recorder = PvRecorder(device_index=-1, frame_length=porcupine.frame_length)
-    whisper_model = whisper.load_model("base")
 except Exception as e:
     openai_client = None
     porcupine = None
     recorder = None
-    whisper_model = None
     print(f"Assistant constructor failed with error: {e}")
 
 previous_questions = ["who won the world series in 2020?", "você é fofo!"]
@@ -47,10 +44,17 @@ def record_query(silence_window_s=2, silence_threshold_percent=50):
 
 def process_query():
     print("Transcribing")
-    transcript = whisper_model.transcribe("sfx/query.wav")['text']
-    os.remove("sfx/query.wav")
-    print(transcript)
-    return transcript
+    try:
+        with open("sfx/query.wav", "rb") as audio_file:
+            transcript = openai_client.audio.transcriptions.create(model="whisper-1", file=audio_file)
+        os.remove("sfx/query.wav")
+        print(transcript.text)
+        return transcript.text
+    except Exception as e:
+        print(f"Transcription failed with error: {e}")
+        if os.path.exists("sfx/query.wav"):
+            os.remove("sfx/query.wav")
+        return ""
 
 def assistant_query(query):
     global previous_question, previous_answer

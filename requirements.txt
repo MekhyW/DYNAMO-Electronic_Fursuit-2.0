@@ -10,7 +10,6 @@ mediapipe==0.10.1
 joblib==1.2.0
 mord==0.7
 openai==1.13.3
-openai-whisper==20231117
 pvporcupine==3.0.0
 pvrecorder==1.1.1
 telepota==1.0

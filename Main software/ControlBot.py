@@ -54,7 +54,8 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     'dynamo/commands/eyebrows-toggle',
                     'dynamo/commands/shutdown',
                     'dynamo/commands/reboot',
-                    'dynamo/commands/kill-software'
+                    'dynamo/commands/kill-software',
+                    'dynamo/commands/set-sound-device'
                 ]
                 for topic in command_topics:
                     try:
@@ -314,6 +315,19 @@ def on_mqtt_message(client, userdata, msg):
             Windows.kill_process('Eye-Graphics.exe')
             Windows.kill_process('VoicemodDesktop.exe')
             os._exit(0)
+        elif topic == 'dynamo/commands/set-sound-device':
+            device_type = payload.get('deviceType')
+            device_name = payload.get('deviceName')
+            if device_type and device_name:
+                try:
+                    Windows.set_default_sound_device(device_name, device_type)
+                    Waveform.play_audio("sfx/sounddevice_set.wav")
+                    print(f"Sound device set: {device_type} -> {device_name} (requested by {user_name})")
+                    device_icon = "🎤" if device_type == "input" else "🔊"
+                    send_telegram_log(f"{device_icon} {device_type.title()} device set to {device_name}", user_info)
+                except Exception as e:
+                    print(f"Error setting sound device: {e} (requested by {user_name})")
+                    send_telegram_log(f"❌ Error setting sound device", user_info)
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
         traceback.print_exc()
@@ -348,7 +362,7 @@ def publish_device_data():
             anydesk_id = os.popen('for /f "tokens=*" %A in (\'"C:\Program Files (x86)\AnyDesk\AnyDesk.exe" --get-id\') do @echo %A').read().strip()
             mqtt_client.publish('dynamo/data/anydesk_id', json.dumps({'id': anydesk_id}), retain=True)
         except:
-            pass
+            print("AnyDesk not found")
         print("Published device data to MQTT")
     except Exception as e:
         print(f"Error publishing device data: {e}")

@@ -56,4 +56,4 @@ def send(expression_scores):
 
 if __name__ == "__main__":
     connect()
-    send([animatronics_on, leds_on, leds_brightness, leds_color, leds_effect, leds_level, 0, 0, 0, 1, 0, 0])
+    send([animatronics_on, leds_on, leds_brightness, leds_color_r, leds_color_g, leds_color_b, leds_effect, leds_level, 0, 0, 0, 1, 0, 0])

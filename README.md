@@ -123,6 +123,8 @@ Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is importan
 
 ![APN Settings](Planning/apn.jpg)
 
+If you connect to a WiFi network (such as a hotel network), the connection can usually be forwarded to the suit via a "WiFi Sharing" option in the phone's network settings.
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request. Or, if you have any suggestions or feedback contact me directly via Telegram @MekhyW.

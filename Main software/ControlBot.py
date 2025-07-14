@@ -424,10 +424,10 @@ def LogAIMessage(query, answer):
         timestamp = datetime.now(timezone.utc).isoformat()
         if query:
             prompt_message = {"id": str(uuid.uuid4()), "content": query, "type": "prompt", "timestamp": timestamp}
-            mqtt_client.publish('dynamo/data/chat_logs', json.dumps(prompt_message), retain=False)
+            mqtt_client.publish('dynamo/data/chat_logs', json.dumps(prompt_message, ensure_ascii=False), retain=False)
         if answer:
             response_message = {"id": str(uuid.uuid4()), "content": answer, "type": "response", "timestamp": timestamp}
-            mqtt_client.publish('dynamo/data/chat_logs', json.dumps(response_message), retain=False)
+            mqtt_client.publish('dynamo/data/chat_logs', json.dumps(response_message, ensure_ascii=False), retain=False)
     except Exception as e:
         print(f"Error logging AI message: {e}")
 

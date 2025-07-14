@@ -35,10 +35,10 @@ def assistant_thread():
                 Assistant.start()
                 if len(answer):
                     Waveform.TTS_generate(answer)
+                    ControlBot.LogAIMessage(transcript, answer)
                     Waveform.TTS_play()
                     ControlBot.fursuitbot.sendMessage(Environment.fursuitbot_ownerID, f'QUERY:\n{transcript}')
                     ControlBot.fursuitbot.sendMessage(Environment.fursuitbot_ownerID, f'RESPONSE:\n{answer}')
-                    ControlBot.LogAIMessage(transcript, answer)
                 Assistant.triggered = False
         except Exception as e:
             print(e)

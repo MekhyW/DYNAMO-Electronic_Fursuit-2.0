@@ -8,11 +8,11 @@ from gtts import gTTS
 import langdetect
 import Serial
 import Assistant
+import threading
 
 p = pyaudio.PyAudio()
 chunk_size = 4096
 
-is_paused = False
 stop_flag = False
 stop_gibberish_flag = False
 
@@ -32,20 +32,18 @@ def normalize_audio(file_path, target_dBFS=-20.0):
     normalized_audio.export(file_path, format="wav")
 
 def play_audio_stream(wf, stream):
-    global is_paused, stop_flag
-    is_paused = False
+    global stop_flag
     stop_flag = False
     data = wf.readframes(chunk_size)
     while len(data) > 0:
-        if not is_paused:
-            audio_data = np.frombuffer(data, dtype=np.int16)
-            audio_data_max = np.max(audio_data)
-            Serial.leds_level_from_int16(audio_data_max)
-            stream.write(data)
-            data = wf.readframes(chunk_size)
         if stop_flag:
             stop_flag = False
             break
+        audio_data = np.frombuffer(data, dtype=np.int16)
+        audio_data_max = np.max(audio_data)
+        Serial.leds_level_from_int16(audio_data_max)
+        stream.write(data)
+        data = wf.readframes(chunk_size)
     wf.close()
 
 def close_audio_stream(stream):
@@ -94,3 +92,11 @@ def TTS_generate(text):
 
 def TTS_play():
     play_audio("sfx/tts_faster.mp3", delete=True)
+
+def TTS_play_async():
+    def tts_worker():
+        play_audio("sfx/tts_faster.mp3", delete=True)
+    stop_flag = True
+    tts_thread = threading.Thread(target=tts_worker, daemon=True)
+    tts_thread.start()
+    return tts_thread

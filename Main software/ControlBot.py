@@ -145,6 +145,7 @@ def on_mqtt_message(client, userdata, msg):
             effect_id = payload.get('effectId')
             if not effect_id:
                 Voicemod.stop_sounds_flag = True
+                Waveform.stop_flag = True
                 return
             Voicemod.sound_id = str(effect_id)
             Voicemod.play_sound_flag = True
@@ -248,7 +249,7 @@ def on_mqtt_message(client, userdata, msg):
             text = payload.get('text')
             if text:
                 TextToSpeech(text, user_name)
-                send_telegram_log(f"🗣️ Text-to-speech: '{text[:50]}{'...' if len(text) > 50 else ''}'", user_info)
+                send_telegram_log(f"🗣️ Text-to-speech: '{text[:1000]}{'...' if len(text) > 1000 else ''}'", user_info)
         elif topic == 'dynamo/commands/set-expression':
             expression = payload.get('expression')
             if expression is not None:
@@ -390,16 +391,19 @@ def setup_mqtt():
         return False
 
 def TextToSpeech(text, user_name="Unknown"):
-    """Text to speech function for MQTT commands"""
-    try:
-        Waveform.play_audio("sfx/assistant_ok.wav")
-        print(f"Generating TTS for: {text} (requested by {user_name})")
-        Waveform.TTS_generate(text)
-        Waveform.TTS_play()
-        Assistant.previous_questions.append("")
-        Assistant.previous_answers.append(text)
-    except Exception as e:
-        print(f"Error in TTS: {e}")
+    """Non-blocking text to speech function for MQTT commands"""
+    def tts_worker():
+        try:
+            Waveform.play_audio("sfx/assistant_ok.wav")
+            print(f"Generating TTS for: {text} (requested by {user_name})")
+            Waveform.TTS_generate(text)
+            Waveform.TTS_play_async()
+            Assistant.previous_questions.append("")
+            Assistant.previous_answers.append(text)
+        except Exception as e:
+            print(f"Error in TTS: {e}")
+    tts_thread = threading.Thread(target=tts_worker, daemon=True)
+    tts_thread.start()
 
 def PlayAudioMessage(fursuitbot, chat_id, msg):
     fursuitbot.sendMessage(chat_id, '<i>>>Downloading sound...</i>', parse_mode='HTML')
@@ -443,7 +447,7 @@ def thread_function(msg):
                     privacy_text = file.read()
                 fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
             else:
-                fursuitbot.sendMessage(chat_id, "Open the App to control the suit\nIf you don't know how, click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
+                fursuitbot.sendMessage(chat_id, "Open the App to control by opening this bot's description and clicking 'Open App'\nFon't know how to use me? Click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
                     [{'text': 'Check out my Refsheet!', 'url': refsheetpath}], 
                     [{'text': 'Check out my Stickers!', 'url': stickerpack}],
                     [{'text': 'Send me a private message', 'url': mychatpath}]

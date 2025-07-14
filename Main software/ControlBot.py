@@ -6,7 +6,7 @@ import ssl
 import threading
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import traceback
 import json
 import os
@@ -248,6 +248,7 @@ def on_mqtt_message(client, userdata, msg):
         elif topic == 'dynamo/commands/text-to-speech':
             text = payload.get('text')
             if text:
+                LogAIMessage(f"TTS message by {user_name}", text)
                 TextToSpeech(text, user_name)
                 send_telegram_log(f"🗣️ Text-to-speech: '{text[:1000]}{'...' if len(text) > 1000 else ''}'", user_info)
         elif topic == 'dynamo/commands/set-expression':
@@ -420,7 +421,7 @@ def LogAIMessage(query, answer):
     try:
         if not mqtt_client or not mqtt_client.is_connected():
             return
-        timestamp = datetime.now(datetime.timezone.utc).isoformat()
+        timestamp = datetime.now(timezone.utc).isoformat()
         if query:
             prompt_message = {"id": str(uuid.uuid4()), "content": query, "type": "prompt", "timestamp": timestamp}
             mqtt_client.publish('dynamo/data/chat_logs', json.dumps(prompt_message), retain=False)

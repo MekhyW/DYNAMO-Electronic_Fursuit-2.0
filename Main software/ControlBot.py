@@ -90,27 +90,35 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
 def on_mqtt_disconnect(client, userdata, rc, properties=None):
     if rc == 0:
         print("MQTT: Disconnected cleanly")
+        return
+    print(f"MQTT: Unexpected disconnection (code: {rc})")
+    if rc == 1:
+        print("MQTT: Incorrect protocol version - check broker compatibility")
+    elif rc == 2:
+        print("MQTT: Invalid client identifier")
+    elif rc == 3:
+        print("MQTT: Server unavailable - broker may be down")
+    elif rc == 4:
+        print("MQTT: Check username and password")
+    elif rc == 5:
+        print("MQTT: Authorization failed")
+    elif rc == 7:
+        print("MQTT: Connection lost - network issue detected")
+        print("MQTT: This usually indicates unstable network or broker overload")
     else:
-        print(f"MQTT: Unexpected disconnection (code: {rc})")
-        if rc == 1:
-            print("MQTT: Incorrect protocol version - check broker compatibility")
-        elif rc == 2:
-            print("MQTT: Invalid client identifier")
-        elif rc == 3:
-            print("MQTT: Server unavailable - broker may be down")
-        elif rc == 4:
-            print("MQTT: Check username and password")
-        elif rc == 5:
-            print("MQTT: Authorization failed")
-        elif rc == 7:
-            print("MQTT: Connection lost - network issue detected")
-            print("MQTT: This usually indicates unstable network or broker overload")
-        else:
-            print(f"MQTT: Unknown disconnect reason: {rc}")
+        print(f"MQTT: Unknown disconnect reason: {rc}")
+    def attempt_reconnect():
         try:
-            client.loop_stop()
-        except:
-            pass
+            print("MQTT: Attempting immediate reconnection...")
+            client.reconnect()
+        except Exception as e:
+            print(f"MQTT: Immediate reconnection failed: {e}")
+    reconnect_thread = threading.Thread(target=attempt_reconnect, daemon=True)
+    reconnect_thread.start()
+    try:
+        client.loop_stop()
+    except:
+        pass
 
 def send_telegram_log(command_description, user_info):
     """Send log message to both command issuer and owner via Telegram"""
@@ -376,6 +384,7 @@ def setup_mqtt():
         mqtt_client = mqtt.Client(userdata=None, protocol=mqtt.MQTTv5)
         mqtt_client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
         mqtt_client.username_pw_set(mqtt_username, mqtt_password)
+        mqtt_client.reconnect_delay_set(min_delay=1, max_delay=120)
         mqtt_client.on_connect = on_mqtt_connect
         mqtt_client.on_disconnect = on_mqtt_disconnect
         mqtt_client.on_message = on_mqtt_message
@@ -448,7 +457,7 @@ def thread_function(msg):
                     privacy_text = file.read()
                 fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
             else:
-                fursuitbot.sendMessage(chat_id, "Open the App to control by opening this bot's description and clicking 'Open App'\nFon't know how to use me? Click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
+                fursuitbot.sendMessage(chat_id, "Open the App to control the fursuit by going to this bot's description and clicking 'Open App'\nDon't know how to use me? Click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
                     [{'text': 'Check out my Refsheet!', 'url': refsheetpath}], 
                     [{'text': 'Check out my Stickers!', 'url': stickerpack}],
                     [{'text': 'Send me a private message', 'url': mychatpath}]
@@ -504,7 +513,7 @@ def StartBot():
         telegram_thread = threading.Thread(target=StartTelegramBot, daemon=True)
         telegram_thread.start()
     last_reconnect_attempt = 0
-    reconnect_interval = 30
+    reconnect_interval = 5
     reconnect_attempts = 0
     try:
         while True:
@@ -526,7 +535,6 @@ def StartBot():
             finally:
                 last_reconnect_attempt = current_time
             if reconnect_attempts > 0:
-                reconnect_interval = min(30 * (2 ** min(reconnect_attempts - 1, 4)), 300)
                 print(f"Next reconnection attempt in {reconnect_interval} seconds")
     except KeyboardInterrupt:
         if mqtt_client:

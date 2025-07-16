@@ -49,6 +49,8 @@ def send(expression_scores):
             connect()
             return None
         finally:
+            if response:
+                print("AVR response:", response)
             if response and "Invalid message format!" in response:
                 raise Exception("AVR returned Invalid message format!")
             return response

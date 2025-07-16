@@ -69,7 +69,7 @@ def serial_thread():
                 Serial.send(MachineVision.emotion_scores)
         except Exception as e:
             print(f"Serial thread error: {e}")
-        time.sleep(0.01)
+        time.sleep(0.1)
 
 def unity_thread():
     while True:

@@ -10,10 +10,10 @@ leds_effects_options = ['solid_color', 'fade', 'wipe', 'theater_chase', 'rainbow
 animatronics_on = 1
 leds_on = 1
 leds_brightness = leds_brightness_default
-leds_color_r = 0
+leds_color_r = 129
 leds_color_g = 0
-leds_color_b = 0
-leds_effect = 0
+leds_color_b = 255
+leds_effect = 1
 leds_level = 0
 
 def leds_level_from_int16(int16_value):

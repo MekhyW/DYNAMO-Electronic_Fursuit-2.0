@@ -277,8 +277,20 @@ def on_mqtt_message(client, userdata, msg):
                     9: "sfx/expr_nightmare.wav", 10: "sfx/expr_gear.wav", 11: "sfx/expr_sans.wav",
                     12: "sfx/expr_mischievous.wav"
                 }
+                led_col = {
+                    0: (255, 0, 0), 1: (0, 255, 33), 2: (255, 255, 0), 3: (255, 255, 255),
+                    4: (0, 0, 255), 5: (255, 128, 0), 6: (255, 255, 255), 7: (255, 0, 0),
+                    8: (255, 255, 255), 9: (255, 0, 0), 10: (255, 255, 255), 11: (0, 0, 255),
+                    12: (255, 0, 220)
+                }
+                led_eff = {
+                    0: 3, 1: 2, 2: 1, 3: 0, 4: 1, 5: 5, 6: 4, 7: 2, 8: 4, 9: 5, 10: 0, 11: 0, 12: 3
+                }
                 if expr_id in sound_files and sound_files[expr_id]:
                     Waveform.play_audio(sound_files[expr_id])
+                if expr_id in led_col:
+                    Serial.leds_color_r, Serial.leds_color_g, Serial.leds_color_b = led_col[expr_id]
+                    Serial.leds_effect = led_eff[expr_id]
                 print(f"Expression set to {expression} (ID: {expr_id}) (requested by {user_name})")
                 send_telegram_log(f"😊 Expression changed to {expression.title()}", user_info)
         elif topic == 'dynamo/commands/face-expression-tracking-toggle':

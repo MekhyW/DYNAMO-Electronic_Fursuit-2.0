@@ -197,6 +197,8 @@ def on_mqtt_message(client, userdata, msg):
             enabled = payload.get('enabled')
             if enabled is not None:
                 Serial.leds_on = 1 if enabled else 0
+                MachineVision.eye_tracking_mode = False if enabled else True
+                MachineVision.expression_manual_mode = True if enabled else False
                 Waveform.play_audio("sfx/leds_state.wav")
                 print(f"LEDs {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
@@ -205,6 +207,8 @@ def on_mqtt_message(client, userdata, msg):
             brightness = payload.get('brightness')
             if brightness is not None:
                 Serial.leds_brightness = brightness
+                MachineVision.eye_tracking_mode = False
+                MachineVision.expression_manual_mode = True
                 print(f"LEDs brightness set to {brightness}% (requested by {user_name})")
                 send_telegram_log(f"💡 LEDs brightness set to {brightness}%", user_info)
         elif topic == 'dynamo/commands/eyes-brightness':
@@ -222,6 +226,8 @@ def on_mqtt_message(client, userdata, msg):
                     Serial.leds_color_r = int(color[0:2], 16)
                     Serial.leds_color_g = int(color[2:4], 16)
                     Serial.leds_color_b = int(color[4:6], 16)
+                    MachineVision.eye_tracking_mode = False
+                    MachineVision.expression_manual_mode = True
                     Waveform.play_audio("sfx/leds_color.wav")
                     print(f"LEDs color set to {color} (requested by {user_name})")
                     send_telegram_log(f"🌈 LEDs color changed to ({Serial.leds_color_r}, {Serial.leds_color_g}, {Serial.leds_color_b})", user_info)
@@ -235,6 +241,8 @@ def on_mqtt_message(client, userdata, msg):
                     effect_index = Serial.leds_effects_options.index(effect.lower())
                     Serial.leds_on = 1
                     Serial.leds_effect = effect_index
+                    MachineVision.eye_tracking_mode = False
+                    MachineVision.expression_manual_mode = True
                     Waveform.play_audio("sfx/leds_effect.wav")
                     print(f"LEDs effect set to {effect} (requested by {user_name})")
                     send_telegram_log(f"✨ LEDs effect changed to {effect.title()}", user_info)
@@ -268,6 +276,7 @@ def on_mqtt_message(client, userdata, msg):
                 expr_id = int(expression)
                 MachineVision.expression_manual_mode = True
                 MachineVision.expression_manual_id = expr_id
+                MachineVision.eye_tracking_mode = False
                 if expr_id == 6:
                     Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
                 sound_files = {
@@ -291,6 +300,7 @@ def on_mqtt_message(client, userdata, msg):
                 if expr_id in led_col:
                     Serial.leds_color_r, Serial.leds_color_g, Serial.leds_color_b = led_col[expr_id]
                     Serial.leds_effect = led_eff[expr_id]
+                    Serial.leds_on = 1
                 print(f"Expression set to {expression} (ID: {expr_id}) (requested by {user_name})")
                 send_telegram_log(f"😊 Expression changed to {expression.title()}", user_info)
         elif topic == 'dynamo/commands/face-expression-tracking-toggle':
@@ -299,7 +309,10 @@ def on_mqtt_message(client, userdata, msg):
                 MachineVision.expression_manual_mode = not enabled
                 if enabled:
                     MachineVision.force_crossed_eye = False
+                    Serial.leds_on = 0
                     Waveform.play_audio("sfx/settings_toggle.wav")
+                else:
+                    Serial.leds_on = 1
                 print(f"Face expression tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"😊 Face expression tracking {status}", user_info)
@@ -309,6 +322,9 @@ def on_mqtt_message(client, userdata, msg):
                 MachineVision.eye_tracking_mode = enabled
                 if enabled:
                     MachineVision.force_crossed_eye = False
+                    Serial.leds_on = 0
+                else:
+                    Serial.leds_on = 1
                 Waveform.play_audio("sfx/settings_toggle.wav")
                 print(f"Eye tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"

@@ -22,6 +22,11 @@ refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
 stickerpack = 'https://t.me/addstickers/MekhyW'
 mychatpath = 'https://t.me/MekhyW'
 mqtt_client = None
+last_mqtt_activity = 0
+mqtt_health_check_interval = 60
+mqtt_heartbeat_interval = 30
+mqtt_keepalive_interval = 15
+
 try:
     fursuitbot = telepot.Bot(fursuitbot_token)
 except Exception as e:
@@ -29,8 +34,10 @@ except Exception as e:
     print(f"ControlBot constructor failed with error: {e}")
 
 def on_mqtt_connect(client, userdata, flags, rc, properties=None):
+    global last_mqtt_activity
     if rc == 0:
         print("Connected to MQTT broker")
+        last_mqtt_activity = time.time()
         def setup_subscriptions(): # Use a separate thread for post-connection setup to avoid blocking
             try:
                 time.sleep(1)  # Brief delay to ensure connection is stable
@@ -71,6 +78,8 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     time.sleep(1.5)
                     if mqtt_client.is_connected():
                         publish_device_data()
+                        heartbeat_thread = threading.Thread(target=mqtt_heartbeat_worker, daemon=True)
+                        heartbeat_thread.start()
                 except Exception as e:
                     print(f"Error publishing device data: {e}")
                 try:
@@ -107,48 +116,57 @@ def on_mqtt_disconnect(client, userdata, rc, properties=None):
         print("MQTT: This usually indicates unstable network or broker overload")
     else:
         print(f"MQTT: Unknown disconnect reason: {rc}")
-    def attempt_reconnect():
-        try:
-            print("MQTT: Attempting immediate reconnection...")
-            client.reconnect()
-        except Exception as e:
-            print(f"MQTT: Immediate reconnection failed: {e}")
-    reconnect_thread = threading.Thread(target=attempt_reconnect, daemon=True)
-    reconnect_thread.start()
-    try:
-        client.loop_stop()
-    except:
-        pass
 
 def send_telegram_log(command_description, user_info):
     """Send log message to both command issuer and owner via Telegram"""
     if not fursuitbot:
         return
-    try:
-        user_id = user_info.get('id')
-        user_name = user_info.get('first_name', 'Unknown User')
-        log_message = f">>> {command_description}"
-        if user_id:
-            try:
-                fursuitbot.sendMessage(user_id, log_message)
-            except Exception as e:
-                print(f"Failed to send message to user {user_id}: {e}")
-        if str(user_id) != str(fursuitbot_ownerID):
-            try:
-                owner_message = f"🤖 MQTT Command Executed:\n{log_message}\n👤 Requested by: {user_name}"
-                fursuitbot.sendMessage(fursuitbot_ownerID, owner_message)
-            except Exception as e:
-                print(f"Failed to send message to owner: {e}")
-    except Exception as e:
-        print(f"Error in telegram logging: {e}")
+    def telegram_worker():
+        """Run telegram operations in separate thread to avoid blocking MQTT"""
+        try:
+            user_id = user_info.get('id')
+            user_name = user_info.get('first_name', 'Unknown User')
+            log_message = f">>> {command_description}"
+            if user_id:
+                try:
+                    fursuitbot.sendMessage(user_id, log_message)
+                except Exception as e:
+                    print(f"Failed to send message to user {user_id}: {e}")
+            if str(user_id) != str(fursuitbot_ownerID):
+                try:
+                    owner_message = f"🤖 MQTT Command Executed:\n{log_message}\n👤 Requested by: {user_name}"
+                    fursuitbot.sendMessage(fursuitbot_ownerID, owner_message)
+                except Exception as e:
+                    print(f"Failed to send message to owner: {e}")
+        except Exception as e:
+            print(f"Error in telegram logging: {e}")
+    telegram_thread = threading.Thread(target=telegram_worker, daemon=True)
+    telegram_thread.start()
 
 def on_mqtt_message(client, userdata, msg):
+    """Handle incoming MQTT messages with improved error handling"""
+    global last_mqtt_activity
+    last_mqtt_activity = time.time()  # Update activity timestamp
+    def process_message():
+        """Process MQTT message in separate thread to prevent blocking"""
+        try:
+            topic = msg.topic
+            payload = json.loads(msg.payload.decode())
+            print(f"Received MQTT message on {topic}: {payload}")
+            user_info = payload.get('user', {})
+            user_name = user_info.get('first_name', 'Unknown')
+            handle_mqtt_command(topic, payload, user_info, user_name)
+        except json.JSONDecodeError as e:
+            print(f"Error decoding MQTT message JSON: {e}")
+        except Exception as e:
+            print(f"Error processing MQTT message: {e}")
+            traceback.print_exc()
+    message_thread = threading.Thread(target=process_message, daemon=True)
+    message_thread.start()
+
+def handle_mqtt_command(topic, payload, user_info, user_name):
+    """Handle specific MQTT commands"""
     try:
-        topic = msg.topic
-        payload = json.loads(msg.payload.decode())
-        print(f"Received MQTT message on {topic}: {payload}")
-        user_info = payload.get('user', {})
-        user_name = user_info.get('first_name', 'Unknown')
         if topic == 'dynamo/commands/play-sound-effect':
             effect_id = payload.get('effectId')
             if not effect_id:
@@ -405,19 +423,41 @@ def publish_device_data():
     except Exception as e:
         print(f"Error publishing device data: {e}")
 
+def mqtt_heartbeat_worker():
+    """Send periodic heartbeat to maintain MQTT connection health"""
+    global last_mqtt_activity, mqtt_heartbeat_interval
+    while True:
+        try:
+            time.sleep(mqtt_heartbeat_interval)
+            if mqtt_client and mqtt_client.is_connected():
+                heartbeat_data = { 'timestamp': time.time() }
+                mqtt_client.publish('dynamo/heartbeat', json.dumps(heartbeat_data), qos=0)
+                last_mqtt_activity = time.time()
+            else:
+                break
+        except Exception as e:
+            print(f"Error in MQTT heartbeat: {e}")
+            break
+
 def setup_mqtt():
     """Setup MQTT client and connection"""
     global mqtt_client
     try:
+        if mqtt_client:
+            try:
+                mqtt_client.loop_stop()
+                mqtt_client.disconnect()
+            except:
+                print("Failed to disconnect existing MQTT client")
         mqtt_client = mqtt.Client(userdata=None, protocol=mqtt.MQTTv5)
         mqtt_client.tls_set(tls_version=ssl.PROTOCOL_TLS_CLIENT)
         mqtt_client.username_pw_set(mqtt_username, mqtt_password)
-        mqtt_client.reconnect_delay_set(min_delay=1, max_delay=120)
+        mqtt_client.reconnect_delay_set(min_delay=1, max_delay=1)
         mqtt_client.on_connect = on_mqtt_connect
         mqtt_client.on_disconnect = on_mqtt_disconnect
         mqtt_client.on_message = on_mqtt_message
         print(f"Connecting to MQTT broker at {mqtt_host}:{mqtt_port}")
-        result = mqtt_client.connect(mqtt_host, mqtt_port, keepalive=30, clean_start=mqtt.MQTT_CLEAN_START_FIRST_ONLY)
+        result = mqtt_client.connect(mqtt_host, mqtt_port, keepalive=mqtt_keepalive_interval, clean_start=mqtt.MQTT_CLEAN_START_FIRST_ONLY)
         if result == 0:
             mqtt_client.loop_start()
             return True
@@ -541,33 +581,50 @@ def StartBot():
         telegram_thread = threading.Thread(target=StartTelegramBot, daemon=True)
         telegram_thread.start()
     last_reconnect_attempt = 0
-    reconnect_interval = 5
+    base_reconnect_interval = 2
+    max_reconnect_interval = 30
     reconnect_attempts = 0
-    try:
-        while True:
-            time.sleep(1)
-            current_time = time.time()
-            if mqtt_client.is_connected() or (current_time - last_reconnect_attempt) < reconnect_interval:
+    connection_stable_time = 0
+    while True:
+        time.sleep(1)
+        current_time = time.time()
+        if mqtt_client and mqtt_client.is_connected():
+            if last_mqtt_activity > 0 and (current_time - last_mqtt_activity) > mqtt_health_check_interval: # Check for stale connection (no activity for too long)
+                print(f"MQTT connection appears stale (no activity for {current_time - last_mqtt_activity:.1f}s) - forcing reconnection")
+                try:
+                    mqtt_client.loop_stop()
+                    mqtt_client.disconnect()
+                except:
+                    pass
+                connection_stable_time = 0
                 continue
-            try:
-                print(f"Attempting to reconnect to MQTT... (attempt {reconnect_attempts + 1})")
-                if setup_mqtt():
-                    print("MQTT reconnected successfully")
+            if connection_stable_time == 0:
+                connection_stable_time = current_time
+            elif current_time - connection_stable_time > 30:
+                if reconnect_attempts > 0:
+                    print("MQTT connection stable - resetting reconnection counter")
                     reconnect_attempts = 0
-                else:
-                    print(f"MQTT reconnection failed")
-                    reconnect_attempts += 1
-            except Exception as e:
-                print(f"MQTT reconnection failed: {e}")
+                    connection_stable_time = current_time
+            continue
+        connection_stable_time = 0
+        current_interval = min(base_reconnect_interval + (reconnect_attempts * 2), max_reconnect_interval)
+        if (current_time - last_reconnect_attempt) < current_interval:
+            continue 
+        try:
+            print(f"Attempting to reconnect to MQTT... (attempt {reconnect_attempts + 1}, next attempt in {current_interval}s if this fails)")
+            if setup_mqtt():
+                print("MQTT reconnected successfully")
+                reconnect_attempts = 0
+                connection_stable_time = current_time
+                time.sleep(2) # Wait a bit for connection to stabilize
+            else:
+                print(f"MQTT reconnection failed")
                 reconnect_attempts += 1
-            finally:
-                last_reconnect_attempt = current_time
-            if reconnect_attempts > 0:
-                print(f"Next reconnection attempt in {reconnect_interval} seconds")
-    except KeyboardInterrupt:
-        if mqtt_client:
-            mqtt_client.loop_stop()
-            mqtt_client.disconnect()
+        except Exception as e:
+            print(f"MQTT reconnection failed: {e}")
+            reconnect_attempts += 1
+        finally:
+            last_reconnect_attempt = current_time
 
 if __name__ == '__main__':
     StartBot()

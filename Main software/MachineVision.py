@@ -97,8 +97,8 @@ def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     dist_x2 = np.linalg.norm(ex2 - eye_center)
     dist_y1 = np.linalg.norm(ey1 - eye_center)
     dist_y2 = np.linalg.norm(ey2 - eye_center)
-    displacement_x = 2 * (dist_x1 / (dist_x1 + dist_x2)) - 1
-    displacement_y = -2 * (dist_y1 / (dist_y1 + dist_y2)) - 1
+    displacement_x = 6 * (dist_x1 / (dist_x1 + dist_x2)) - 3
+    displacement_y = -6 * (dist_y1 / (dist_y1 + dist_y2)) - 3
     return (displacement_x, displacement_y)
 
 def inference(cv2image):
@@ -131,17 +131,17 @@ def draw_tracking(rgb_image):
 
 def draw_emotion(frame, emotion):
     if emotion:
-        cv2.putText(frame, f"Expr: {emotion.capitalize()}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+        cv2.putText(frame, f"Expr: {emotion.capitalize()}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
     return frame
 
 def draw_eyecloseness(frame, left_eye_closeness, right_eye_closeness):
-    cv2.putText(frame, f"L eye closed: {round(left_eye_closeness, 2)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
-    cv2.putText(frame, f"R eye closed: {round(right_eye_closeness, 2)}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"L eye closed: {round(left_eye_closeness, 2)}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    cv2.putText(frame, f"R eye closed: {round(right_eye_closeness, 2)}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
     return frame
 
 def draw_gaze(frame, displacement_eye, cross_eyedness):
-    cv2.putText(frame, f"Gaze: {round(displacement_eye[0], 2)} {round(displacement_eye[1], 2)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
-    cv2.putText(frame, f"Crosseyed: {round(cross_eyedness, 2)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
+    cv2.putText(frame, f"Gaze: {round(displacement_eye[0], 2)} {round(displacement_eye[1], 2)}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    cv2.putText(frame, f"Crosseyed: {round(cross_eyedness, 2)}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
     return frame
 
 def predict_emotion(frame, scores, draw=False):

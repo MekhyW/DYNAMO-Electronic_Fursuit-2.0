@@ -78,6 +78,11 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     time.sleep(1.5)
                     if mqtt_client.is_connected():
                         publish_device_data()
+                        try:
+                            if hasattr(Voicemod, 'sounds') and hasattr(Voicemod, 'voices') and len(Voicemod.sounds) > 0:
+                                publish_voicemod_data()
+                        except Exception as vm_e:
+                            print(f"Error publishing Voicemod data on MQTT connect: {vm_e}")
                         heartbeat_thread = threading.Thread(target=mqtt_heartbeat_worker, daemon=True)
                         heartbeat_thread.start()
                 except Exception as e:
@@ -391,6 +396,9 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
 def publish_voicemod_data():
     """Publish Voicemod data to MQTT"""
     try:
+        if not mqtt_client or not mqtt_client.is_connected():
+            print("MQTT client not connected, skipping Voicemod data publish")
+            return
         sound_effects = []
         for sound in Voicemod.sounds:
             sound_effects.append({'id': sound['id'], 'name': sound['name']})

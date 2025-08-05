@@ -37,10 +37,10 @@ valid_response_actions = {
     'getMemes': ['getMemes'],
     'getBitmap': ['getBitmap']
 }
+no_response_commands = ['playMeme', 'stopAllMemeSounds']
 
 async def send_message(websocket, command, payload):
-    no_response_commands = ['playMeme', 'stopAllMemeSounds']
-    message = {"action": command, "id": ''.join(random.choice(string.ascii_lowercase) for i in range(36)), "payload": payload}
+    message = {"action": command, "id": ''.join(random.choice(string.ascii_lowercase) for _ in range(36)), "payload": payload}
     await websocket.send(json.dumps(message))
     if command in no_response_commands:
         return True
@@ -82,32 +82,34 @@ async def getSounds():
         response = await send_message(voicemod_websocket, 'getMemes', {})
         if response is not None and 'actionObject' in response and 'listOfMemes' in response['actionObject']:
             for sound in response["actionObject"]["listOfMemes"]:
-                if sound.get("profile") == "Fursuit":
-                    sounds.append({"name": sound["name"], "id": sound["FileName"]})
+                if sound.get("Type") == "PlayStop" and sound.get('Name').islower():
+                    sounds.append({"name": sound["Name"], "id": sound["FileName"]})
             sounds = sorted(sounds, key=lambda k: k['name'])
             return
         
 async def getStatus(command):
     status = await send_message(voicemod_websocket, command, {})
+    if not 'value' in status['actionObject']:
+        return None
     return status['actionObject']['value']
     
 async def toggleHearMyVoice(desired_status):
-    while True:
-        response = await send_message(voicemod_websocket, 'toggleHearMyVoice', {})
-        if (desired_status and 'action' in response and response['action'] == 'hearMySelfEnabledEvent') or ((not desired_status) and 'action' in response and response['action'] == 'hearMySelfDisabledEvent'):
-            break
+    status = await getStatus('getHearMyselfStatus')
+    if status == desired_status:
+        return
+    return await send_message(voicemod_websocket, 'toggleHearMyVoice', {})
 
 async def toggleVoiceChanger(desired_status):
-    while True:
-        response = await send_message(voicemod_websocket, 'toggleVoiceChanger', {})
-        if (desired_status and 'action' in response and response['action'] == 'voiceChangerEnabledEvent') or ((not desired_status) and 'action' in response and response['action'] == 'voiceChangerDisabledEvent'):
-            break
+    status = await getStatus('getVoiceChangerStatus')
+    if status == desired_status:
+        return
+    return await send_message(voicemod_websocket, 'toggleVoiceChanger', {})
 
 async def toggleBackground(desired_status):
-    while True:
-        response = await send_message(voicemod_websocket, 'toggleBackground', {})
-        if (desired_status and 'action' in response and response['action'] == 'backgroundEffectsEnabledEvent') or ((not desired_status) and 'action' in response and response['action'] == 'backgroundEffectsDisabledEvent'):
-            break
+    status = await getStatus('getBackgroundEffectStatus')
+    if status == desired_status:
+        return
+    return await send_message(voicemod_websocket, 'toggleBackground', {})
 
 async def setVoice(voice_id):
     await send_message(voicemod_websocket, 'loadVoice', {"voiceId": voice_id})
@@ -136,7 +138,6 @@ async def connect():
             print("Voices loaded")
             await getSounds()
             print("Soundboard loaded")
-            ControlBot.publish_voicemod_data()
             while True:
                 time.sleep(0.1)
                 if toggle_hear_my_voice_flag:

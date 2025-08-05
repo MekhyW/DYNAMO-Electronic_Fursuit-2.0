@@ -27,7 +27,8 @@ async def send_message(websocket, message):
                 'toggleVoiceChanger': ['voiceChangerEnabledEvent', 'voiceChangerDisabledEvent'],
                 'toggleBackground': ['backgroundEffectsEnabledEvent', 'backgroundEffectsDisabledEvent'],
                 'getVoices': ['getVoices'],
-                'loadVoice': ['loadVoice']
+                'loadVoice': ['loadVoice'],
+                'getMemes': ['getMemes']
             }
             if message['action'] in valid_response_actions and 'action' in response and response['action'] not in valid_response_actions[message['action']]:
                 continue
@@ -65,8 +66,8 @@ async def main():
                         if sounds is not None and 'actionObject' in sounds and 'listOfMemes' in sounds['actionObject']:
                             sounds = sounds["actionObject"]["listOfMemes"]
                             for sound in sounds:
-                                if sound.get("profile") == "Fursuit":
-                                    print(sound["name"], sound["FileName"])
+                                if sound.get("Type") == "PlayStop" and sound.get('Name').islower():
+                                    print(sound["Name"], sound["FileName"])
                         else:
                             print("Error getting sounds")
                     case "getAllSoundboard":

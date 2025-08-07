@@ -91,6 +91,7 @@ Configure the audio settings, including noise reduction and voice gate. Also, se
 
 To set your own effect options:
 - Add the voice effects you want to appear in the app menu as "Favorites"
+- For the voices that have background sounds, it is recommended to set them to a low volume (e.g. 10%)
 - Add the sound effects you want to appear in the app menu to a soundboard and make their names lowercase
 
 ### 6. Install and Configure AnyDesk

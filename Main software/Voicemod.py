@@ -162,6 +162,8 @@ async def connect():
                             await toggleHearMyVoice(True)
                         if not await getStatus('getVoiceChangerStatus'):
                             await toggleVoiceChanger(True)
+                        if not await getStatus('getBackgroundEffectStatus'):
+                            await toggleBackground(True)
                 if play_sound_flag:
                     play_sound_flag = False
                     await playSound(sound_id)

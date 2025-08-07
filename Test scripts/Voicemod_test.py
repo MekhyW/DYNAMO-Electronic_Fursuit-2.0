@@ -4,8 +4,11 @@ import asyncio
 import json
 import random
 import string
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-voicemod_key = ''
+voicemod_key = os.getenv('voicemod_key')
 url = "ws://localhost:59129/v1"
 
 async def send_message(websocket, message):
@@ -28,7 +31,9 @@ async def send_message(websocket, message):
                 'toggleBackground': ['backgroundEffectsEnabledEvent', 'backgroundEffectsDisabledEvent'],
                 'getVoices': ['getVoices'],
                 'loadVoice': ['loadVoice'],
-                'getMemes': ['getMemes']
+                'getMemes': ['getMemes'],
+                'getCurrentVoice': ['getCurrentVoice'],
+                'setCurrentVoiceParameter': ['setCurrentVoiceParameter'],
             }
             if message['action'] in valid_response_actions and 'action' in response and response['action'] not in valid_response_actions[message['action']]:
                 continue
@@ -110,6 +115,22 @@ async def main():
                             print(bitmap)
                         else:
                             print("Error getting bitmap")
+                    case "getCurrentVoice":
+                        current_voice = await send_message(websocket_voicemod, message)
+                        if current_voice is not None and 'actionObject' in current_voice and 'Parameters' in current_voice['actionObject']:
+                            current_voice = current_voice["actionObject"]["Parameters"]
+                            for parameter in current_voice:
+                                print(parameter['name'], parameter['value'])
+                    case "setCurrentVoiceParameter":
+                        parameter_name = input("Enter parameter name: ")
+                        parameter_value = input("Enter parameter value: ")
+                        message["payload"]["parameterName"] = parameter_name
+                        message["payload"]["parameterValue"] = { "value": { "value": parameter_value } }
+                        response = await send_message(websocket_voicemod, message)
+                        if response is not None and 'action' in response and response['action'] == 'setCurrentVoiceParameter':
+                            print("Parameter set successfully")
+                        else:
+                            print("Error setting parameter")
                     case _:
                         print("Invalid command")
     except ConnectionRefusedError:

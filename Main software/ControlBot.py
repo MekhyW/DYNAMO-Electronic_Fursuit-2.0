@@ -38,7 +38,7 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print("Connected to MQTT broker")
         last_mqtt_activity = time.time()
-        def setup_subscriptions(): # Use a separate thread for post-connection setup to avoid blocking
+        def setup_subscriptions():
             try:
                 time.sleep(1)  # Brief delay to ensure connection is stable
                 command_topics = [
@@ -47,6 +47,7 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                     'dynamo/commands/set-output-volume',
                     'dynamo/commands/microphone-toggle',
                     'dynamo/commands/voice-changer-toggle',
+                    'dynamo/commands/background-sound-toggle',
                     'dynamo/commands/leds-toggle',
                     'dynamo/commands/leds-brightness',
                     'dynamo/commands/eyes-brightness',
@@ -151,7 +152,7 @@ def send_telegram_log(command_description, user_info):
 def on_mqtt_message(client, userdata, msg):
     """Handle incoming MQTT messages with improved error handling"""
     global last_mqtt_activity
-    last_mqtt_activity = time.time()  # Update activity timestamp
+    last_mqtt_activity = time.time()
     def process_message():
         """Process MQTT message in separate thread to prevent blocking"""
         try:
@@ -216,6 +217,16 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 print(f"Voice changer {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🎤 Voice changer {status}", user_info)
+        elif topic == 'dynamo/commands/background-sound-toggle':
+            enabled = payload.get('enabled')
+            if enabled is not None:
+                Waveform.stop_gibberish_flag = True
+                Voicemod.desired_status = enabled
+                Voicemod.toggle_background_flag = True
+                Waveform.play_audio("sfx/settings_toggle.wav")
+                print(f"Background sound {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                status = "enabled" if enabled else "disabled"
+                send_telegram_log(f"🎵 Background sound {status}", user_info)
         elif topic == 'dynamo/commands/leds-toggle':
             enabled = payload.get('enabled')
             if enabled is not None:

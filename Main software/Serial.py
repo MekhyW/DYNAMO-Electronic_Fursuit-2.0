@@ -4,7 +4,7 @@ port = 'COM3'
 baud = 9600
 ser = None
 
-leds_brightness_default = 50
+leds_brightness_default = 150
 leds_effects_options = ['solid_color', 'fade', 'wipe', 'theater_chase', 'rainbow', 'strobe', 'moving substrips', 'none (off)']
 
 animatronics_on = 1

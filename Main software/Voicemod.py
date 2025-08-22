@@ -62,6 +62,8 @@ async def getVoices():
         voices = []
         gibberish_voices = []
         response = await send_message(voicemod_websocket, 'getVoices', {})
+        if 'payload' not in response:
+            continue
         response = response['payload']
         if response is not None and 'voices' in response:
             response = response["voices"]

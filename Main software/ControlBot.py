@@ -35,72 +35,64 @@ except Exception as e:
 
 def on_mqtt_connect(client, userdata, flags, rc, properties=None):
     global last_mqtt_activity
-    if rc == 0:
-        print("Connected to MQTT broker")
-        last_mqtt_activity = time.time()
-        def setup_subscriptions():
+    if rc != 0:
+        print(f"MQTT connection failed with code {rc}")
+        return
+    print("Connected to MQTT broker")
+    last_mqtt_activity = time.time()
+    def setup_subscriptions():
+        try:
+            time.sleep(1)  # Brief delay to ensure connection is stable
+            command_topics = [
+                'dynamo/commands/play-sound-effect',
+                'dynamo/commands/set-voice-effect',
+                'dynamo/commands/set-output-volume',
+                'dynamo/commands/microphone-toggle',
+                'dynamo/commands/voice-changer-toggle',
+                'dynamo/commands/background-sound-toggle',
+                'dynamo/commands/leds-toggle',
+                'dynamo/commands/leds-brightness',
+                'dynamo/commands/eyes-brightness',
+                'dynamo/commands/leds-color',
+                'dynamo/commands/leds-effect',
+                'dynamo/commands/hotword-detection-toggle',
+                'dynamo/commands/hotword-trigger',
+                'dynamo/commands/text-to-speech',
+                'dynamo/commands/set-expression',
+                'dynamo/commands/face-expression-tracking-toggle',
+                'dynamo/commands/eye-tracking-toggle',
+                'dynamo/commands/eyebrows-toggle',
+                'dynamo/commands/shutdown',
+                'dynamo/commands/reboot',
+                'dynamo/commands/kill-software',
+                'dynamo/commands/set-sound-device'
+            ]
+            for topic in command_topics:
+                try:
+                    result = client.subscribe(topic)
+                    if result[0] == mqtt.MQTT_ERR_SUCCESS:
+                        print(f"Subscribed to {topic}")
+                    else:
+                        print(f"Failed to subscribe to {topic}: {result}")
+                    time.sleep(0.1)
+                except Exception as e:
+                    print(f"Error subscribing to {topic}: {e}")
             try:
-                time.sleep(1)  # Brief delay to ensure connection is stable
-                command_topics = [
-                    'dynamo/commands/play-sound-effect',
-                    'dynamo/commands/set-voice-effect',
-                    'dynamo/commands/set-output-volume',
-                    'dynamo/commands/microphone-toggle',
-                    'dynamo/commands/voice-changer-toggle',
-                    'dynamo/commands/background-sound-toggle',
-                    'dynamo/commands/leds-toggle',
-                    'dynamo/commands/leds-brightness',
-                    'dynamo/commands/eyes-brightness',
-                    'dynamo/commands/leds-color',
-                    'dynamo/commands/leds-effect',
-                    'dynamo/commands/hotword-detection-toggle',
-                    'dynamo/commands/hotword-trigger',
-                    'dynamo/commands/text-to-speech',
-                    'dynamo/commands/set-expression',
-                    'dynamo/commands/face-expression-tracking-toggle',
-                    'dynamo/commands/eye-tracking-toggle',
-                    'dynamo/commands/eyebrows-toggle',
-                    'dynamo/commands/shutdown',
-                    'dynamo/commands/reboot',
-                    'dynamo/commands/kill-software',
-                    'dynamo/commands/set-sound-device'
-                ]
-                for topic in command_topics:
-                    try:
-                        result = client.subscribe(topic)
-                        if result[0] == mqtt.MQTT_ERR_SUCCESS:
-                            print(f"Subscribed to {topic}")
-                        else:
-                            print(f"Failed to subscribe to {topic}: {result}")
-                        time.sleep(0.1)
-                    except Exception as e:
-                        print(f"Error subscribing to {topic}: {e}")
-                try:
-                    time.sleep(1.5)
-                    if mqtt_client.is_connected():
-                        publish_device_data()
-                        try:
-                            if hasattr(Voicemod, 'sounds') and hasattr(Voicemod, 'voices') and len(Voicemod.sounds) > 0:
-                                publish_voicemod_data()
-                        except Exception as vm_e:
-                            print(f"Error publishing Voicemod data on MQTT connect: {vm_e}")
-                        heartbeat_thread = threading.Thread(target=mqtt_heartbeat_worker, daemon=True)
-                        heartbeat_thread.start()
-                except Exception as e:
-                    print(f"Error publishing device data: {e}")
-                try:
-                    Waveform.play_audio("sfx/bot_online.wav")
-                    print("MQTT Control bot online!")
-                    if fursuitbot:
-                        fursuitbot.sendMessage(fursuitbot_ownerID, '>>> CONTROL BOT READY! <<<')
-                except Exception as e:
-                    print(f"Error in post-connection setup: {e}")
+                time.sleep(1.5)
+                publish_device_data()
             except Exception as e:
-                print(f"Error in subscription setup: {e}")
-        setup_thread = threading.Thread(target=setup_subscriptions, daemon=True)
-        setup_thread.start()
-    else:
-        print(f"Failed to connect to MQTT broker, return code {rc}")
+                print(f"Error publishing device data: {e}")
+            heartbeat_thread = threading.Thread(target=mqtt_heartbeat_worker, daemon=True)
+            heartbeat_thread.start()
+            Waveform.play_audio("sfx/bot_online.wav")
+            print("MQTT Control bot online!")
+            if fursuitbot:
+                fursuitbot.sendMessage(fursuitbot_ownerID, '>>> CONTROL BOT READY! <<<')
+        except Exception as e:
+            print(f"Error in subscription setup: {e}")
+        publish_voicemod_data() #Blocking loop waits for Voicemod data
+    setup_thread = threading.Thread(target=setup_subscriptions, daemon=True)
+    setup_thread.start()
 
 def on_mqtt_disconnect(client, userdata, rc, properties=None):
     if rc == 0:
@@ -410,6 +402,8 @@ def publish_voicemod_data():
         if not mqtt_client or not mqtt_client.is_connected():
             print("MQTT client not connected, skipping Voicemod data publish")
             return
+        while not len(Voicemod.sounds) and not len(Voicemod.voices):
+            time.sleep(1)
         sound_effects = []
         for sound in Voicemod.sounds:
             sound_effects.append({'id': sound['id'], 'name': sound['name']})

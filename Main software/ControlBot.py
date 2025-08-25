@@ -284,7 +284,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🗣️ Hotword detection {status}", user_info)
         elif topic == 'dynamo/commands/hotword-trigger':
-            Assistant.trigger()
+            Assistant.keyword_detected = True
             print(f"Hotword triggered (requested by {user_name})")
             send_telegram_log(f"🗣️ Assistant hotword triggered", user_info)
         elif topic == 'dynamo/commands/text-to-speech':
@@ -489,8 +489,6 @@ def TextToSpeech(text, user_name="Unknown"):
             print(f"Generating TTS for: {text} (requested by {user_name})")
             Waveform.TTS_generate(text)
             Waveform.TTS_play_async()
-            Assistant.previous_questions.append("")
-            Assistant.previous_answers.append(text)
         except Exception as e:
             print(f"Error in TTS: {e}")
     tts_thread = threading.Thread(target=tts_worker, daemon=True)

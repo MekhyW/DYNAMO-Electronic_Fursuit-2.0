@@ -2,3 +2,4 @@
 *.pyc
 *.env
 *.cfg
+*system_prompt.txt

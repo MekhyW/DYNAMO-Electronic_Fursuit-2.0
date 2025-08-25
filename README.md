@@ -8,17 +8,6 @@ Traditional industry-standard mascot and full-body character suits, although fas
 
 The Dynamo project addresses these challenges by introducing an innovative platform for full-body mascot and character suits. Its primary goal is to bring characters to life in real, uncontrolled scenarios by enabling autonomous operation without the need for an external operator. 
 
-This is made possible by combining the following key features:
-
-1. Modular Design: The system consists of two main expandable components - a specially designed mask and a component box worn inside a backpack, connected via a wire-joining "vertical spine" structure
-2. Advanced Mask Components: The mask incorporates displays, a camera, microphone, servos, and other relevant peripherals to create lifelike expressions and interactions
-3. Powerful Processing Unit: A Lattepanda Delta 3 central processing unit housed in the backpack component box serves as the brain of the system
-4. Self-Contained Power: Batteries within the component box ensure portability and extended operation
-5. Facial/eye-tracking: Custom pipeline for realtime mapping of the wearers gaze and facial expression, which is mirrored on the displayed eyes
-6. Audio Processing: A dedicated speaker enables clear voice communication + realtime and non-realtime sound effects
-7. Self-Hosted Control Bot: Custom control and debugging interface remotely accessible by the wearer or a third party
-8. Assistant Intelligence: Extra layer of interactivity and autonomy with the use of generative AI capable of executing commands and generating responses
-
 ## Directory Structure
 
 ```

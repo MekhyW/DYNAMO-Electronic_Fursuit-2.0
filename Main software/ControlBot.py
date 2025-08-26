@@ -284,7 +284,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🗣️ Hotword detection {status}", user_info)
         elif topic == 'dynamo/commands/hotword-trigger':
-            Assistant.keyword_detected = True
+            Assistant.manual_trigger = True
             print(f"Hotword triggered (requested by {user_name})")
             send_telegram_log(f"🗣️ Assistant hotword triggered", user_info)
         elif topic == 'dynamo/commands/text-to-speech':

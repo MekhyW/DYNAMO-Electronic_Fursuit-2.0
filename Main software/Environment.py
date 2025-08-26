@@ -12,6 +12,7 @@ try:
     livekit_api_secret = os.getenv("livekit_api_secret")
     prompt_encryption_key = os.getenv("prompt_encryption_key")
     eleven_api_key = os.getenv("eleven_api_key")
+    tavily_api_key = os.getenv("tavily_api_key")
     mqtt_host = os.getenv("mqtt_host")
     mqtt_port = int(os.getenv("mqtt_port"))
     mqtt_username = os.getenv("mqtt_username")

@@ -19,6 +19,7 @@ def machine_vision_thread():
         time.sleep(0.01)
 
 def assistant_thread():
+    os.system("python Assistant.py download-files")
     os.system("python Assistant.py console")
 
 def voicemod_thread():

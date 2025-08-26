@@ -15,7 +15,7 @@ os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
-KEYWORDS = ["cookiebot", "cookie bot"]
+KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote"]
 hotword_detection_enabled = True
 keyword_detected = False
 
@@ -72,11 +72,11 @@ async def entrypoint(ctx: JobContext):
     session = AgentSession(
         llm=openai.LLM(model="gpt-4o", temperature=0.9),
         stt=openai.STT(model="whisper-1", language="pt"),
-        tts=elevenlabs.TTS(voice_id="ODq5zmih8GrVes37Dizd", model="eleven_multilingual_v2"),
+        tts=elevenlabs.TTS(voice_id="cXQRjuAYvmCPhUeRKe7o", model="eleven_multilingual_v2"),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],
         allow_interruptions=True,
-        preemptive_generation=True
+        preemptive_generation=False
     )
     await session.start(
         agent=Cookiebot(), 

@@ -53,14 +53,8 @@ class Cookiebot(Agent):
                 if hasattr(event, 'type') and str(event.type) == "SpeechEventType.FINAL_TRANSCRIPT" and event.alternatives:
                     transcript = event.alternatives[0].text
                     print(f"Transcript: {transcript}")
-                    if not keyword_detected:
-                        for keyword in KEYWORDS:
-                            if keyword.lower() in transcript.lower():
-                                print(f"Activation keyword detected: '{keyword}'")
-                                keyword_detected = True
-                                await self.session.generate_reply(instructions="Keyword detected. How can I help you?")
-                                break
-                    elif keyword_detected and hotword_detection_enabled: # If keyword is already detected, process all messages
+                    if hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS):
+                        print(f"Activation keyword detected: '{keyword}'")
                         await self.session.generate_reply(instructions=transcript)
                 yield event
         return process_stream()

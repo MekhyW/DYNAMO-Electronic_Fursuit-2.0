@@ -52,14 +52,15 @@ class Cookiebot(Agent):
         if parent_stream is None:
             return None
         async def process_stream():
+            global manual_trigger
             async for event in parent_stream:
                 if hasattr(event, 'type') and str(event.type) == "SpeechEventType.FINAL_TRANSCRIPT" and event.alternatives:
                     transcript = event.alternatives[0].text
                     print(f"Transcript: {transcript}")
                     if manual_trigger or (hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS)):
-                        print(f"Activation keyword detected: '{keyword}'")
-                        await self.session.generate_reply(instructions=transcript)
-                yield event
+                        print(f"Activation keyword detected")
+                        manual_trigger = False
+                        yield event
         return process_stream()
 
     @function_tool()
@@ -138,7 +139,7 @@ def prewarm(proc: JobProcess):
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
         llm=openai.LLM(model="gpt-4.1-nano", temperature=0.9),
-        stt=openai.STT(model="whisper-1", language="pt"),
+        stt=openai.STT(model="whisper-1"),
         tts=elevenlabs.TTS(voice_id="Rb9J9nOjoNgGbjJUN5wt", model="eleven_multilingual_v2", voice_settings=elevenlabs.VoiceSettings(stability=0.3, similarity_boost=1.0, style=0.0, speed=1.05, use_speaker_boost=True)),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],

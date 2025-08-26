@@ -22,7 +22,12 @@ except Exception as e:
     fursuitbot_token = None
     fursuitbot_ownerID = None
     openai_key = None
-    porcupine_key = None
+    livekit_url = None
+    livekit_api_key = None
+    livekit_api_secret = None
+    prompt_encryption_key = None
+    eleven_api_key = None
+    tavily_api_key = None
     mqtt_host = None
     mqtt_port = None
     mqtt_username = None

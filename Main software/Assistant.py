@@ -3,7 +3,7 @@ import aiohttp
 import json
 from typing import AsyncIterable, Optional
 from livekit import rtc
-from livekit.agents import JobContext, JobProcess, WorkerOptions, cli, RoomInputOptions, RoomOutputOptions
+from livekit.agents import JobContext, JobProcess, WorkerOptions, cli, RoomInputOptions, RoomOutputOptions, llm, FunctionTool, ModelSettings
 from livekit.agents.voice import Agent, AgentSession
 from livekit.plugins import elevenlabs, openai, silero, noise_cancellation
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
@@ -12,7 +12,7 @@ import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from Environment import openai_key, livekit_url, livekit_api_key, livekit_api_secret, eleven_api_key, prompt_encryption_key, tavily_api_key
-from Waveform import play_audio
+import Waveform
 import time
 import os
 os.environ["OPENAI_API_KEY"] = openai_key
@@ -21,7 +21,7 @@ os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
-KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote"]
+KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter"]
 hotword_detection_enabled = True
 manual_trigger = False
 
@@ -53,6 +53,17 @@ class Cookiebot(Agent):
         self.context_window_seconds = 15
         self.manual_listening_active = False
         self.manual_session_buffer = []
+        self.thinking_audio_thread = None
+
+    async def llm_node(self, chat_ctx: llm.ChatContext, tools: list[FunctionTool], model_settings: ModelSettings) -> AsyncIterable[llm.ChatChunk]:
+        thinking_sound_started = False
+        async for chunk in Agent.default.llm_node(self, chat_ctx, tools, model_settings):
+            if not thinking_sound_started:
+                self.thinking_audio_thread = Waveform.play_audio_async("sfx/assistant_thinking.wav")
+                thinking_sound_started = True
+            yield chunk
+        if thinking_sound_started:
+            Waveform.stop_flag = True
 
     async def stt_node(self, text: AsyncIterable[str], model_settings: Optional[dict] = None) -> Optional[AsyncIterable[rtc.AudioFrame]]:
         parent_stream = super().stt_node(text, model_settings)
@@ -70,7 +81,7 @@ class Cookiebot(Agent):
                     print(f"Transcript: {transcript}")
                     if manual_trigger:
                         print("Assistant manual trigger activated - starting listening session")
-                        play_audio("sfx/assistant_listening.wav")
+                        Waveform.play_audio("sfx/assistant_listening.wav")
                         manual_trigger = False
                         self.manual_listening_active = True
                         self.manual_session_buffer = []  # Clear previous manual session
@@ -92,7 +103,7 @@ class Cookiebot(Agent):
                         continue
                     elif hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS):
                         print(f"Assistant activation keyword detected")
-                        play_audio("sfx/assistant_listening.wav")
+                        Waveform.play_audio("sfx/assistant_listening.wav")
                         combined_text = " ".join([item['text'] for item in self.transcript_buffer])
                         modified_event = event
                         if hasattr(event, 'alternatives') and event.alternatives:

@@ -62,6 +62,11 @@ def play_audio(filename, delete=False):
     if delete:
         os.remove(filename)
 
+def play_audio_async(filename, delete=False):
+    audio_thread = threading.Thread(target=play_audio, args=(filename, delete), daemon=True)
+    audio_thread.start()
+    return audio_thread
+
 def TTS_generate(text):
     language = langdetect.detect(text)
     tts = gTTS(text=text, lang=language, slow=False)

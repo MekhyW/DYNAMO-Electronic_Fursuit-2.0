@@ -12,6 +12,7 @@ import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from Environment import openai_key, livekit_url, livekit_api_key, livekit_api_secret, eleven_api_key, prompt_encryption_key, tavily_api_key
+import time
 import os
 os.environ["OPENAI_API_KEY"] = openai_key
 os.environ["LIVEKIT_URL"] = livekit_url
@@ -46,6 +47,11 @@ def decrypt_system_prompt(encryption_key):
 class Cookiebot(Agent):
     def __init__(self) -> None:
         super().__init__(instructions=decrypt_system_prompt(prompt_encryption_key))
+        self.transcript_buffer = []
+        self.buffer_max_size = 5
+        self.context_window_seconds = 15
+        self.manual_listening_active = False
+        self.manual_session_buffer = []
 
     async def stt_node(self, text: AsyncIterable[str], model_settings: Optional[dict] = None) -> Optional[AsyncIterable[rtc.AudioFrame]]:
         parent_stream = super().stt_node(text, model_settings)
@@ -56,11 +62,40 @@ class Cookiebot(Agent):
             async for event in parent_stream:
                 if hasattr(event, 'type') and str(event.type) == "SpeechEventType.FINAL_TRANSCRIPT" and event.alternatives:
                     transcript = event.alternatives[0].text
+                    current_time = time.time()
+                    self.transcript_buffer.append({'text': transcript, 'timestamp': current_time, 'event': event})
+                    self.transcript_buffer = [item for item in self.transcript_buffer if current_time - item['timestamp'] <= self.context_window_seconds]
+                    self.transcript_buffer = self.transcript_buffer[-self.buffer_max_size:]
                     print(f"Transcript: {transcript}")
-                    if manual_trigger or (hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS)):
-                        print(f"Activation keyword detected")
+                    if manual_trigger:
+                        print("Assistant manual trigger activated - starting listening session")
                         manual_trigger = False
-                        yield event
+                        self.manual_listening_active = True
+                        self.manual_session_buffer = []  # Clear previous manual session
+                        continue # Don't process immediately, wait for new speech
+                    if self.manual_listening_active:
+                        self.manual_session_buffer.append(transcript)
+                        print(f"Manual session collecting: {transcript}")
+                        if len(self.manual_session_buffer) >= 1:  # Process after first complete sentence
+                            print("Processing manual session input")
+                            self.manual_listening_active = False
+                            context_text = " ".join([item['text'] for item in self.transcript_buffer[-2:]])  # Last 2 context items
+                            manual_text = " ".join(self.manual_session_buffer)
+                            combined_text = f"{context_text} {manual_text}".strip()
+                            modified_event = event
+                            if hasattr(event, 'alternatives') and event.alternatives:
+                                event.alternatives[0].text = combined_text
+                            yield modified_event
+                            self.manual_session_buffer = []
+                        continue
+                    elif hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS):
+                        print(f"Assistant activation keyword detected")
+                        combined_text = " ".join([item['text'] for item in self.transcript_buffer])
+                        modified_event = event
+                        if hasattr(event, 'alternatives') and event.alternatives:
+                            event.alternatives[0].text = combined_text
+                        yield modified_event
+                        self.transcript_buffer = []
         return process_stream()
 
     @function_tool()
@@ -139,7 +174,7 @@ def prewarm(proc: JobProcess):
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
         llm=openai.LLM(model="gpt-4.1-nano", temperature=0.9),
-        stt=openai.STT(model="whisper-1"),
+        stt=openai.STT(model="gpt-4o-mini-transcribe"),
         tts=elevenlabs.TTS(voice_id="Rb9J9nOjoNgGbjJUN5wt", model="eleven_multilingual_v2", voice_settings=elevenlabs.VoiceSettings(stability=0.3, similarity_boost=1.0, style=0.0, speed=1.05, use_speaker_boost=True)),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],

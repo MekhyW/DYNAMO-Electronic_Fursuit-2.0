@@ -7,14 +7,12 @@ import os
 from gtts import gTTS
 import langdetect
 import Serial
-import Assistant
 import threading
 
 p = pyaudio.PyAudio()
 chunk_size = 4096
 
 stop_flag = False
-stop_gibberish_flag = False
 
 def convert_to_wav(input_filename):
     if input_filename[-4:] != ".wav":
@@ -49,25 +47,6 @@ def play_audio_stream(wf, stream):
 def close_audio_stream(stream):
     stream.stop_stream()
     stream.close()
-
-def gibberish(filename, silence_threshold_percent=50):
-    global stop_gibberish_flag
-    stop_gibberish_flag = False
-    wf = wave.open(f"sfx/gibberish_voices/{filename}.wav", 'rb')
-    stream = p.open(format=p.get_format_from_width(wf.getsampwidth()), channels=wf.getnchannels(), rate=wf.getframerate(), output=True)
-    while True:
-        if stop_gibberish_flag:
-            stop_gibberish_flag = False
-            break
-        if wf.tell() >= wf.getnframes() - chunk_size:
-            wf.rewind()
-        Assistant.refresh()
-        volume = Serial.leds_level_from_int16(max(Assistant.current_pcm))
-        if volume > silence_threshold_percent:
-            data = wf.readframes(chunk_size*2)
-            stream.write(data)
-    wf.close()
-    close_audio_stream(stream)
 
 def play_audio(filename, delete=False):
     if not os.path.isfile(filename):

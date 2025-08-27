@@ -178,7 +178,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
         elif topic == 'dynamo/commands/set-voice-effect':
             effect_id = payload.get('effectId')
             if effect_id is not None:
-                Waveform.stop_gibberish_flag = True
                 Voicemod.voice_id = str(effect_id)
                 Voicemod.load_voice_flag = True
                 print(f"Setting voice effect {effect_id} (requested by {user_name})")
@@ -202,7 +201,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
         elif topic == 'dynamo/commands/voice-changer-toggle':
             enabled = payload.get('enabled')
             if enabled is not None:
-                Waveform.stop_gibberish_flag = True
                 Voicemod.desired_status = enabled
                 Voicemod.toggle_voice_changer_flag = True
                 Waveform.play_audio("sfx/settings_toggle.wav")
@@ -212,7 +210,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
         elif topic == 'dynamo/commands/background-sound-toggle':
             enabled = payload.get('enabled')
             if enabled is not None:
-                Waveform.stop_gibberish_flag = True
                 Voicemod.desired_status = enabled
                 Voicemod.toggle_background_flag = True
                 Waveform.play_audio("sfx/settings_toggle.wav")
@@ -411,8 +408,6 @@ def publish_voicemod_data():
         voice_effects = []
         for voice in Voicemod.voices:
             voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'modulation'})
-        for voice in Voicemod.gibberish_voices:
-            voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'gibberish'})
         mqtt_client.publish('dynamo/data/voice_effects', json.dumps(voice_effects), retain=True)
     except Exception as e:
         print(f"Error publishing Voicemod data: {e}")

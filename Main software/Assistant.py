@@ -12,6 +12,7 @@ import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from Environment import openai_key, livekit_url, livekit_api_key, livekit_api_secret, eleven_api_key, prompt_encryption_key, tavily_api_key
+from Waveform import play_audio
 import time
 import os
 os.environ["OPENAI_API_KEY"] = openai_key
@@ -69,6 +70,7 @@ class Cookiebot(Agent):
                     print(f"Transcript: {transcript}")
                     if manual_trigger:
                         print("Assistant manual trigger activated - starting listening session")
+                        play_audio("sfx/assistant_listening.wav")
                         manual_trigger = False
                         self.manual_listening_active = True
                         self.manual_session_buffer = []  # Clear previous manual session
@@ -90,6 +92,7 @@ class Cookiebot(Agent):
                         continue
                     elif hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS):
                         print(f"Assistant activation keyword detected")
+                        play_audio("sfx/assistant_listening.wav")
                         combined_text = " ".join([item['text'] for item in self.transcript_buffer])
                         modified_event = event
                         if hasattr(event, 'alternatives') and event.alternatives:

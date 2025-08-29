@@ -21,7 +21,7 @@ os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
-KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter"]
+KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball"]
 hotword_detection_enabled = True
 manual_trigger = False
 

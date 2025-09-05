@@ -1,13 +1,10 @@
-import ControlBot
 import websockets
 import asyncio
 import json
 import random
 import string
 import time
-import os
 from Environment import voicemod_key
-import Waveform
 
 voicemod_websocket = None
 url = "ws://localhost:59129/v1"

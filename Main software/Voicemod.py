@@ -1,13 +1,10 @@
-import ControlBot
 import websockets
 import asyncio
 import json
 import random
 import string
 import time
-import os
 from Environment import voicemod_key
-import Waveform
 
 voicemod_websocket = None
 url = "ws://localhost:59129/v1"
@@ -19,10 +16,9 @@ load_voice_flag = True
 play_sound_flag = False
 stop_sounds_flag = False
 desired_status = True
-voice_id = 'nofx'
+voice_id = '2eeebd97-8de3-4d94-91ae-79e6588e7715'
 sound_id = ''
 voices = []
-gibberish_voices = []
 sounds = []
 
 valid_response_actions = {
@@ -57,10 +53,9 @@ async def send_message(websocket, command, payload):
     return None
 
 async def getVoices():
-    global voices, gibberish_voices
+    global voices
     for _ in range(3):
         voices = []
-        gibberish_voices = []
         response = await send_message(voicemod_websocket, 'getVoices', {})
         if 'payload' not in response:
             continue
@@ -70,11 +65,7 @@ async def getVoices():
             for voice in response:
                 if voice["favorited"]:
                     voices.append({"name": voice["friendlyName"], "id": voice["id"]})
-            for gibberish_voice in os.listdir("sfx/gibberish_voices"):
-                name = gibberish_voice.replace(".wav", "")
-                gibberish_voices.append({"name": name, "id": f"gibberish-{name}"})
             voices = sorted(voices, key=lambda k: k['name'])
-            gibberish_voices = sorted(gibberish_voices, key=lambda k: k['name'])
             return
 
 async def getSounds():
@@ -153,19 +144,14 @@ async def connect():
                     toggle_background_flag = False
                 if load_voice_flag:
                     load_voice_flag = False
-                    if voice_id.startswith("gibberish-"):
-                        if await getStatus('getHearMyselfStatus'):
-                            await toggleHearMyVoice(False)
-                        Waveform.gibberish(voice_id.replace("gibberish-", ""))
-                    else:
-                        await setVoice(voice_id)
-                        time.sleep(5)
-                        if not await getStatus('getHearMyselfStatus'):
-                            await toggleHearMyVoice(True)
-                        if not await getStatus('getVoiceChangerStatus'):
-                            await toggleVoiceChanger(True)
-                        if not await getStatus('getBackgroundEffectStatus'):
-                            await toggleBackground(True)
+                    await setVoice(voice_id)
+                    time.sleep(5)
+                    if not await getStatus('getHearMyselfStatus'):
+                        await toggleHearMyVoice(True)
+                    if not await getStatus('getVoiceChangerStatus'):
+                        await toggleVoiceChanger(True)
+                    if not await getStatus('getBackgroundEffectStatus'):
+                        await toggleBackground(True)
                 if play_sound_flag:
                     play_sound_flag = False
                     await playSound(sound_id)

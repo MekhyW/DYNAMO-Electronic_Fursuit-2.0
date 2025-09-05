@@ -8,6 +8,8 @@ from mediapipe import solutions
 from mediapipe.framework.formats import landmark_pb2
 import pickle
 import joblib
+import threading
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -30,6 +32,7 @@ UPSIDE_DOWN = True
 
 cap = None
 cap_id = 0
+camera_lock = threading.Lock()
 detection_result = None
 mesh_points = None
 displacement_eye = (0,0)
@@ -47,14 +50,23 @@ expression_manual_id = 0
 
 def open_camera(camera_id):
     global cap
-    while True:
-        cap = cv2.VideoCapture(camera_id)
-        if not cap.isOpened():
-            print("Camera failure")
-            return None
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        cap.set(cv2.CAP_PROP_FPS, 30)
-        return cap
+    with camera_lock:
+        if cap is not None:
+            cap.release()
+            cap = None
+        max_retries = 3
+        for _ in range(max_retries):
+            cap = cv2.VideoCapture(camera_id)
+            if cap.isOpened():
+                cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+                cap.set(cv2.CAP_PROP_FPS, 30)
+                return cap
+            else:
+                cap.release()
+                cap = None
+                time.sleep(0.5)
+        print(f"Camera failure after {max_retries} attempts")
+        return None
 
 def undistort_image(image, draw):
     height, width = image.shape[:2]
@@ -190,11 +202,16 @@ def eye_track(frame, scores, draw=False):
     return frame
 
 def main(draw=False):
+    global cap
     if not detector:
         return None
-    ret, frame = cap.read()
+    with camera_lock:
+        if cap is None or not cap.isOpened():
+            open_camera(cap_id)
+            if cap is None:
+                return None
+        ret, frame = cap.read()
     if not ret or frame is None:
-        open_camera(cap_id)
         return None
     frame = undistort_image(frame, draw)
     scores = inference(frame)
@@ -210,7 +227,6 @@ def main(draw=False):
 
 if __name__ == "__main__":
     open_camera(cap_id)
-    import time
     fps = 0
     while True:
         start = time.time()

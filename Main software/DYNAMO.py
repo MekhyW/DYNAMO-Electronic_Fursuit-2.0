@@ -2,13 +2,12 @@ import Voicemod
 import Waveform
 import MachineVision
 import Unity
-import Assistant
 import Serial
 import ControlBot
-import Environment
 import threading
 import asyncio
 import time
+import os
 
 def machine_vision_thread():
     MachineVision.open_camera(MachineVision.cap_id)
@@ -20,30 +19,8 @@ def machine_vision_thread():
         time.sleep(0.01)
 
 def assistant_thread():
-    Assistant.start()
-    while True:
-        try:
-            Assistant.refresh()
-            if Assistant.triggered:
-                Waveform.stop_flag = True
-                Waveform.play_audio("sfx/assistant_listening.wav")
-                time.sleep(0.5)
-                Assistant.record_query()
-                Waveform.play_audio("sfx/assistant_ok.wav")
-                transcript = Assistant.process_query()
-                answer = Assistant.assistant_query(transcript)
-                Assistant.start()
-                if len(answer):
-                    Waveform.TTS_generate(answer)
-                    ControlBot.LogAIMessage(transcript, answer)
-                    Waveform.TTS_play()
-                    ControlBot.fursuitbot.sendMessage(Environment.fursuitbot_ownerID, f'QUERY:\n{transcript}')
-                    ControlBot.fursuitbot.sendMessage(Environment.fursuitbot_ownerID, f'RESPONSE:\n{answer}')
-                Assistant.triggered = False
-        except Exception as e:
-            print(e)
-            Assistant.triggered = False
-        time.sleep(0.01)
+    os.system("python Assistant.py download-files")
+    os.system("python Assistant.py console")
 
 def voicemod_thread():
     while True:

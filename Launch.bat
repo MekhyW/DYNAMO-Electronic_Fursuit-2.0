@@ -13,11 +13,11 @@ git pull || echo Git pull failed
 powershell -window minimized -command ""
 
 :: Start Eye-Graphics.exe
-start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Build\Eye-Graphics.exe" || echo Eye-Graphics failed to start
+start "" "C:\Users\LattePanda\Documents\GitHub\Eye-Graphics\Build\Eye-Graphics.exe" || echo Eye-Graphics crashed
 
 :: Start DYNAMO.py
 cd "Main software"
-python DYNAMO.py || echo DYNAMO.py failed to start
+python DYNAMO.py || echo DYNAMO.py crashed
 
 :: Pause at the end
 pause

@@ -13,7 +13,6 @@ The Dynamo project addresses these challenges by introducing an innovative platf
 ```
 ├───Main software
 │   ├───models
-│   ├───resources
 │   ├───sfx
 ├───Planning
 └───Test scripts
@@ -21,7 +20,7 @@ The Dynamo project addresses these challenges by introducing an innovative platf
 
 - Main software: Python code for the main software of the project with associated artifacts
 - Planning: Diagrams and planning documents
-- Test scripts: Some scripts used for testing the project
+- Test scripts: Some scripts used for testing aspects of the project
 
 ## Associated Repositories
 
@@ -111,6 +110,10 @@ Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is importan
 ![APN Settings](Planning/apn.jpg)
 
 If you connect to a WiFi network (such as a hotel network), the connection can usually be forwarded to the suit via a "WiFi Sharing" option in the phone's network settings.
+
+### 10. Disable Screen Saver
+
+To disable the screen saver, go to "Settings" -> "System" -> "Power & sleep" -> "Screen saver" and set it to "Never".
 
 ## Contributing
 

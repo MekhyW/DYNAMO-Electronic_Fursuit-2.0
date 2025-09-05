@@ -229,7 +229,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
         elif topic == 'dynamo/commands/leds-brightness':
             brightness = payload.get('brightness')
             if brightness is not None:
-                Serial.leds_brightness = brightness
+                Serial.leds_brightness = brightness * (255 / 100)
                 MachineVision.eye_tracking_mode = False
                 MachineVision.expression_manual_mode = True
                 print(f"LEDs brightness set to {brightness}% (requested by {user_name})")

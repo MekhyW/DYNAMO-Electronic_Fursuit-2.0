@@ -115,6 +115,13 @@ If you connect to a WiFi network (such as a hotel network), the connection can u
 
 To disable the screen saver, go to "Settings" -> "System" -> "Power & sleep" -> "Screen saver" and set it to "Never".
 
+### 11. Disable Volume Ducking
+
+By default, when Windows detects what it thinks is a communications activity (like a VoIP call, or any app that looks like one: Voicemod, Discord, Zoom, etc.), it will automatically reduce the volume of other apps (Spotify, games, etc.) so you can “hear the call.”
+
+We should disable this so that the volume of all sound is not reduced when using the suit.
+Go to Control Panel → Sound → Communications tab → Do nothing
+
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request. Or, if you have any suggestions or feedback contact me directly via Telegram @MekhyW.

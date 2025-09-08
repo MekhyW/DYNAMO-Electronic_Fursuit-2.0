@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.special import expit
 import cv2
 import mediapipe as mp
 from mediapipe.tasks import python
@@ -10,6 +9,7 @@ import pickle
 import joblib
 import threading
 import time
+import math
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -100,6 +100,9 @@ def transform_to_zero_one_numpy(arr, normalize=False):
     if normalize:
         transformed_arr /= np.sum(transformed_arr)
     return transformed_arr
+
+def expit(x):
+    return 1 / (1 + math.exp(-x))
 
 def calculate_eye_displacement(iris_points, ex1, ex2, ey1, ey2):
     eye_center = np.mean(iris_points, axis=0)

@@ -12,6 +12,7 @@ import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from Environment import openai_key, livekit_url, livekit_api_key, livekit_api_secret, eleven_api_key, prompt_encryption_key, tavily_api_key
+import ControlBot
 import Waveform
 import time
 import os
@@ -113,6 +114,171 @@ class Cookiebot(Agent):
         return process_stream()
 
     @function_tool()
+    async def get_sound_effects(self) -> str:
+        """Get the list of available sound effects."""
+        from Voicemod import sounds
+        return f"Available sound effects: {sounds}"
+
+    @function_tool()
+    async def get_voice_effects(self) -> str:
+        """Get the list of available voice effects."""
+        from Voicemod import voices
+        return f"Available voice effects: {voices}"
+
+    @function_tool()
+    async def play_sound_effect(self, effect_id: str = None) -> str:
+        """Play a sound effect or stop all sounds if no effect_id provided."""
+        try:
+            payload = {'effectId': effect_id} if effect_id else {}
+            ControlBot.handle_mqtt_command('dynamo/commands/play-sound-effect', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            if effect_id:
+                return f"Playing sound effect {effect_id}"
+            else:
+                return "Stopped all sound effects"
+        except Exception as e:
+            return f"Error playing sound effect: {str(e)}"
+
+    @function_tool()
+    async def set_voice_effect(self, effect_id: str) -> str:
+        """Set the voice changer current effect."""
+        try:
+            payload = {'effectId': effect_id}
+            ControlBot.handle_mqtt_command('dynamo/commands/set-voice-effect', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"Voice effect set to {effect_id}"
+        except Exception as e:
+            return f"Error setting voice effect: {str(e)}"
+
+    @function_tool()
+    async def set_output_volume(self, volume: int) -> str:
+        """Set the system output volume (0-100)."""
+        try:
+            if not 0 <= volume <= 100:
+                return "Volume must be between 0 and 100"
+            payload = {'volume': volume}
+            ControlBot.handle_mqtt_command('dynamo/commands/set-output-volume', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"Output volume set to {volume}%"
+        except Exception as e:
+            return f"Error setting volume: {str(e)}"
+
+    @function_tool()
+    async def toggle_microphone(self, enabled: bool) -> str:
+        """Enable or disable the 'Hear Myself' option in Voicemod (mutes/unmutes my voice)."""
+        try:
+            payload = {'enabled': enabled}
+            ControlBot.handle_mqtt_command('dynamo/commands/microphone-toggle', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            status = "enabled" if enabled else "disabled"
+            return f"Microphone {status}"
+        except Exception as e:
+            return f"Error toggling microphone: {str(e)}"
+
+    @function_tool()
+    async def toggle_voice_changer(self, enabled: bool) -> str:
+        """Enable or disable the voice changer (voice effects)."""
+        try:
+            payload = {'enabled': enabled}
+            ControlBot.handle_mqtt_command('dynamo/commands/voice-changer-toggle', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            status = "enabled" if enabled else "disabled"
+            return f"Voice changer {status}"
+        except Exception as e:
+            return f"Error toggling voice changer: {str(e)}"
+
+    @function_tool()
+    async def toggle_background_sound(self, enabled: bool) -> str:
+        """Enable or disable background sound of voice effects."""
+        try:
+            payload = {'enabled': enabled}
+            ControlBot.handle_mqtt_command('dynamo/commands/background-sound-toggle', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            status = "enabled" if enabled else "disabled"
+            return f"Background sound {status}"
+        except Exception as e:
+            return f"Error toggling background sound: {str(e)}"
+
+    @function_tool()
+    async def toggle_leds(self, enabled: bool) -> str:
+        """Enable or disable the LEDs of the suit."""
+        try:
+            payload = {'enabled': enabled}
+            ControlBot.handle_mqtt_command('dynamo/commands/leds-toggle', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            status = "enabled" if enabled else "disabled"
+            return f"LEDs {status}"
+        except Exception as e:
+            return f"Error toggling LEDs: {str(e)}"
+
+    @function_tool()
+    async def set_leds_brightness(self, brightness: int) -> str:
+        """Set the LED brightness (0-100) of the suit."""
+        try:
+            if not 0 <= brightness <= 100:
+                return "Brightness must be between 0 and 100"
+            payload = {'brightness': brightness}
+            ControlBot.handle_mqtt_command('dynamo/commands/leds-brightness', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"LED brightness set to {brightness}%"
+        except Exception as e:
+            return f"Error setting LED brightness: {str(e)}"
+
+    @function_tool()
+    async def set_eyes_brightness(self, brightness: int) -> str:
+        """Set the eyes/screen brightness (0-100) of the suit."""
+        try:
+            if not 0 <= brightness <= 100:
+                return "Brightness must be between 0 and 100"
+            payload = {'brightness': brightness}
+            ControlBot.handle_mqtt_command('dynamo/commands/eyes-brightness', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"Eyes brightness set to {brightness}%"
+        except Exception as e:
+            return f"Error setting eyes brightness: {str(e)}"
+
+    @function_tool()
+    async def set_leds_color(self, color: str) -> str:
+        """Set the LED color using hex color code (e.g., '#FF0000' for red)."""
+        try:
+            payload = {'color': color}
+            ControlBot.handle_mqtt_command('dynamo/commands/leds-color', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"LED color set to {color}"
+        except Exception as e:
+            return f"Error setting LED color: {str(e)}"
+
+    @function_tool()
+    async def set_leds_effect(self, effect: str) -> str:
+        """Set the LED effect (e.g., 'rainbow', 'pulse', 'static', etc.)."""
+        try:
+            payload = {'effect': effect}
+            ControlBot.handle_mqtt_command('dynamo/commands/leds-effect', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"LED effect set to {effect}"
+        except Exception as e:
+            return f"Error setting LED effect: {str(e)}"
+
+    @function_tool()
+    async def set_expression(self, expression: str) -> str:
+        """Set facial expression. Use expression ID (0-12) or 'SillyON'/'SillyOFF' for activating/deactivating crossed eyes."""
+        try:
+            payload = {'expression': expression}
+            ControlBot.handle_mqtt_command('dynamo/commands/set-expression', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return f"Expression set to {expression}"
+        except Exception as e:
+            return f"Error setting expression: {str(e)}"
+
+    @function_tool()
+    async def shutdown(self):
+        """Turn off the suit."""
+        try:
+            payload = {}
+            ControlBot.handle_mqtt_command('dynamo/commands/shutdown', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return "Suit shutdown"
+        except Exception as e:
+            return f"Error shutting down suit: {str(e)}"
+
+    @function_tool()
+    async def restart(self):
+        """Restart the suit."""
+        try:
+            payload = {}
+            ControlBot.handle_mqtt_command('dynamo/commands/restart', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")
+            return "Suit restarted"
+        except Exception as e:
+            return f"Error restarting suit: {str(e)}"
+
+    @function_tool()
     async def search_internet(self, query: str) -> str:
         """Search the internet for the given query and return the results."""
         try:
@@ -121,19 +287,8 @@ class Cookiebot(Agent):
             if not tavily_api_key:
                 return "Error: Tavily API key not configured."
             url = "https://api.tavily.com/search"
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {tavily_api_key}"
-            }
-            payload = {
-                "query": query.strip(),
-                "search_depth": "basic",
-                "include_answer": True,
-                "include_raw_content": False,
-                "max_results": 5,
-                "include_domains": [],
-                "exclude_domains": []
-            }
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {tavily_api_key}"}
+            payload = {"query": query.strip(), "search_depth": "basic", "include_answer": True, "include_raw_content": False, "max_results": 5, "include_domains": [], "exclude_domains": []}
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as session:
                 async with session.post(url, headers=headers, json=payload) as response:
                     if response.status == 200:

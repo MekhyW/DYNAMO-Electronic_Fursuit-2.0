@@ -13,7 +13,6 @@ import os
 from Environment import fursuitbot_token, fursuitbot_ownerID, mqtt_host, mqtt_port, mqtt_username, mqtt_password
 import Waveform
 import MachineVision
-import Assistant
 import Voicemod
 import Unity
 import Serial
@@ -274,13 +273,15 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
         elif topic == 'dynamo/commands/hotword-detection-toggle':
             enabled = payload.get('enabled')
             if enabled is not None:
-                Assistant.hotword_detection_enabled = enabled
+                with open("assistant_ipc.json", "w") as assistant_ipc:
+                    json.dump({"command": "hotword_detection", "enabled": enabled}, assistant_ipc)
                 Waveform.play_audio("sfx/settings_toggle.wav")
                 print(f"Hotword detection {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🗣️ Hotword detection {status}", user_info)
         elif topic == 'dynamo/commands/hotword-trigger':
-            Assistant.manual_trigger = True
+            with open("assistant_ipc.json", "w") as assistant_ipc:
+                json.dump({"command": "hotword_trigger"}, assistant_ipc)
             print(f"Hotword triggered (requested by {user_name})")
             send_telegram_log(f"🗣️ Assistant hotword triggered", user_info)
         elif topic == 'dynamo/commands/text-to-speech':

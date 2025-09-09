@@ -15,6 +15,7 @@ from Environment import openai_key, livekit_url, livekit_api_key, livekit_api_se
 import ControlBot
 import Waveform
 import time
+import threading
 import os
 os.environ["OPENAI_API_KEY"] = openai_key
 os.environ["LIVEKIT_URL"] = livekit_url
@@ -340,6 +341,35 @@ class Cookiebot(Agent):
 def prewarm(proc: JobProcess):
     proc.userdata["vad"] = silero.VAD.load()
 
+def monitor_assistant_ipc():
+    """Monitor for IPC requests from ControlBot"""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    async def process_ipc_requests():
+        while True:
+            try:
+                if os.path.exists("assistant_ipc.json"):
+                    print("FOUND IPC FILE")
+                    with open("assistant_ipc.json", "r") as assistant_ipc:
+                        request = json.load(assistant_ipc)
+                        print(request)
+                    os.remove("assistant_ipc.json")
+                    if request.get("command") == "hotword_detection":
+                        global hotword_detection_enabled
+                        hotword_detection_enabled = request["enabled"]
+                    elif request.get("command") == "hotword_trigger":
+                        global manual_trigger
+                        manual_trigger = True
+            except Exception as e:
+                print(f"IPC monitor error: {e}")
+            await asyncio.sleep(0.1)
+    try:
+        loop.run_until_complete(process_ipc_requests())
+    except Exception as e:
+        print(f"IPC monitor thread error: {e}")
+    finally:
+        loop.close()
+
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
         llm=openai.LLM(model="gpt-4.1-nano", temperature=0.9),
@@ -350,6 +380,8 @@ async def entrypoint(ctx: JobContext):
         allow_interruptions=True,
         preemptive_generation=False
     )
+    ipc_monitor_thread = threading.Thread(target=monitor_assistant_ipc, daemon=True)
+    ipc_monitor_thread.start()
     await session.start(
         agent=Cookiebot(), 
         room=ctx.room,

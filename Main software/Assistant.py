@@ -251,7 +251,21 @@ class Cookiebot(Agent):
 
     @function_tool()
     async def set_expression(self, expression: str) -> str:
-        """Set facial expression. Use expression ID (0-12) or 'SillyON'/'SillyOFF' for activating/deactivating crossed eyes."""
+        """Set facial expression. Use expression ID (0-12) or 'SillyON'/'SillyOFF' for activating/deactivating crossed eyes.
+        0: Angry
+        1: Disgusted
+        2: Happy
+        3: Neutral
+        4: Sad
+        5: Surprised
+        6: Hypnotic
+        7: Heart eyes
+        8: Rainbow eyes
+        9: Nightmare/demon
+        10: Gear eyes
+        11: Sans undertale
+        12: Mischievous
+        """
         try:
             payload = {'expression': expression}
             ControlBot.handle_mqtt_command('dynamo/commands/set-expression', payload, {'id': 0, 'first_name': "Cookiebot"}, "Cookiebot")

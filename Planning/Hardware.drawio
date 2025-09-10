@@ -136,7 +136,7 @@
                 <mxCell id="78" style="edgeStyle=none;html=1;exitX=0.086;exitY=0.031;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitPerimeter=0;" parent="1" source="19" target="26" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="120" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.717;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#FAFAFA,#FFFFFF);strokeWidth=1;startArrow=none;startFill=0;entryPerimeter=0;" parent="1" source="112" target="13" edge="1">
+                <mxCell id="120" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.717;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#000000,#FFFFFF);strokeWidth=1;startArrow=none;startFill=0;entryPerimeter=0;" parent="1" source="112" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="391" y="593"/>
@@ -146,7 +146,7 @@
                 <mxCell id="112" value="&lt;span style=&quot;font-size: 10px;&quot;&gt;eDP-HDMI adapter&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="310" y="578" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="121" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#FAFAFA,#EDEDED);strokeWidth=1;startArrow=none;startFill=0;" parent="1" source="114" target="14" edge="1">
+                <mxCell id="121" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#000000;strokeWidth=1;startArrow=none;startFill=0;fillColor=#e1d5e7;" parent="1" source="114" target="14" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="490" y="623"/>
@@ -166,7 +166,7 @@
                 <mxCell id="118" value="USB port" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="310" y="638" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="141" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=light-dark(#FAFAFA,#F7F7F7);strokeWidth=1;fontSize=8;startArrow=none;startFill=0;" parent="1" source="119" edge="1">
+                <mxCell id="141" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeColor=light-dark(#000000,#F7F7F7);strokeWidth=1;fontSize=8;startArrow=none;startFill=0;" parent="1" source="119" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="469" y="683"/>

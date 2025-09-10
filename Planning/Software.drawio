@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="qH1ZnPOLuF4nMyL4x-qJ" name="Page-1">
-        <mxGraphModel dx="922" dy="782" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="553" dy="469" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -121,7 +121,7 @@
                 <mxCell id="34" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="30" target="33" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="30" value="Silero VAD + Whisper-1 STT" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="30" value="Silero VAD + GPT-4o mini Transcribe" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="255" y="656" width="120" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="32" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;Session&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=4;" parent="1" vertex="1">
@@ -130,10 +130,10 @@
                 <mxCell id="36" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=10;" parent="1" source="33" target="35" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="33" value="LLM layer" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="33" value="GPT 4.1 Nano" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="255" y="696" width="120" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="35" value="Elevenlabs TTS" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
+                <mxCell id="35" value="Elevenlabs Multilingual V2" style="rounded=0;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
                     <mxGeometry x="255" y="736" width="120" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="45" value="" style="rounded=1;whiteSpace=wrap;html=1;fontSize=12;" parent="1" vertex="1">
@@ -275,7 +275,7 @@
                 <mxCell id="111" style="edgeStyle=none;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;" parent="1" source="93" target="106" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="113" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;Function tool calling&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=4;" vertex="1" parent="1">
+                <mxCell id="113" value="&lt;span style=&quot;font-size: 8px;&quot;&gt;Function tool calling&lt;/span&gt;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=4;" parent="1" vertex="1">
                     <mxGeometry x="217" y="795" width="88" height="30" as="geometry"/>
                 </mxCell>
             </root>

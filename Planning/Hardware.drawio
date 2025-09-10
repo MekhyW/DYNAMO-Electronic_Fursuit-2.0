@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="790" dy="670" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="851" dy="722" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -198,7 +198,7 @@
                         <mxPoint x="295" y="742" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="22" value="&lt;font style=&quot;&quot;&gt;Speaker&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                <mxCell id="22" value="&lt;font style=&quot;&quot;&gt;Trendwoo X-BASS Speaker&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="570" y="558" width="160" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="146" value="40mm cooler fan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">

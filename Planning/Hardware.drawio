@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="851" dy="722" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="381" dy="323" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -41,18 +41,11 @@
                         <mxPoint x="110" y="743" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="17" value="PD 30Ah Battery" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="588" width="120" height="40" as="geometry"/>
-                </mxCell>
-                <mxCell id="109" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#B20000;strokeWidth=2;startArrow=none;startFill=0;fillColor=#e51400;" parent="1" source="18" target="108" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points">
-                            <mxPoint x="320" y="560"/>
-                        </Array>
-                    </mxGeometry>
+                <mxCell id="17" value="PD 20Ah Battery" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" parent="1" vertex="1">
+                    <mxGeometry x="70" y="603" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="18" value="20Ah Battery" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" parent="1" vertex="1">
-                    <mxGeometry x="70" y="540" width="120" height="40" as="geometry"/>
+                    <mxGeometry x="70" y="515" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="25" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="1" source="19" target="22" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -104,27 +97,31 @@
                 <mxCell id="13" value="Bigtreetech 5-inch HDMI Display" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;" parent="1" vertex="1">
                     <mxGeometry x="305" y="254" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="56" style="edgeStyle=none;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="18" target="26" edge="1">
+                <mxCell id="56" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" parent="1" source="148" target="26" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="240" y="658" as="targetPoint"/>
                         <mxPoint x="240.22000000000003" y="608.6899999999999" as="sourcePoint"/>
                         <Array as="points">
-                            <mxPoint x="220" y="570"/>
+                            <mxPoint x="220" y="578"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="65" style="edgeStyle=none;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.127;entryY=1.073;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;entryPerimeter=0;" parent="1" source="108" target="13" edge="1">
-                    <mxGeometry relative="1" as="geometry">
-                        <Array as="points"/>
-                    </mxGeometry>
-                </mxCell>
-                <mxCell id="66" style="edgeStyle=none;html=1;exitX=0.75;exitY=0;exitDx=0;exitDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;" parent="1" source="108" edge="1">
+                <mxCell id="65" style="edgeStyle=none;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0.127;entryY=1.073;entryDx=0;entryDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;entryPerimeter=0;" parent="1" source="18" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
-                            <mxPoint x="340" y="429"/>
+                            <mxPoint x="320" y="525"/>
+                        </Array>
+                        <mxPoint x="320" y="510" as="sourcePoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="66" style="edgeStyle=none;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;fillColor=#e51400;strokeColor=#B20000;strokeWidth=2;" parent="1" source="18" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="453" y="545"/>
                             <mxPoint x="453" y="429"/>
                         </Array>
                         <mxPoint x="453" y="294" as="targetPoint"/>
+                        <mxPoint x="340" y="510" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="79" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;startArrow=classic;startFill=1;" parent="1" source="76" edge="1">
@@ -138,9 +135,6 @@
                 </mxCell>
                 <mxCell id="78" style="edgeStyle=none;html=1;exitX=0.086;exitY=0.031;exitDx=0;exitDy=0;entryX=0.25;entryY=1;entryDx=0;entryDy=0;exitPerimeter=0;" parent="1" source="19" target="26" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
-                </mxCell>
-                <mxCell id="108" value="USB hub" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="280" y="510" width="80" height="30" as="geometry"/>
                 </mxCell>
                 <mxCell id="120" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.717;entryY=1;entryDx=0;entryDy=0;strokeColor=light-dark(#FAFAFA,#FFFFFF);strokeWidth=1;startArrow=none;startFill=0;entryPerimeter=0;" parent="1" source="112" target="13" edge="1">
                     <mxGeometry relative="1" as="geometry">
@@ -203,6 +197,9 @@
                 </mxCell>
                 <mxCell id="146" value="40mm cooler fan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
                     <mxGeometry x="440" y="153" width="120" height="33" as="geometry"/>
+                </mxCell>
+                <mxCell id="148" value="12Ah Battery" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#a20025;fontColor=#ffffff;strokeColor=#6F0000;" vertex="1" parent="1">
+                    <mxGeometry x="70" y="558" width="120" height="40" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>

@@ -5,7 +5,7 @@ numpy==1.26.0
 gTTS==2.3.1
 langdetect==1.0.9
 opencv-python==4.8.1.78
-protobuf==5.29.3
+protobuf==5.29.5
 scikit-learn
 mediapipe
 joblib==1.2.0

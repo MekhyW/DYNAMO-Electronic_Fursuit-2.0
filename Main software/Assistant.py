@@ -387,7 +387,7 @@ def monitor_assistant_ipc():
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
         llm=openai.LLM(model="gpt-4.1-nano", temperature=0.9),
-        stt=openai.STT(model="gpt-4o-mini-transcribe"),
+        stt=openai.STT(model="gpt-4o-mini-transcribe", detect_language=True, use_realtime=True),
         tts=elevenlabs.TTS(voice_id="Rb9J9nOjoNgGbjJUN5wt", model="eleven_multilingual_v2", voice_settings=elevenlabs.VoiceSettings(stability=0.3, similarity_boost=1.0, style=0.0, speed=1.05, use_speaker_boost=True)),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],

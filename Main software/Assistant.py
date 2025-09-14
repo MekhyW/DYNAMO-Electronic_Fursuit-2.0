@@ -50,6 +50,17 @@ def call_controlbot_command(topic, payload):
     with open("controlbot_ipc.json", "w") as controlbot_ipc:
         json.dump({"topic": topic, "payload": payload, "user_info": {'id': 0, 'first_name': "Cookiebot"}, "user_name": "Cookiebot"}, controlbot_ipc)
 
+def text_to_speech(text):
+    from elevenlabs.client import ElevenLabs
+    from elevenlabs import VoiceSettings
+    elevenlabs_client = ElevenLabs(api_key=eleven_api_key)
+    audio = elevenlabs_client.text_to_speech.convert(text=text, voice_id="Rb9J9nOjoNgGbjJUN5wt", voice_settings=VoiceSettings(stability=0.3, similarity_boost=1.0, style=0.0, speed=1.1, use_speaker_boost=True), model_id="eleven_multilingual_v2", output_format="mp3_44100_128")
+    with open("tts.mp3", "wb") as f:
+        for chunk in audio:
+            if chunk:
+                f.write(chunk)
+    Waveform.play_audio_async("tts.mp3", delete=True)
+
 class Cookiebot(Agent):
     def __init__(self) -> None:
         super().__init__(instructions=decrypt_system_prompt(prompt_encryption_key))
@@ -314,7 +325,9 @@ def monitor_assistant_ipc():
                         request = json.load(assistant_ipc)
                         print(request)
                     os.remove("assistant_ipc.json")
-                    if request.get("command") == "hotword_detection":
+                    if request.get("command") == "tts":
+                        text_to_speech(request["text"])
+                    elif request.get("command") == "hotword_detection":
                         global hotword_detection_enabled
                         hotword_detection_enabled = request["enabled"]
                     elif request.get("command") == "hotword_trigger":

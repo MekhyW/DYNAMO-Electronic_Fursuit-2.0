@@ -475,8 +475,8 @@ def TextToSpeech(text, user_name="Unknown"):
         try:
             Waveform.play_audio("sfx/assistant_ok.wav")
             print(f"Generating TTS for: {text} (requested by {user_name})")
-            Waveform.TTS_generate(text)
-            Waveform.TTS_play_async()
+            with open("assistant_ipc.json", "w") as assistant_ipc:
+                json.dump({"command": "tts", "text": text}, assistant_ipc)
         except Exception as e:
             print(f"Error in TTS: {e}")
     tts_thread = threading.Thread(target=tts_worker, daemon=True)

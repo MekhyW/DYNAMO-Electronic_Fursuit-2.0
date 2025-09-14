@@ -1,12 +1,25 @@
-from gtts import gTTS
-import langdetect
+import os
+from dotenv import load_dotenv
+from elevenlabs.client import ElevenLabs
+from elevenlabs import VoiceSettings
 import subprocess
 
-text_en = "My name is Yoshikage Kira. I'm 33 years old. My house is in the northeast section of Morioh, where all the villas are, and I am not married. I work as an employee for the Kame Yu department stores, and I get home every day by 8 PM at the latest. I don't smoke, but I occasionally drink. I'm in bed by 11 PM, and make sure I get eight hours of sleep, no matter what. After having a glass of warm milk and doing about twenty minutes of stretches before going to bed, I usually have no problems sleeping until morning. Just like a baby, I wake up without any fatigue or stress in the morning. I was told there were no issues at my last check-up. I'm trying to explain that I'm a person who wishes to live a very quiet life. I take care not to trouble myself with any enemies, like winning and losing, that would cause me to lose sleep at night. That is how I deal with society, and I know that is what brings me happiness. Although, if I were to fight I wouldn't lose to anyone."
-text_ptbr = "po cara, parabens ai velho, de boa, muito legal isso. contei pra todos aqui da minha familia, todos acharam muito surpreendente e pediram pra te dar os parabens, queriam falar com você pessoalmente se possivel para lhe parabenizar. disseram também que na festa de natal irão contar para os parentes mais distantes e no ano novo lançarão baterias de fogos com seu nome. contei esse seu feito também para alguns outros parentes mais próximos, reagiram tal qual minha familia, pediram seu endereço para mandar cartões e mensagem de parabenização. meus amigos não acreditaram quando eu disse que conhecia o dono desse feito tão imenso, sério, ficaram todos de boca aberta, disseram que farão seu nome ecoar por anos e anos. quando os vizinhos ficaram sabendo do feito, ficaram todos boquiabertos, quiseram saber quem é você, pediu se, caso você tiver tempo, é claro, de poderia passar aqui para receber presentes, congratulações e apertos de mãos."
+load_dotenv()
+elevenlabs_client = ElevenLabs(api_key=os.getenv("eleven_api_key"))
 
-language = langdetect.detect(text_ptbr)
-tts = gTTS(text=text_ptbr, lang=language, slow=False)
-tts.save("output.wav")
+def save_and_play_audio(text, filename):
+    audio = elevenlabs_client.text_to_speech.convert(
+        text=text, 
+        voice_id="Rb9J9nOjoNgGbjJUN5wt", 
+        voice_settings=VoiceSettings(stability=0.3, similarity_boost=1.0, style=0.0, speed=1.1, use_speaker_boost=True), 
+        model_id="eleven_multilingual_v2", 
+        output_format="mp3_44100_128"
+    )
+    with open(filename, "wb") as f:
+        for chunk in audio:
+            if chunk:
+                f.write(chunk)
+    subprocess.run(["start", filename], shell=True)
 
-subprocess.call(["ffmpeg", "-i", "output.wav", "-filter:a", "atempo=1.5,aecho=0.8:0.9:20:0.6,asetrate=22050", "output_robotic.wav", "-y"])
+text = "My name is Yoshikage Kira. I'm 33 years old. My house is in the northeast section of Morioh, where all the villas are"
+save_and_play_audio(text, "audio.mp3")

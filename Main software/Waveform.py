@@ -4,8 +4,6 @@ import numpy as np
 import wave
 import subprocess
 import os
-from gtts import gTTS
-import langdetect
 import Serial
 import threading
 
@@ -66,21 +64,3 @@ def play_audio_async(filename, delete=False):
     audio_thread = threading.Thread(target=play_audio, args=(filename, delete), daemon=True)
     audio_thread.start()
     return audio_thread
-
-def TTS_generate(text):
-    language = langdetect.detect(text)
-    tts = gTTS(text=text, lang=language, slow=False)
-    tts.save("sfx/tts.mp3")
-    subprocess.call(["ffmpeg", "-i", "sfx/tts.mp3", "-filter:a", "atempo=1.5,aecho=0.8:0.9:20:0.6,asetrate=22050", "sfx/tts_faster.mp3", "-y"])
-    os.remove("sfx/tts.mp3")
-
-def TTS_play():
-    play_audio("sfx/tts_faster.mp3", delete=True)
-
-def TTS_play_async():
-    def tts_worker():
-        play_audio("sfx/tts_faster.mp3", delete=True)
-    stop_flag = True
-    tts_thread = threading.Thread(target=tts_worker, daemon=True)
-    tts_thread.start()
-    return tts_thread

@@ -4,6 +4,7 @@ from telepot.loop import MessageLoop
 import paho.mqtt.client as mqtt
 import ssl
 import threading
+import asyncio
 import time
 import uuid
 from datetime import datetime, timezone
@@ -550,6 +551,29 @@ def handle(msg):
         if fursuitbot:
             fursuitbot.sendMessage(fursuitbot_ownerID, traceback.format_exc())
 
+def monitor_controlbot_ipc():
+    """Monitor for IPC requests"""
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    async def process_ipc_requests():
+        while True:
+            try:
+                if os.path.exists("controlbot_ipc.json"):
+                    with open("controlbot_ipc.json", "r") as controlbot_ipc:
+                        request = json.load(controlbot_ipc)
+                        print(request)
+                    os.remove("controlbot_ipc.json")
+                    handle_mqtt_command(request.get("topic"), request.get("payload"), request.get("user_info"), request.get("user_name"))
+            except Exception as e:
+                print(f"IPC monitor error: {e}")
+            await asyncio.sleep(0.1)
+    try:
+        loop.run_until_complete(process_ipc_requests())
+    except Exception as e:
+        print(f"IPC monitor thread error: {e}")
+    finally:
+        loop.close()
+
 def StartTelegramBot():
     if not fursuitbot:
         return False
@@ -578,6 +602,8 @@ def StartBot():
     if fursuitbot:
         telegram_thread = threading.Thread(target=StartTelegramBot, daemon=True)
         telegram_thread.start()
+        ipc_thread = threading.Thread(target=monitor_controlbot_ipc, daemon=True)
+        ipc_thread.start()
     last_reconnect_attempt = 0
     base_reconnect_interval = 2
     max_reconnect_interval = 30

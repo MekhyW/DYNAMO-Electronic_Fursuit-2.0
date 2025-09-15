@@ -22,7 +22,7 @@ os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
-KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball"]
+KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball", "que bot", "cookiebar", "cookie bar"]
 hotword_detection_enabled = True
 manual_trigger = False
 
@@ -120,7 +120,9 @@ class Cookiebot(Agent):
                     elif hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS):
                         print(f"Assistant activation keyword detected")
                         Waveform.play_audio("sfx/assistant_listening.wav")
-                        combined_text = " ".join([item['text'] for item in self.transcript_buffer])
+                        combined_text = " ".join([item['text'] for item in self.transcript_buffer]).lower()
+                        for keyword in KEYWORDS:
+                            combined_text = combined_text.replace(keyword, "cookiebot")
                         modified_event = event
                         if hasattr(event, 'alternatives') and event.alternatives:
                             event.alternatives[0].text = combined_text

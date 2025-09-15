@@ -19,7 +19,9 @@ def machine_vision_thread():
 
 def assistant_thread():
     os.system("python Assistant.py download-files")
-    os.system("python Assistant.py console")
+    while True:
+        os.system("python Assistant.py console")
+        print("Assistant console process ended. Restarting...")
 
 def voicemod_thread():
     while True:

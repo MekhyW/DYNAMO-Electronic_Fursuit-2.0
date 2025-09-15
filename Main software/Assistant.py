@@ -22,7 +22,7 @@ os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
-KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball", "que bot", "cookiebar", "cookie bar"]
+KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball", "que bot", "cookiebar", "cookie bar", "kukibot"]
 hotword_detection_enabled = True
 manual_trigger = False
 
@@ -65,7 +65,7 @@ class Cookiebot(Agent):
     def __init__(self) -> None:
         super().__init__(instructions=decrypt_system_prompt(prompt_encryption_key))
         self.transcript_buffer = []
-        self.buffer_max_size = 5
+        self.buffer_max_size = 3
         self.context_window_seconds = 15
         self.manual_listening_active = False
         self.manual_session_buffer = []
@@ -73,13 +73,18 @@ class Cookiebot(Agent):
 
     async def llm_node(self, chat_ctx: llm.ChatContext, tools: list[FunctionTool], model_settings: ModelSettings) -> AsyncIterable[llm.ChatChunk]:
         thinking_sound_started = False
+        answer = ''
         async for chunk in Agent.default.llm_node(self, chat_ctx, tools, model_settings):
             if not thinking_sound_started:
                 self.thinking_audio_thread = Waveform.play_audio_async("sfx/assistant_thinking.wav")
                 thinking_sound_started = True
+            chunktext = getattr(chunk.delta, 'content', '') if hasattr(chunk, 'delta') else str(chunk)
+            if chunktext:
+                answer += chunktext
             yield chunk
         if thinking_sound_started:
             Waveform.stop_flag = True
+        call_controlbot_command("dynamo/chat_logs", {'answer': answer})
 
     async def stt_node(self, text: AsyncIterable[str], model_settings: Optional[dict] = None) -> Optional[AsyncIterable[rtc.AudioFrame]]:
         parent_stream = super().stt_node(text, model_settings)
@@ -97,11 +102,10 @@ class Cookiebot(Agent):
                     print(f"Transcript: {transcript}")
                     if manual_trigger:
                         print("Assistant manual trigger activated - starting listening session")
-                        Waveform.play_audio("sfx/assistant_listening.wav")
+                        Waveform.play_audio_async("sfx/assistant_listening.wav")
                         manual_trigger = False
                         self.manual_listening_active = True
                         self.manual_session_buffer = []  # Clear previous manual session
-                        continue # Don't process immediately, wait for new speech
                     if self.manual_listening_active:
                         self.manual_session_buffer.append(transcript)
                         print(f"Manual session collecting: {transcript}")
@@ -114,6 +118,7 @@ class Cookiebot(Agent):
                             modified_event = event
                             if hasattr(event, 'alternatives') and event.alternatives:
                                 event.alternatives[0].text = combined_text
+                            call_controlbot_command("dynamo/chat_logs", {'query': combined_text})
                             yield modified_event
                             self.manual_session_buffer = []
                         continue
@@ -126,6 +131,7 @@ class Cookiebot(Agent):
                         modified_event = event
                         if hasattr(event, 'alternatives') and event.alternatives:
                             event.alternatives[0].text = combined_text
+                        call_controlbot_command("dynamo/chat_logs", {'query': combined_text})
                         yield modified_event
                         self.transcript_buffer = []
         return process_stream()

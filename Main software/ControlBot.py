@@ -285,6 +285,8 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 json.dump({"command": "hotword_trigger"}, assistant_ipc)
             print(f"Hotword triggered (requested by {user_name})")
             send_telegram_log(f"🗣️ Assistant hotword triggered", user_info)
+        elif topic == 'dynamo/chat_logs':
+            LogAIMessage(payload.get('query', None), payload.get('answer', None))
         elif topic == 'dynamo/commands/text-to-speech':
             text = payload.get('text')
             if text:

@@ -400,10 +400,14 @@ def publish_voicemod_data():
         for sound in Voicemod.sounds:
             sound_effects.append({'id': sound['id'], 'name': sound['name']})
         mqtt_client.publish('dynamo/data/sound_effects', json.dumps(sound_effects), retain=True)
+        with open("assistant_ipc.json", "w") as assistant_ipc:
+            json.dump({"command": "update_sounds", "sounds": sound_effects}, assistant_ipc)
         voice_effects = []
         for voice in Voicemod.voices:
             voice_effects.append({'id': voice['id'], 'name': voice['name'], 'type': 'modulation'})
         mqtt_client.publish('dynamo/data/voice_effects', json.dumps(voice_effects), retain=True)
+        with open("assistant_ipc.json", "w") as assistant_ipc:
+            json.dump({"command": "update_voices", "voices": voice_effects}, assistant_ipc)
     except Exception as e:
         print(f"Error publishing Voicemod data: {e}")
 

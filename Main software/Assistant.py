@@ -25,6 +25,8 @@ os.environ["ELEVEN_API_KEY"] = eleven_api_key
 KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball", "que bot", "cookiebar", "cookie bar", "kukibot"]
 hotword_detection_enabled = True
 manual_trigger = False
+sounds = []
+voices = []
 
 def decrypt_system_prompt(encryption_key):
     with open("models/system_prompt_encrypted.txt", "r", encoding='utf-8') as f:
@@ -138,19 +140,28 @@ class Cookiebot(Agent):
 
     @function_tool()
     async def get_sound_effects(self) -> str:
-        """Get the list of available sound effects."""
-        from Voicemod import sounds
+        """Retrieve the complete list of available Voicemod sound effects that can be played. 
+        Use this when the user asks what sounds are available or wants to browse sound options.
+        Returns a formatted list of sound effect IDs that can be used with play_sound_effect()."""
         return f"Available sound effects: {sounds}"
 
     @function_tool()
     async def get_voice_effects(self) -> str:
-        """Get the list of available voice effects."""
-        from Voicemod import voices
+        """Retrieve the complete list of available Voicemod voice effects/filters that can be applied.
+        Use this when the user asks about voice changing options or wants to see available voice filters.
+        Returns a formatted list of voice effect IDs that can be used with set_voice_effect()."""
         return f"Available voice effects: {voices}"
 
     @function_tool()
     async def play_sound_effect(self, effect_id: str = None) -> str:
-        """Play a sound effect or stop all sounds if no effect_id provided."""
+        """Play a specific Voicemod sound effect or stop all currently playing sounds.
+        
+        Parameters:
+        - effect_id: The sound effect ID to play (get list with get_sound_effects()). 
+                    If None or empty, stops all currently playing sound effects.
+        
+        Use this when user wants to play a specific sound, make noise, or stop all sounds.
+        Always call get_sound_effects() first if you need to suggest available sounds."""
         call_controlbot_command('dynamo/commands/play-sound-effect', {'effectId': effect_id} if effect_id else {})
         if effect_id:
             return f"Playing sound effect {effect_id}"
@@ -159,13 +170,25 @@ class Cookiebot(Agent):
 
     @function_tool()
     async def set_voice_effect(self, effect_id: str) -> str:
-        """Set the voice changer current effect."""
+        """Change the active voice effect/filter in Voicemod to modify how the user's voice sounds.
+        
+        Parameters:
+        - effect_id: The voice effect ID to activate (get list with get_voice_effects())
+        
+        Use this when user wants to change their voice, sound different, or apply voice filters.
+        Call get_voice_effects() first if you need to suggest available voice options."""
         call_controlbot_command('dynamo/commands/set-voice-effect', {'effectId': effect_id})
         return f"Voice effect set to {effect_id}"
 
     @function_tool()
     async def set_output_volume(self, volume: int) -> str:
-        """Set the system output volume (0-100)."""
+        """Control the system's master output volume level.
+        
+        Parameters:
+        - volume: Volume level from 0 (mute) to 100 (maximum). Must be an integer.
+        
+        Use this when user wants to adjust how loud everything sounds, make things quieter/louder,
+        or mute the system. This affects all audio output from the computer."""
         if not 0 <= volume <= 100:
             return "Volume must be between 0 and 100"
         call_controlbot_command('dynamo/commands/set-output-volume', {'volume': volume})
@@ -173,35 +196,63 @@ class Cookiebot(Agent):
 
     @function_tool()
     async def toggle_microphone(self, enabled: bool) -> str:
-        """Enable or disable the 'Hear Myself' option in Voicemod (mutes/unmutes my voice)."""
+        """Control the 'Hear Myself' feature in Voicemod - whether the user can hear their own voice through speakers.
+        
+        Parameters:
+        - enabled: True to enable hearing own voice, False to disable (mute own voice feedback)
+        
+        Use this when user wants to hear/not hear their own voice coming through the speakers,
+        or when they mention voice feedback, echo, or hearing themselves."""
         call_controlbot_command('dynamo/commands/microphone-toggle', {'enabled': enabled})
         status = "enabled" if enabled else "disabled"
         return f"Microphone {status}"
 
     @function_tool()
     async def toggle_voice_changer(self, enabled: bool) -> str:
-        """Enable or disable the voice changer (voice effects)."""
+        """Enable or disable all voice effects/filters in Voicemod.
+        
+        Parameters:
+        - enabled: True to activate voice effects, False to use natural voice
+        
+        Use this when user wants to turn voice changing on/off completely, return to normal voice,
+        or enable/disable voice modification entirely. This is the master switch for voice effects."""
         call_controlbot_command('dynamo/commands/voice-changer-toggle', {'enabled': enabled})
         status = "enabled" if enabled else "disabled"
         return f"Voice changer {status}"
 
     @function_tool()
     async def toggle_background_sound(self, enabled: bool) -> str:
-        """Enable or disable background sound of voice effects."""
+        """Control background audio/ambient sounds that accompany voice effects in Voicemod.
+        
+        Parameters:
+        - enabled: True to enable background sounds with voice effects, False to disable
+        
+        Use this when user wants voice effects with or without accompanying background audio,
+        or mentions ambient sounds, background noise, or atmospheric effects with their voice."""
         call_controlbot_command('dynamo/commands/background-sound-toggle', {'enabled': enabled})
         status = "enabled" if enabled else "disabled"
         return f"Background sound {status}"
 
     @function_tool()
     async def toggle_leds(self, enabled: bool) -> str:
-        """Enable or disable the LEDs of the suit."""
+        """Control the LED lighting system on the electronic fursuit.
+        
+        Parameters:
+        - enabled: True to turn LEDs on, False to turn them off
+        
+        Use this when user wants to control suit lighting, turn lights on/off, or mentions LEDs, lighting, or glowing."""
         call_controlbot_command('dynamo/commands/leds-toggle', {'enabled': enabled})
         status = "enabled" if enabled else "disabled"
         return f"LEDs {status}"
 
     @function_tool()
     async def set_leds_brightness(self, brightness: int) -> str:
-        """Set the LED brightness (0-100) of the suit."""
+        """Adjust the brightness level of the fursuit's LED lighting system.
+        
+        Parameters:
+        - brightness: Brightness level from 0 (off) to 100 (maximum bright). Must be an integer.
+        
+        Use this when user wants brighter/dimmer lights, to adjust LED intensity, or mentions brightness."""
         if not 0 <= brightness <= 100:
             return "Brightness must be between 0 and 100"
         call_controlbot_command('dynamo/commands/leds-brightness', {'brightness': brightness})
@@ -209,7 +260,12 @@ class Cookiebot(Agent):
 
     @function_tool()
     async def set_eyes_brightness(self, brightness: int) -> str:
-        """Set the eyes/screen brightness (0-100) of the suit."""
+        """Adjust the brightness of the fursuit's eye displays/screens.
+        
+        Parameters:
+        - brightness: Brightness level from 0 (off) to 100 (maximum bright). Must be an integer.
+        
+        Use this when user wants to adjust eye/screen brightness, make eyes brighter/dimmer, or mentions eye display intensity."""
         if not 0 <= brightness <= 100:
             return "Brightness must be between 0 and 100"
         call_controlbot_command('dynamo/commands/eyes-brightness', {'brightness': brightness})
@@ -217,51 +273,77 @@ class Cookiebot(Agent):
 
     @function_tool()
     async def set_leds_color(self, color: str) -> str:
-        """Set the LED color using hex color code (e.g., '#FF0000' for red)."""
+        """Change the color of the fursuit's LED lighting system using hex color codes.
+        
+        Parameters:
+        - color: Hex color code (e.g., '#FF0000' for red, '#00FF00' for green, '#0000FF' for blue)
+        
+        Use this when user mentions specific colors, wants to change LED color, or describes color preferences.
+        Convert color names to hex codes (red=#FF0000, blue=#0000FF, green=#00FF00, etc.)."""
         call_controlbot_command('dynamo/commands/leds-color', {'color': color})
         return f"LED color set to {color}"
 
     @function_tool()
     async def set_leds_effect(self, effect: str) -> str:
-        """Set the LED effect (e.g., 'rainbow', 'pulse', 'static', etc.)."""
+        """Apply visual effects to the fursuit's LED lighting system.
+        
+        Parameters:
+        - effect: Effect name
+            'solid_color': Static color, 
+            'fade': Fade between colors,
+            'wipe': Wipe effect,
+            'theater_chase': Theater chase effect,
+            'rainbow': Color cycling,
+            'strobe': Strobe effect,
+            'moving substrips': Moving sub-LED strips effect,
+            'none (off)': Turn off LED effects
+        
+        Use this when user wants dynamic lighting, animated effects, or mentions specific lighting patterns.
+        'static' = solid color, 'pulse' = breathing effect, 'rainbow' = color cycling."""
         call_controlbot_command('dynamo/commands/leds-effect', {'effect': effect})
         return f"LED effect set to {effect}"
 
     @function_tool()
     async def set_expression(self, expression: str) -> str:
-        """Set facial expression. Use expression ID (0-12) or 'SillyON'/'SillyOFF' for activating/deactivating crossed eyes.
-        0: Angry
-        1: Disgusted
-        2: Happy
-        3: Neutral
-        4: Sad
-        5: Surprised
-        6: Hypnotic
-        7: Heart eyes
-        8: Rainbow eyes
-        9: Nightmare/demon
-        10: Gear eyes
-        11: Sans undertale
-        12: Mischievous
-        """
+        """Change the facial expression displayed on the fursuit's eye screens.
+        
+        Parameters:
+        - expression: Expression ID (0-12) or 'SillyON'/'SillyOFF' for crossed eyes
+            0: Angry - for frustration, anger, annoyance
+            1: Disgusted - for disgust, revulsion, distaste  
+            2: Happy - for joy, happiness, excitement
+            3: Neutral - for calm, default, normal state
+            4: Sad - for sadness, disappointment, sorrow
+            5: Surprised - for shock, amazement, surprise
+            6: Hypnotic - for mesmerizing, trance-like state
+            7: Heart eyes - for love, affection, adoration
+            8: Rainbow eyes - for pride, celebration, colorful mood
+            9: Nightmare/demon - for scary, evil, menacing look
+            10: Gear eyes - for mechanical, robotic, technical mood
+            11: Sans undertale - for specific character reference
+            12: Mischievous - for playful, sneaky, troublemaking
+            SillyON/SillyOFF: Toggle crossed eyes effect
+        
+        Use this to match the user's mood, emotional state, or when they request specific expressions.
+        Choose expressions that fit the context of the conversation or user's feelings."""
         call_controlbot_command('dynamo/commands/set-expression', {'expression': expression})
         return f"Expression set to {expression}"
 
     @function_tool()
-    async def shutdown(self):
-        """Turn off the suit."""
-        call_controlbot_command('dynamo/commands/shutdown', {})
-        return "Suit shutdown"
-
-    @function_tool()
-    async def restart(self):
-        """Restart the suit."""
-        call_controlbot_command('dynamo/commands/restart', {})
-        return "Suit restarted"
-
-    @function_tool()
     async def search_internet(self, query: str) -> str:
-        """Search the internet for the given query and return the results."""
+        """Search the internet for current information, facts, news, or answers to questions.
+        
+        Parameters:
+        - query: The search terms or question to look up online
+        
+        Use this when:
+        - User asks about current events, news, or recent information
+        - You need factual information you don't have in your training data
+        - User requests web search or wants to look something up
+        - Questions about real-time data (weather, stocks, etc.)
+        - Verification of facts or getting updated information
+        
+        Returns formatted search results with quick answers and source links."""
         try:
             if not query or not query.strip():
                 return "Error: Search query cannot be empty."
@@ -341,6 +423,12 @@ def monitor_assistant_ipc():
                     elif request.get("command") == "hotword_trigger":
                         global manual_trigger
                         manual_trigger = True
+                    elif request.get("command") == "update_sounds":
+                        global sounds
+                        sounds = request["sounds"]
+                    elif request.get("command") == "update_voices":
+                        global voices
+                        voices = request["voices"]
             except Exception as e:
                 print(f"IPC monitor error: {e}")
             await asyncio.sleep(0.1)

@@ -384,6 +384,8 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 except Exception as e:
                     print(f"Error setting sound device: {e} (requested by {user_name})")
                     send_telegram_log(f"❌ Error setting sound device", user_info)
+        elif topic == 'dynamo/spotify':
+            mqtt_client.publish('dynamo/spotify', json.dumps(payload), retain=True)
     except Exception as e:
         print(f"Error processing MQTT message: {e}")
         traceback.print_exc()

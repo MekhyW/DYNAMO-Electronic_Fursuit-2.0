@@ -195,45 +195,6 @@ class Cookiebot(Agent):
         return f"Output volume set to {volume}%"
 
     @function_tool()
-    async def toggle_microphone(self, enabled: bool) -> str:
-        """Control the 'Hear Myself' feature in Voicemod - whether the user can hear their own voice through speakers.
-        
-        Parameters:
-        - enabled: True to enable hearing own voice, False to disable (mute own voice feedback)
-        
-        Use this when user wants to hear/not hear their own voice coming through the speakers,
-        or when they mention voice feedback, echo, or hearing themselves."""
-        call_controlbot_command('dynamo/commands/microphone-toggle', {'enabled': enabled})
-        status = "enabled" if enabled else "disabled"
-        return f"Microphone {status}"
-
-    @function_tool()
-    async def toggle_voice_changer(self, enabled: bool) -> str:
-        """Enable or disable all voice effects/filters in Voicemod.
-        
-        Parameters:
-        - enabled: True to activate voice effects, False to use natural voice
-        
-        Use this when user wants to turn voice changing on/off completely, return to normal voice,
-        or enable/disable voice modification entirely. This is the master switch for voice effects."""
-        call_controlbot_command('dynamo/commands/voice-changer-toggle', {'enabled': enabled})
-        status = "enabled" if enabled else "disabled"
-        return f"Voice changer {status}"
-
-    @function_tool()
-    async def toggle_background_sound(self, enabled: bool) -> str:
-        """Control background audio/ambient sounds that accompany voice effects in Voicemod.
-        
-        Parameters:
-        - enabled: True to enable background sounds with voice effects, False to disable
-        
-        Use this when user wants voice effects with or without accompanying background audio,
-        or mentions ambient sounds, background noise, or atmospheric effects with their voice."""
-        call_controlbot_command('dynamo/commands/background-sound-toggle', {'enabled': enabled})
-        status = "enabled" if enabled else "disabled"
-        return f"Background sound {status}"
-
-    @function_tool()
     async def toggle_leds(self, enabled: bool) -> str:
         """Control the LED lighting system on the electronic fursuit.
         
@@ -244,32 +205,6 @@ class Cookiebot(Agent):
         call_controlbot_command('dynamo/commands/leds-toggle', {'enabled': enabled})
         status = "enabled" if enabled else "disabled"
         return f"LEDs {status}"
-
-    @function_tool()
-    async def set_leds_brightness(self, brightness: int) -> str:
-        """Adjust the brightness level of the fursuit's LED lighting system.
-        
-        Parameters:
-        - brightness: Brightness level from 0 (off) to 100 (maximum bright). Must be an integer.
-        
-        Use this when user wants brighter/dimmer lights, to adjust LED intensity, or mentions brightness."""
-        if not 0 <= brightness <= 100:
-            return "Brightness must be between 0 and 100"
-        call_controlbot_command('dynamo/commands/leds-brightness', {'brightness': brightness})
-        return f"LED brightness set to {brightness}%"
-
-    @function_tool()
-    async def set_eyes_brightness(self, brightness: int) -> str:
-        """Adjust the brightness of the fursuit's eye displays/screens.
-        
-        Parameters:
-        - brightness: Brightness level from 0 (off) to 100 (maximum bright). Must be an integer.
-        
-        Use this when user wants to adjust eye/screen brightness, make eyes brighter/dimmer, or mentions eye display intensity."""
-        if not 0 <= brightness <= 100:
-            return "Brightness must be between 0 and 100"
-        call_controlbot_command('dynamo/commands/eyes-brightness', {'brightness': brightness})
-        return f"Eyes brightness set to {brightness}%"
 
     @function_tool()
     async def set_leds_color(self, color: str) -> str:
@@ -328,6 +263,27 @@ class Cookiebot(Agent):
         Choose expressions that fit the context of the conversation or user's feelings."""
         call_controlbot_command('dynamo/commands/set-expression', {'expression': expression})
         return f"Expression set to {expression}"
+
+    @function_tool()
+    async def play_music(self, query: str) -> str:
+        """Play music on the fursuit's audio system.
+        
+        Parameters:
+        - query: The name of the song, artist, or genre to play
+        
+        Use this when user requests music playback, wants to listen to specific tracks, or mentions music preferences.
+        Search for songs using song name, artist name, or genre, and begins to play the first result found."""
+        call_controlbot_command('dynamo/spotify', {"action": "search_and_play", "query": query})
+        return f"Searching and playing '{query}'"
+
+    @function_tool()
+    async def stop_music(self) -> str:
+        """Stop the currently playing music on the fursuit's audio system.
+        
+        Use this when user requests to stop or pause music playback, wants to end listening to music, or mentions music control.
+        Stops/pauses the music if it is currently playing, otherwise does nothing."""
+        call_controlbot_command('dynamo/spotify', {"action": "pause"})
+        return "Music stopped"
 
     @function_tool()
     async def search_internet(self, query: str) -> str:

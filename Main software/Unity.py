@@ -48,6 +48,14 @@ def send(displacement_eye_x, displacement_eye_y, closeness_left, closeness_right
         if response and "Invalid message format!" in response:
             raise Exception("Unity app returned Invalid message format!")
         return response
+
+def send_eyes_video(url):
+    try:
+        message = "VIDEO STOP" if url == "stop" else f"VIDEO PLAY {url}"
+        client_socket.sendall(message.encode())
+    except Exception as e:
+        print(e)
+        connect()
     
 if __name__ == "__main__":
     connect()

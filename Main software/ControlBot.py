@@ -64,7 +64,8 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                 'dynamo/commands/shutdown',
                 'dynamo/commands/reboot',
                 'dynamo/commands/kill-software',
-                'dynamo/commands/set-sound-device'
+                'dynamo/commands/set-sound-device',
+                'dynamo/eyes-video'
             ]
             for topic in command_topics:
                 try:

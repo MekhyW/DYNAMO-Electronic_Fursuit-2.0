@@ -53,10 +53,15 @@ def send_eyes_video(url):
     try:
         message = "VIDEO STOP" if url == "stop" else f"VIDEO PLAY {url}"
         client_socket.sendall(message.encode())
+        response = client_socket.recv(1024).decode()
+        return response
     except Exception as e:
         print(e)
         connect()
+        return None
     
 if __name__ == "__main__":
     connect()
-    send(0, 0, 0, 0, [0, 0, 0, 0, 0, 0], False, 0, False)
+    print(send(0, 0, 0, 0, [0, 0, 0, 0, 0, 0], False, 0, False))
+    print(send_eyes_video("http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"))
+    print(send_eyes_video("stop"))

@@ -111,9 +111,9 @@ Make sure that the Access Point Name (APN) is set to ONLY ipv4. This is importan
 
 If you connect to a WiFi network (such as a hotel network), the connection can usually be forwarded to the suit via a "WiFi Sharing" option in the phone's network settings.
 
-### 10. Disable Screen Saver
+### 10. Disable Screen Sleep
 
-To disable the screen saver, go to "Settings" -> "System" -> "Power & sleep" -> "Screen saver" and set it to "Never".
+Open Settings, go to System > Power & sleep, and then select Never from the drop-down menus under Screen and Sleep for both "On battery power" and "When plugged in" options.
 
 ### 11. Disable Volume Ducking
 
@@ -123,5 +123,6 @@ We should disable this so that the volume of all sound is not reduced when using
 Go to Control Panel → Sound → Communications tab → Do nothing
 
 ## Contributing
+
 
 Contributions are welcome! Please open an issue or submit a pull request. Or, if you have any suggestions or feedback contact me directly via Telegram @MekhyW.

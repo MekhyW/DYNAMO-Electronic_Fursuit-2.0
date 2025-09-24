@@ -10,9 +10,12 @@ joblib==1.2.0
 mord==0.7
 torch
 livekit>=1.0.0
-livekit-agents[openai,turn-detector,silero,elevenlabs]>=1.2.2
-livekit-plugins-noise-cancellation>=0.2.5
+git+https://github.com/MekhyW/agents.git#subdirectory=livekit-agents
+livekit-plugins-openai
+livekit-plugins-turn-detector
+livekit-plugins-silero
 livekit-plugins-elevenlabs
+livekit-plugins-noise-cancellation>=0.2.5
 elevenlabs
 cryptography
 telepota==1.0

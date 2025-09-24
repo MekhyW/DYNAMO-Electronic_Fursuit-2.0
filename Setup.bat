@@ -1,5 +1,5 @@
 :: Install Python dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt --force-reinstall
 
 :: Set Launch.bat to run on startup
 copy /Y "Launch.bat" "C:\Users\LattePanda\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup"

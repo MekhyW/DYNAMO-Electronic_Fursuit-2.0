@@ -32,9 +32,7 @@ The Dynamo project addresses these challenges by introducing an innovative platf
 
 [Control App](https://github.com/MekhyW/DYNAMO-Control-App)
 
-[App onboarding](https://github.com/MekhyW/control-app-onboarding)
-
-[Schematics and PCB](https://github.com/MekhyW/DYNAMO-PCB)
+[App onboarding](https://github.com/MekhyW/control-app-onboarding)
 
 ## Hardware Assembly
 

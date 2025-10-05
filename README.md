@@ -32,7 +32,7 @@ The Dynamo project addresses these challenges by introducing an innovative platf
 
 [Control App](https://github.com/MekhyW/DYNAMO-Control-App)
 
-[App onboarding](https://github.com/MekhyW/control-app-onboarding)
+[App onboarding](https://github.com/MekhyW/control-app-onboarding)
 
 ## Hardware Assembly
 
@@ -76,7 +76,7 @@ Download and install Voicemod V3 from the official [Voicemod website](https://ww
 Configure the audio settings, including noise reduction and voice gate. Also, set it to use the default output device. Make sure that the option to auto-start with Windows is checked and it is set to start minimized to the system tray.
 
 To set your own effect options:
-- Add the voice effects you want to appear in the app menu as "Favorites"
+- Add the icons of the voice effects you want to appear in the app to it
 - For the voices that have background sounds, it is recommended to set them to a low volume (e.g. 10%)
 - Add the sound effects you want to appear in the app menu to a soundboard and make their names lowercase
 

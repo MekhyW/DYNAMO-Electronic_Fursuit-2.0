@@ -63,8 +63,7 @@ async def getVoices():
         if response is not None and 'voices' in response:
             response = response["voices"]
             for voice in response:
-                if voice["favorited"]:
-                    voices.append({"name": voice["friendlyName"], "id": voice["id"]})
+                voices.append({"name": voice["friendlyName"], "id": voice["id"]})
             voices = sorted(voices, key=lambda k: k['name'])
             return
 
@@ -164,3 +163,10 @@ async def connect():
                     pass
     except ConnectionRefusedError:
         print("Voicemod not running")
+
+if __name__ == "__main__":
+    loop = asyncio.new_event_loop()
+    try:
+        loop.run_until_complete(connect())
+    except Exception as e:
+        print(e)

@@ -5,21 +5,22 @@ from typing import AsyncIterable, Optional
 from livekit import rtc
 from livekit.agents import JobContext, JobProcess, WorkerOptions, cli, RoomInputOptions, RoomOutputOptions, llm, FunctionTool, ModelSettings
 from livekit.agents.voice import Agent, AgentSession
-from livekit.plugins import elevenlabs, openai, silero, noise_cancellation
+from livekit.plugins import elevenlabs, openai, silero, noise_cancellation, deepgram
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 from livekit.agents.llm import function_tool
 import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
-from Environment import openai_key, livekit_url, livekit_api_key, livekit_api_secret, eleven_api_key, prompt_encryption_key, tavily_api_key
+from Environment import livekit_url, livekit_api_key, livekit_api_secret, prompt_encryption_key, deepgram_api_key, openai_key, tavily_api_key, eleven_api_key
 import Waveform
 import time
 import threading
 import os
-os.environ["OPENAI_API_KEY"] = openai_key
 os.environ["LIVEKIT_URL"] = livekit_url
 os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
+os.environ["DEEPGRAM_API_KEY"] = deepgram_api_key
+os.environ["OPENAI_API_KEY"] = openai_key
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
 KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball", "que bot", "cookiebar", "cookie bar", "kukibot"]
@@ -136,6 +137,8 @@ class Cookiebot(Agent):
                         call_controlbot_command("dynamo/chat_logs", {'query': combined_text})
                         yield modified_event
                         self.transcript_buffer = []
+                elif hasattr(event, 'type') and str(event.type) == "SpeechEventType.INTERIM_TRANSCRIPT":
+                    print(f"Interim Transcript: {event.alternatives[0].text}")
         return process_stream()
 
     @function_tool()
@@ -397,8 +400,8 @@ def monitor_assistant_ipc():
 
 async def entrypoint(ctx: JobContext):
     session = AgentSession(
+        stt=deepgram.STT(model="nova-3", language="multi", interim_results=True, no_delay=True, punctuate=True, filler_words=True),
         llm=openai.LLM(model="gpt-4.1-mini", temperature=0.9),
-        stt=openai.STT(model="gpt-4o-mini-transcribe", detect_language=True, use_realtime=True),
         tts=elevenlabs.TTS(voice_id="Rb9J9nOjoNgGbjJUN5wt", model="eleven_multilingual_v2", voice_settings=elevenlabs.VoiceSettings(stability=0.3, similarity_boost=1.0, style=0.0, speed=1.05, use_speaker_boost=True)),
         turn_detection=MultilingualModel(),
         vad=ctx.proc.userdata["vad"],

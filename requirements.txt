@@ -15,6 +15,7 @@ livekit-plugins-openai
 livekit-plugins-turn-detector
 livekit-plugins-silero
 livekit-plugins-elevenlabs
+livekit-plugins-deepgram
 livekit-plugins-noise-cancellation>=0.2.5
 elevenlabs
 cryptography

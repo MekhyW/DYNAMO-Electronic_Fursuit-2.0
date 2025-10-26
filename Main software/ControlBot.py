@@ -304,6 +304,8 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 MachineVision.expression_manual_mode = True
                 MachineVision.expression_manual_id = expr_id
                 MachineVision.eye_tracking_mode = False
+                if expr_id < 6:
+                    MachineVision.emotion_scores = [1 if i == expr_id else 0 for i in range(6)]
                 if expr_id == 6:
                     Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
                 sound_files = {

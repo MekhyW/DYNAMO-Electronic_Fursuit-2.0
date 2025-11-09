@@ -60,7 +60,6 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
                 'dynamo/commands/text-to-speech',
                 'dynamo/commands/set-expression',
                 'dynamo/commands/face-expression-tracking-toggle',
-                'dynamo/commands/eye-tracking-toggle',
                 'dynamo/commands/shutdown',
                 'dynamo/commands/reboot',
                 'dynamo/commands/kill-software',
@@ -345,19 +344,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 print(f"Face expression tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"😊 Face expression tracking {status}", user_info)
-        elif topic == 'dynamo/commands/eye-tracking-toggle':
-            enabled = payload.get('enabled')
-            if enabled is not None:
-                MachineVision.eye_tracking_mode = enabled
-                if enabled:
-                    MachineVision.force_crossed_eye = False
-                    Serial.leds_on = 0
-                else:
-                    Serial.leds_on = 1
-                Waveform.play_audio("sfx/settings_toggle.wav")
-                print(f"Eye tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
-                status = "enabled" if enabled else "disabled"
-                send_telegram_log(f"👁️ Eye tracking {status}", user_info)
         elif topic == 'dynamo/commands/shutdown':
             print(f"Shutdown requested by {user_name}")
             send_telegram_log(f"⚠️ System shutdown initiated", user_info)

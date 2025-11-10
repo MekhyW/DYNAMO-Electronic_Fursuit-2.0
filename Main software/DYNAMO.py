@@ -1,5 +1,5 @@
 import Voicemod
-import MachineVision
+import EyeControl
 import Unity
 import Serial
 import ControlBot
@@ -8,13 +8,9 @@ import asyncio
 import time
 import os
 
-def machine_vision_thread():
-    MachineVision.open_camera(MachineVision.cap_id)
+def eyecontrol_thread():
     while True:
-        try:
-            MachineVision.main()
-        except Exception as e:
-            print(e)
+        EyeControl.update_eye_movement()
         time.sleep(0.01)
 
 def assistant_thread():
@@ -44,7 +40,7 @@ def serial_thread():
                 Serial.connect()
                 time.sleep(1)
             else:
-                Serial.send(MachineVision.emotion_scores)
+                Serial.send(EyeControl.emotion_scores)
         except Exception as e:
             print(f"Serial thread error: {e}")
         time.sleep(0.1)
@@ -56,17 +52,17 @@ def unity_thread():
                 Unity.connect()
                 time.sleep(1)
             else:
-                Unity.send(MachineVision.displacement_eye[0], MachineVision.displacement_eye[1], 
-                        MachineVision.left_eye_closeness, MachineVision.right_eye_closeness, MachineVision.emotion_scores, 
-                        MachineVision.expression_manual_mode, MachineVision.expression_manual_id, 
-                        MachineVision.force_crossed_eye or MachineVision.cross_eyedness > MachineVision.CROSS_EYEDNESS_THRESHOLD)
+                Unity.send(EyeControl.displacement_eye[0], EyeControl.displacement_eye[1], 
+                        EyeControl.left_eye_closeness, EyeControl.right_eye_closeness, EyeControl.emotion_scores, 
+                        EyeControl.expression_manual_mode, EyeControl.expression_manual_id, 
+                        EyeControl.crossed_eyes)
         except Exception as e:
             print(e)
         time.sleep(0.01)
 
 def main():
     threads = []
-    threads.append(threading.Thread(target=machine_vision_thread))
+    threads.append(threading.Thread(target=eyecontrol_thread))
     threads.append(threading.Thread(target=assistant_thread))
     threads.append(threading.Thread(target=voicemod_thread))
     threads.append(threading.Thread(target=controlbot_thread))

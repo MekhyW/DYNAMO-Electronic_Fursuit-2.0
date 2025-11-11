@@ -44,7 +44,7 @@ left_eye_closeness_noisy = [0, 0, 0, 0]
 right_eye_closeness_noisy = [0, 0, 0, 0]
 cross_eyedness_noisy = [0, 0, 0, 0]
 eye_tracking_mode = True
-force_crossed_eye = False
+crossed_eyes = False
 expression_manual_mode = False
 expression_manual_id = 0
 

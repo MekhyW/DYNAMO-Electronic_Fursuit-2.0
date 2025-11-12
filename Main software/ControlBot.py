@@ -303,7 +303,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 expr_id = int(expression)
                 EyeControl.expression_manual_mode = True
                 EyeControl.expression_manual_id = expr_id
-                EyeControl.eye_tracking_mode = False
                 if expr_id < 6:
                     EyeControl.emotion_scores = [1 if i == expr_id else 0 for i in range(6)]
                 if expr_id == 6:

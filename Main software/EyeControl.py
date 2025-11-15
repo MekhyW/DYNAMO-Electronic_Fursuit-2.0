@@ -24,6 +24,8 @@ left_press_time = 0.0
 right_press_time = 0.0
 left_blink_until = 0.0
 right_blink_until = 0.0
+left_blink_prev = False
+right_blink_prev = False
 
 TIMER_MOVE_RAND_MAX = 6
 TIMER_EYELID_RAND_MAX = 12
@@ -45,7 +47,7 @@ def random_gaussian(min_value=0.0, max_value=1.0):
 
 def update_eye_movement():
     global timer_xmove, timer_ymove, timer_eyelidmove, x_current, y_current, displacement_eye, left_eye_closeness, right_eye_closeness, crossed_eyes
-    global left_held, right_held, up_held, down_held, left_blink_until, right_blink_until
+    global left_held, right_held, up_held, down_held, left_blink_until, right_blink_until, left_blink_prev, right_blink_prev
     if not eye_tracking_mode:
         displacement_eye = (0, 0)
         (left_eye_closeness, right_eye_closeness) = (0, 0)
@@ -67,14 +69,21 @@ def update_eye_movement():
     if timer_eyelidmove == 0 or now >= timer_eyelidmove:
         timer_eyelidmove = now + random_gaussian(0, TIMER_EYELID_RAND_MAX)
         (left_eye_closeness, right_eye_closeness) = random.choice(EYELID_SETS)
+    lb = now <= left_blink_until
+    rb = now <= right_blink_until
     if down_held:
         left_eye_closeness = 1.2
         right_eye_closeness = 1.2
     else:
-        if now <= left_blink_until:
+        if lb:
             left_eye_closeness = 1.2
-        if now <= right_blink_until:
+        if rb:
             right_eye_closeness = 1.2
+        if (not lb and not rb) and (left_blink_prev or right_blink_prev):
+            (left_eye_closeness, right_eye_closeness) = (0, 0)
+            timer_eyelidmove = now + random_gaussian(0, TIMER_EYELID_RAND_MAX)
+    left_blink_prev = lb
+    right_blink_prev = rb
     displacement_eye = (x_current, y_current)
 
 def on_press(key):

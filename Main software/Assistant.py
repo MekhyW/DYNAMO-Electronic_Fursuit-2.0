@@ -177,29 +177,6 @@ class Cookiebot(Agent):
         return f"Output volume set to {volume}%"
 
     @function_tool()
-    async def get_sound_effects(self) -> str:
-        """Retrieve the complete list of available Voicemod sound effects that can be played. 
-        Use this when the user asks what sounds are available or wants to browse sound options.
-        Returns a formatted list of sound effect IDs that can be used with play_sound_effect()."""
-        return f"Available sound effects: {sounds}"
-
-    @function_tool()
-    async def play_sound_effect(self, effect_id: str = None) -> str:
-        """Play a specific Voicemod sound effect or stop all currently playing sounds.
-        
-        Parameters:
-        - effect_id: The sound effect ID to play (get list with get_sound_effects()). 
-                    If None or empty, stops all currently playing sound effects.
-        
-        Use this when user wants to play a specific sound, make noise, or stop all sounds.
-        Always call get_sound_effects() first if you need to suggest available sounds."""
-        call_controlbot_command('dynamo/commands/play-sound-effect', {'effectId': effect_id} if effect_id else {})
-        if effect_id:
-            return f"Playing sound effect {effect_id}"
-        else:
-            return "Stopped all sound effects"
-
-    @function_tool()
     async def get_voice_effects(self) -> str:
         """Retrieve the complete list of available Voicemod voice effects/filters that can be applied.
         Use this when the user asks about voice changing options or wants to see available voice filters.
@@ -219,30 +196,43 @@ class Cookiebot(Agent):
         return f"Voice effect set to {effect_id}"
 
     @function_tool()
-    async def set_expression(self, expression: str) -> str:
-        """Change the facial expression displayed on the fursuit's eye screens.
+    async def toggle_microphone(self, enabled: bool) -> str:
+        """Control the microphone on Voicemod. When enabled, the users voice input will be processed and output to the fursuit. When disabled, 
+        the microphone input will be muted and not processed.
         
         Parameters:
-        - expression: Expression ID (0-12) or 'SillyON'/'SillyOFF' for crossed eyes
-            0: Angry - for frustration, anger, annoyance
-            1: Disgusted - for disgust, revulsion, distaste  
-            2: Happy - for joy, happiness, excitement
-            3: Neutral - for calm, default, normal state
-            4: Sad - for sadness, disappointment, sorrow
-            5: Surprised - for shock, amazement, surprise
-            6: Hypnotic - for mesmerizing, trance-like state
-            7: Heart eyes - for love, affection, adoration
-            8: Rainbow eyes - for pride, celebration, colorful mood
-            9: Nightmare/demon - for scary, evil, menacing look
-            10: Gear eyes - for mechanical, robotic, technical mood
-            11: Sans undertale - for specific character reference
-            12: Mischievous - for playful, sneaky, troublemaking
-            SillyON/SillyOFF: Toggle crossed eyes effect
+        - enabled: True to turn microphone on, False to turn it off
         
-        Use this to match the user's mood, emotional state, or when they request specific expressions.
-        Choose expressions that fit the context of the conversation or user's feelings."""
-        call_controlbot_command('dynamo/commands/set-expression', {'expression': expression})
-        return f"Expression set to {expression}"
+        Use this when user wants to control microphone input, turn on/off, or mentions audio input."""
+        call_controlbot_command('dynamo/commands/microphone-toggle', {'enabled': enabled})
+        status = "enabled" if enabled else "disabled"
+        return f"Microphone {status}"
+
+    @function_tool()
+    async def toggle_voice_changer(self, enabled: bool) -> str:
+        """Control the voice changer feature in Voicemod. When enabled, the user can change their voice to sound different. When disabled,
+        the voice changer feature is turned off and the user can only use their original voice.
+        
+        Parameters:
+        - enabled: True to turn voice changer on, False to turn it off
+        
+        Use this when user wants to enable/disable voice changing, or mentions voice modification options."""
+        call_controlbot_command('dynamo/commands/voice-changer-toggle', {'enabled': enabled})
+        status = "enabled" if enabled else "disabled"
+        return f"Voice changer {status}"
+
+    @function_tool()
+    async def toggle_background_sound(self, enabled: bool) -> str:
+        """Control the background sound feature in Voicemod. When enabled, the voice changer will play background music to further enhance the voice. When disabled,
+        the background music will be muted and not played. This is not the same as the music that is played when user requests music playback.
+        
+        Parameters:
+        - enabled: True to turn background sound on, False to turn it off
+        
+        Use this when user wants to enable/disable background music, or mentions background audio options."""
+        call_controlbot_command('dynamo/commands/background-sound-toggle', {'enabled': enabled})
+        status = "enabled" if enabled else "disabled"
+        return f"Background sound {status}"
 
     @function_tool()
     async def toggle_leds(self, enabled: bool) -> str:

@@ -247,6 +247,19 @@ class Cookiebot(Agent):
         return f"LEDs {status}"
 
     @function_tool()
+    async def set_leds_brightness(self, brightness: int) -> str:
+        """Adjust the brightness of the fursuit's LED lighting system.
+        
+        Parameters:
+        - brightness: Brightness level from 0 (off) to 100 (maximum)
+        
+        Use this when user wants to control LED brightness, make lights dimmer/brighter, or mentions LED intensity."""
+        if not 0 <= brightness <= 100:
+            return "Brightness must be between 0 and 100"
+        call_controlbot_command('dynamo/commands/leds-brightness', {'brightness': brightness})
+        return f"LEDs brightness set to {brightness}%"
+
+    @function_tool()
     async def set_leds_color(self, color: str) -> str:
         """Change the color of the fursuit's LED lighting system using hex color codes.
         

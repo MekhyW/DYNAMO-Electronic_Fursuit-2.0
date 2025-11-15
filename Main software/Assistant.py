@@ -142,18 +142,46 @@ class Cookiebot(Agent):
         return process_stream()
 
     @function_tool()
+    async def play_music(self, query: str) -> str:
+        """Play music on the fursuit's audio system.
+        
+        Parameters:
+        - query: The name of the song, artist, or genre to play
+        
+        Use this when user requests music playback, wants to listen to specific tracks, or mentions music preferences.
+        Search for songs using song name, artist name, or genre, and begins to play the first result found."""
+        call_controlbot_command('dynamo/spotify', {"action": "search_and_play", "query": query})
+        return f"Searching and playing '{query}'"
+
+    @function_tool()
+    async def stop_music(self) -> str:
+        """Stop the currently playing music on the fursuit's audio system.
+        
+        Use this when user requests to stop or pause music playback, wants to end listening to music, or mentions music control.
+        Stops/pauses the music if it is currently playing, otherwise does nothing."""
+        call_controlbot_command('dynamo/spotify', {"action": "pause"})
+        return "Music stopped"
+
+    @function_tool()
+    async def set_output_volume(self, volume: int) -> str:
+        """Control the system's master output volume level.
+        
+        Parameters:
+        - volume: Volume level from 0 (mute) to 100 (maximum). Must be an integer.
+        
+        Use this when user wants to adjust how loud everything sounds, make things quieter/louder,
+        or mute the system. This affects all audio output from the computer."""
+        if not 0 <= volume <= 100:
+            return "Volume must be between 0 and 100"
+        call_controlbot_command('dynamo/commands/set-output-volume', {'volume': volume})
+        return f"Output volume set to {volume}%"
+
+    @function_tool()
     async def get_sound_effects(self) -> str:
         """Retrieve the complete list of available Voicemod sound effects that can be played. 
         Use this when the user asks what sounds are available or wants to browse sound options.
         Returns a formatted list of sound effect IDs that can be used with play_sound_effect()."""
         return f"Available sound effects: {sounds}"
-
-    @function_tool()
-    async def get_voice_effects(self) -> str:
-        """Retrieve the complete list of available Voicemod voice effects/filters that can be applied.
-        Use this when the user asks about voice changing options or wants to see available voice filters.
-        Returns a formatted list of voice effect IDs that can be used with set_voice_effect()."""
-        return f"Available voice effects: {voices}"
 
     @function_tool()
     async def play_sound_effect(self, effect_id: str = None) -> str:
@@ -172,6 +200,13 @@ class Cookiebot(Agent):
             return "Stopped all sound effects"
 
     @function_tool()
+    async def get_voice_effects(self) -> str:
+        """Retrieve the complete list of available Voicemod voice effects/filters that can be applied.
+        Use this when the user asks about voice changing options or wants to see available voice filters.
+        Returns a formatted list of voice effect IDs that can be used with set_voice_effect()."""
+        return f"Available voice effects: {voices}"
+    
+    @function_tool()
     async def set_voice_effect(self, effect_id: str) -> str:
         """Change the active voice effect/filter in Voicemod to modify how the user's voice sounds.
         
@@ -184,18 +219,30 @@ class Cookiebot(Agent):
         return f"Voice effect set to {effect_id}"
 
     @function_tool()
-    async def set_output_volume(self, volume: int) -> str:
-        """Control the system's master output volume level.
+    async def set_expression(self, expression: str) -> str:
+        """Change the facial expression displayed on the fursuit's eye screens.
         
         Parameters:
-        - volume: Volume level from 0 (mute) to 100 (maximum). Must be an integer.
+        - expression: Expression ID (0-12) or 'SillyON'/'SillyOFF' for crossed eyes
+            0: Angry - for frustration, anger, annoyance
+            1: Disgusted - for disgust, revulsion, distaste  
+            2: Happy - for joy, happiness, excitement
+            3: Neutral - for calm, default, normal state
+            4: Sad - for sadness, disappointment, sorrow
+            5: Surprised - for shock, amazement, surprise
+            6: Hypnotic - for mesmerizing, trance-like state
+            7: Heart eyes - for love, affection, adoration
+            8: Rainbow eyes - for pride, celebration, colorful mood
+            9: Nightmare/demon - for scary, evil, menacing look
+            10: Gear eyes - for mechanical, robotic, technical mood
+            11: Sans undertale - for specific character reference
+            12: Mischievous - for playful, sneaky, troublemaking
+            SillyON/SillyOFF: Toggle crossed eyes effect
         
-        Use this when user wants to adjust how loud everything sounds, make things quieter/louder,
-        or mute the system. This affects all audio output from the computer."""
-        if not 0 <= volume <= 100:
-            return "Volume must be between 0 and 100"
-        call_controlbot_command('dynamo/commands/set-output-volume', {'volume': volume})
-        return f"Output volume set to {volume}%"
+        Use this to match the user's mood, emotional state, or when they request specific expressions.
+        Choose expressions that fit the context of the conversation or user's feelings."""
+        call_controlbot_command('dynamo/commands/set-expression', {'expression': expression})
+        return f"Expression set to {expression}"
 
     @function_tool()
     async def toggle_leds(self, enabled: bool) -> str:
@@ -240,53 +287,6 @@ class Cookiebot(Agent):
         'static' = solid color, 'pulse' = breathing effect, 'rainbow' = color cycling."""
         call_controlbot_command('dynamo/commands/leds-effect', {'effect': effect})
         return f"LED effect set to {effect}"
-
-    @function_tool()
-    async def set_expression(self, expression: str) -> str:
-        """Change the facial expression displayed on the fursuit's eye screens.
-        
-        Parameters:
-        - expression: Expression ID (0-12) or 'SillyON'/'SillyOFF' for crossed eyes
-            0: Angry - for frustration, anger, annoyance
-            1: Disgusted - for disgust, revulsion, distaste  
-            2: Happy - for joy, happiness, excitement
-            3: Neutral - for calm, default, normal state
-            4: Sad - for sadness, disappointment, sorrow
-            5: Surprised - for shock, amazement, surprise
-            6: Hypnotic - for mesmerizing, trance-like state
-            7: Heart eyes - for love, affection, adoration
-            8: Rainbow eyes - for pride, celebration, colorful mood
-            9: Nightmare/demon - for scary, evil, menacing look
-            10: Gear eyes - for mechanical, robotic, technical mood
-            11: Sans undertale - for specific character reference
-            12: Mischievous - for playful, sneaky, troublemaking
-            SillyON/SillyOFF: Toggle crossed eyes effect
-        
-        Use this to match the user's mood, emotional state, or when they request specific expressions.
-        Choose expressions that fit the context of the conversation or user's feelings."""
-        call_controlbot_command('dynamo/commands/set-expression', {'expression': expression})
-        return f"Expression set to {expression}"
-
-    @function_tool()
-    async def play_music(self, query: str) -> str:
-        """Play music on the fursuit's audio system.
-        
-        Parameters:
-        - query: The name of the song, artist, or genre to play
-        
-        Use this when user requests music playback, wants to listen to specific tracks, or mentions music preferences.
-        Search for songs using song name, artist name, or genre, and begins to play the first result found."""
-        call_controlbot_command('dynamo/spotify', {"action": "search_and_play", "query": query})
-        return f"Searching and playing '{query}'"
-
-    @function_tool()
-    async def stop_music(self) -> str:
-        """Stop the currently playing music on the fursuit's audio system.
-        
-        Use this when user requests to stop or pause music playback, wants to end listening to music, or mentions music control.
-        Stops/pauses the music if it is currently playing, otherwise does nothing."""
-        call_controlbot_command('dynamo/spotify', {"action": "pause"})
-        return "Music stopped"
 
     @function_tool()
     async def search_internet(self, query: str) -> str:

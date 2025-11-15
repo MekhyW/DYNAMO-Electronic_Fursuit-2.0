@@ -1,0 +1,37 @@
+Power --> screen sleep
+Vol --> volume up/down
+Mute --> mute/unmute
+Home --> m key + opens chrome
+Gear --> backspace
+Menu --> menu key
+Share --> delete key
+Mouse --> switch between keyboard mode and mouse mode
+
+
+KEYBOARD MODE:
+
+D-PAD --> left, right, up, down arrow keys
+OK --> enter
+Back --> "None" key
+
+
+MOUSE MODE:
+
+D-PAD --> move mouse (capped by screen limit)
+OK --> left click
+Back --> right click
+
+
+
+
+Look left                HOLD LEFT
+Look right               HOLD RIGHT
+Look up                  HOLD UP
+Close eyes               HOLD DOWN
+Left blink               PRESS LEFT
+Right blink              PRESS RIGHT
+Become silly             HOLD OK
+Set expression           COG + combination
+Play SFX                 SHARE + combination
+Change voice             MENU + combination
+Cancel                   BACK

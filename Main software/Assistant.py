@@ -26,6 +26,7 @@ os.environ["OPENAI_API_KEY"] = openai_key
 os.environ["ELEVEN_API_KEY"] = eleven_api_key
 
 KEYWORDS = ["cookiebot", "cookie bot", "cookie pot", "cookie bote", "cookie butter", "cookieball", "cookie ball", "que bot", "cookiebar", "cookie bar", "kukibot"]
+emotion_mapping = {'angry': 0, 'disgusted': 1, 'happy': 2, 'neutral': 3, 'sad': 4, 'surprised': 5, 'hypnotic': 6, 'heart': 7, 'rainbow': 8, 'nightmare': 9, 'gear': 10, 'sans': 11, 'mischievous': 12}
 hotword_detection_enabled = True
 manual_trigger = False
 sounds = []
@@ -106,8 +107,10 @@ class Cookiebot(Agent):
                     self.transcript_buffer = [item for item in self.transcript_buffer if current_time - item['timestamp'] <= self.context_window_seconds]
                     self.transcript_buffer = self.transcript_buffer[-self.buffer_max_size:]
                     print(f"Transcript: {transcript}")
-                    emotion = emotiny.classify_emotion(transcript)
-                    print(f"Emotion: {emotion}")
+                    print(f"Expression manual mode: {EyeControl.expression_manual_mode}")
+                    if not EyeControl.expression_manual_mode:
+                        emotion = emotiny.classify_emotion(transcript)
+                        call_controlbot_command("dynamo/commands/set-expression", {'expression': str(emotion_mapping[emotion]), 'silent': True})
                     if manual_trigger:
                         print("Assistant manual trigger activated - starting listening session")
                         Waveform.play_audio_async("sfx/assistant_listening.wav")

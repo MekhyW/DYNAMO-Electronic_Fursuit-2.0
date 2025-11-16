@@ -26,6 +26,8 @@ left_blink_until = 0.0
 right_blink_until = 0.0
 left_blink_prev = False
 right_blink_prev = False
+expr_select_mode = False
+expr_keys = []
 
 TIMER_MOVE_RAND_MAX = 6
 TIMER_EYELID_RAND_MAX = 12
@@ -77,7 +79,9 @@ def update_eye_movement():
     else:
         if lb:
             left_eye_closeness = 1.2
+            right_eye_closeness = 0
         if rb:
+            left_eye_closeness = 0
             right_eye_closeness = 1.2
         if (not lb and not rb) and (left_blink_prev or right_blink_prev):
             (left_eye_closeness, right_eye_closeness) = (0, 0)
@@ -87,8 +91,58 @@ def update_eye_movement():
     displacement_eye = (x_current, y_current)
 
 def on_press(key):
-    global left_held, right_held, up_held, down_held, enter_held, left_press_time, right_press_time
+    global left_held, right_held, up_held, down_held, enter_held, left_press_time, right_press_time, expression_manual_mode, expression_manual_id, emotion_scores
+    global expr_select_mode, expr_keys
     t = time.time()
+    def is_cancel_key(k):
+        if (hasattr(k, 'vk') and k.vk == 166) or (hasattr(k, 'value') and hasattr(k.value, 'vk') and k.value.vk == 166):
+            print("Cancel key pressed")
+            return True
+        return False
+    if key == keyboard.Key.backspace:
+        expr_select_mode = True
+        expr_keys = []
+        print("Expression select mode started")
+        return
+    if expr_select_mode:
+        if is_cancel_key(key):
+            expr_select_mode = False
+            expr_keys = []
+            return
+        allowed = {keyboard.Key.enter, keyboard.Key.left, keyboard.Key.right, keyboard.Key.up, keyboard.Key.down}
+        if key in allowed:
+            expr_keys.append(key)
+            if len(expr_keys) >= 2:
+                mapping = {
+                    (keyboard.Key.enter,keyboard.Key.enter): 'neutral',
+                    (keyboard.Key.enter,keyboard.Key.right): 'angry',
+                    (keyboard.Key.enter,keyboard.Key.left): 'disgusted',
+                    (keyboard.Key.enter,keyboard.Key.up): 'happy',
+                    (keyboard.Key.enter,keyboard.Key.down): 'sad',
+                    (keyboard.Key.up,keyboard.Key.up): 'surprised',
+                    (keyboard.Key.left,keyboard.Key.left): 'mischievous',
+                    (keyboard.Key.down,keyboard.Key.down): 'nightmare',
+                    (keyboard.Key.right,keyboard.Key.right): 'heart',
+                    (keyboard.Key.up,keyboard.Key.right): 'gears',
+                    (keyboard.Key.down,keyboard.Key.right): 'sans',
+                    (keyboard.Key.up,keyboard.Key.down): 'hypnotic',
+                    (keyboard.Key.down,keyboard.Key.up): 'hypnotic',
+                    (keyboard.Key.left,keyboard.Key.right): 'rainbow',
+                    (keyboard.Key.right,keyboard.Key.left): 'rainbow',
+                }
+                chosen = mapping.get((expr_keys[0], expr_keys[1]))
+                if chosen:
+                    if chosen in EMOTION_LABELS:
+                        expression_manual_mode = False
+                        for i in range(len(emotion_scores)):
+                            emotion_scores[i] = 1 if EMOTION_LABELS[i] == chosen else 0
+                    elif chosen in EMOTION_LABELS_EXTRA:
+                        expression_manual_mode = True
+                        expression_manual_id = EMOTION_LABELS_EXTRA.index(chosen) + 6
+                    print(f"Emotion {chosen} selected")
+                expr_select_mode = False
+                expr_keys = []
+        return
     if key == keyboard.Key.left:
         if not left_held:
             left_press_time = t

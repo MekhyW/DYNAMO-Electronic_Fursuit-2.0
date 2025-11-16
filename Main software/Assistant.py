@@ -8,11 +8,13 @@ from livekit.agents.voice import Agent, AgentSession
 from livekit.plugins import elevenlabs, openai, silero, noise_cancellation, deepgram
 from livekit.plugins.turn_detector.multilingual import MultilingualModel
 from livekit.agents.llm import function_tool
+import emotiny
 import base64
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from Environment import livekit_url, livekit_api_key, livekit_api_secret, prompt_encryption_key, deepgram_api_key, openai_key, tavily_api_key, eleven_api_key
 import Waveform
+import EyeControl
 import time
 import threading
 import os
@@ -73,6 +75,7 @@ class Cookiebot(Agent):
         self.manual_listening_active = False
         self.manual_session_buffer = []
         self.thinking_audio_thread = None
+        emotiny.load_model("models")
 
     async def llm_node(self, chat_ctx: llm.ChatContext, tools: list[FunctionTool], model_settings: ModelSettings) -> AsyncIterable[llm.ChatChunk]:
         thinking_sound_started = False
@@ -103,6 +106,8 @@ class Cookiebot(Agent):
                     self.transcript_buffer = [item for item in self.transcript_buffer if current_time - item['timestamp'] <= self.context_window_seconds]
                     self.transcript_buffer = self.transcript_buffer[-self.buffer_max_size:]
                     print(f"Transcript: {transcript}")
+                    emotion = emotiny.classify_emotion(transcript)
+                    print(f"Emotion: {emotion}")
                     if manual_trigger:
                         print("Assistant manual trigger activated - starting listening session")
                         Waveform.play_audio_async("sfx/assistant_listening.wav")

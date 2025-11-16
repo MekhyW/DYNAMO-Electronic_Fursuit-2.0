@@ -9,6 +9,7 @@ mediapipe
 joblib==1.2.0
 mord==0.7
 torch
+git+https://github.com/MekhyW/EmoTiny.git
 livekit>=1.0.0
 git+https://github.com/MekhyW/agents.git#subdirectory=livekit-agents
 livekit-plugins-openai

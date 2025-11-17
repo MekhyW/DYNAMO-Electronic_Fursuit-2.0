@@ -3,8 +3,8 @@ import random
 import json
 from pynput import keyboard
 
-EMOTION_LABELS = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised']
-EMOTION_LABELS_EXTRA = ['hypnotic', 'heart', 'rainbow', 'nightmare', 'gears', 'sans', 'mischievous']
+EMOTION_LABELS = ['angry', 'disgusted', 'happy', 'neutral', 'sad', 'surprised', 'mischievous']
+EMOTION_LABELS_EXTRA = ['hypnotic', 'heart', 'rainbow', 'nightmare', 'gears', 'sans']
 EYELID_SETS = [(-0.2, -0.2), (-0.2, -0.2), (0.3, 0.3), (0.3, 0.3), (0.2, 0.6), (0.6, 0.2), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
 emotion_scores = [0] * len(EMOTION_LABELS)
 expression_manual_mode = False
@@ -57,9 +57,9 @@ def update_eye_movement():
     now = time.time()
     crossed_eyes = True if enter_held else False
     if (left_held and not right_held):
-        x_current = -1
-    elif (right_held and not left_held):
         x_current = 1
+    elif (right_held and not left_held):
+        x_current = -1
     elif timer_xmove == 0 or now >= timer_xmove:
         timer_xmove = now + random_gaussian(0, TIMER_MOVE_RAND_MAX)
         x_current = random_gaussian(-0.5, 0.5)

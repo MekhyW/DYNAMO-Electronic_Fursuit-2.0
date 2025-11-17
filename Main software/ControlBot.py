@@ -297,6 +297,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
         elif topic == 'dynamo/commands/set-expression':
             expression = payload.get('expression', None)
             silent = payload.get('silent', False)
+            scores = payload.get('scores', None)
             if expression is None:
                 return
             if silent and EyeControl.expression_manual_mode:
@@ -308,9 +309,11 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
             if not silent:
                 EyeControl.expression_manual_mode = True
             EyeControl.expression_manual_id = expr_id
-            if expr_id < 6:
-                EyeControl.emotion_scores = [1 if i == expr_id else 0 for i in range(6)]
-            if expr_id == 6:
+            if scores:
+                EyeControl.emotion_scores = [scores[str(i)] for i in [0, 1, 2, 3, 4, 5, 12]]
+            elif expr_id < 6 or expr_id == 12:
+                EyeControl.emotion_scores = [1 if i == expr_id else 0 for i in [0, 1, 2, 3, 4, 5, 12]]
+            elif expr_id == 6:
                 Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
             sound_files = {
                 0: "sfx/expr_angry.wav", 1: "sfx/expr_disgusted.wav", 2: "sfx/expr_happy.wav",

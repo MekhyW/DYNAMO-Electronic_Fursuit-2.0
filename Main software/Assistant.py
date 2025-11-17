@@ -109,8 +109,9 @@ class Cookiebot(Agent):
                     print(f"Transcript: {transcript}")
                     print(f"Expression manual mode: {EyeControl.expression_manual_mode}")
                     if not EyeControl.expression_manual_mode:
-                        emotion = emotiny.classify_emotion(transcript)
-                        call_controlbot_command("dynamo/commands/set-expression", {'expression': str(emotion_mapping[emotion]), 'silent': True})
+                        prediction = emotiny.classify_emotion_with_confidence(transcript)
+                        prediction['probabilities'] = {emotion_mapping[key]: value for key, value in prediction['probabilities'].items()}
+                        call_controlbot_command("dynamo/commands/set-expression", {'expression': str(emotion_mapping[prediction['emotion']]), 'silent': True, 'scores': prediction['probabilities']})
                     if manual_trigger:
                         print("Assistant manual trigger activated - starting listening session")
                         Waveform.play_audio_async("sfx/assistant_listening.wav")

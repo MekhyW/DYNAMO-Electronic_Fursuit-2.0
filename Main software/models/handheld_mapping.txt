@@ -31,7 +31,7 @@ Close eyes               HOLD DOWN
 Left blink               PRESS LEFT
 Right blink              PRESS RIGHT
 Become silly             HOLD OK
-Set expression           COG + combination
+Set expression           MENU + combination
 Play SFX                 SHARE + combination
-Change voice             MENU + combination
+Change voice             COG + combination
 Cancel                   BACK

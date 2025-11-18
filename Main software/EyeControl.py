@@ -99,7 +99,7 @@ def on_press(key):
             print("Cancel key pressed")
             return True
         return False
-    if key == keyboard.Key.backspace:
+    if key == keyboard.Key.menu:
         expr_select_mode = True
         expr_keys = []
         print("Expression select mode started")

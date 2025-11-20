@@ -18,6 +18,7 @@ import Voicemod
 import Unity
 import Serial
 
+apppath = 'https://t.me/mekhybot?startapp'
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
 stickerpack = 'https://t.me/addstickers/MekhyW'
 mychatpath = 'https://t.me/MekhyW'
@@ -546,7 +547,8 @@ def thread_function(msg):
                     privacy_text = file.read()
                 fursuitbot.sendMessage(chat_id, privacy_text, parse_mode='HTML')
             else:
-                fursuitbot.sendMessage(chat_id, "Open the App to control the fursuit by going to this bot's description and clicking 'Open App'\nDon't know how to use me? Click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
+                fursuitbot.sendMessage(chat_id, "Open the App to control the fursuit by pressing the button below!\nDon't know how to use me? Click on 'Tutorial' on the bottom left corner", reply_markup={'inline_keyboard':[
+                    [{'text': 'OPEN APP', 'url': apppath}],
                     [{'text': 'Check out my Refsheet!', 'url': refsheetpath}], 
                     [{'text': 'Check out my Stickers!', 'url': stickerpack}],
                     [{'text': 'Send me a private message', 'url': mychatpath}]

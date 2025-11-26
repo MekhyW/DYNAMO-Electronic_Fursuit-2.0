@@ -9,8 +9,8 @@ from Environment import voicemod_key
 voicemod_websocket = None
 url = "ws://localhost:59129/v1"
 
-toggle_hear_my_voice_flag = False
-toggle_voice_changer_flag = False
+toggle_hear_my_voice_flag = True
+toggle_voice_changer_flag = True
 toggle_background_flag = False
 load_voice_flag = True
 play_sound_flag = False
@@ -130,6 +130,7 @@ async def connect():
             print("Voices loaded")
             await getSounds()
             print("Soundboard loaded")
+            time.sleep(1)
             while True:
                 time.sleep(0.1)
                 if toggle_hear_my_voice_flag:

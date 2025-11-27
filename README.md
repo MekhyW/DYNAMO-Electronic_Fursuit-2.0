@@ -22,18 +22,6 @@ The Dynamo project addresses these challenges by introducing an innovative platf
 - Planning: Diagrams and planning documents
 - Test scripts: Some scripts used for testing aspects of the project
 
-## Associated Repositories
-
-[Eye Graphics Unity C#](https://github.com/MekhyW/DYNAMO-Eye-Graphics)
-
-[AVR C++ Firmware](https://github.com/MekhyW/DYNAMO-AVR)
-
-[Image processing pipeline](https://github.com/MekhyW/Facial-Emotion-Classification)
-
-[Control App](https://github.com/MekhyW/DYNAMO-Control-App)
-
-[App onboarding](https://github.com/MekhyW/control-app-onboarding)
-
 ## Hardware Assembly
 
 ![Hardware Diagram](Planning/Hardware.png)
@@ -124,3 +112,4 @@ Go to Control Panel → Sound → Communications tab → Do nothing
 
 
 Contributions are welcome! Please open an issue or submit a pull request. Or, if you have any suggestions or feedback contact me directly via Telegram @MekhyW.
+

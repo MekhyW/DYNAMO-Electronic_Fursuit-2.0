@@ -1,3 +1,4 @@
+import Serial
 import time
 import random
 import json
@@ -96,13 +97,13 @@ def on_press(key):
     t = time.time()
     def is_cancel_key(k):
         if (hasattr(k, 'vk') and k.vk == 166) or (hasattr(k, 'value') and hasattr(k.value, 'vk') and k.value.vk == 166):
-            print("Cancel key pressed")
+            Serial.send_debug("Cancel key pressed")
             return True
         return False
     if key == keyboard.Key.menu:
         expr_select_mode = True
         expr_keys = []
-        print("Expression select mode started")
+        Serial.send_debug("Expression select mode started")
         return
     if expr_select_mode:
         if is_cancel_key(key):
@@ -139,7 +140,7 @@ def on_press(key):
                     elif chosen in EMOTION_LABELS_EXTRA:
                         expression_manual_mode = True
                         expression_manual_id = EMOTION_LABELS_EXTRA.index(chosen) + 6
-                    print(f"Emotion {chosen} selected")
+                    Serial.send_debug(f"Emotion {chosen} selected")
                 expr_select_mode = False
                 expr_keys = []
         return

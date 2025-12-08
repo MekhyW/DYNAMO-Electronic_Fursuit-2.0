@@ -4,6 +4,7 @@ import json
 import random
 import string
 import time
+import Serial
 from Environment import voicemod_key
 
 voicemod_websocket = None
@@ -48,7 +49,7 @@ async def send_message(websocket, command, payload):
                 continue
             return response
         except asyncio.TimeoutError:
-            print("Voicemod Timeout")
+            Serial.send_debug("Voicemod Timeout")
             break
     return None
 
@@ -125,11 +126,11 @@ async def connect():
         async with websockets.connect(url, ping_interval=5, max_size=2**30) as websocket_voicemod:
             await send_message(websocket_voicemod, "registerClient", {"clientKey": voicemod_key})
             voicemod_websocket = websocket_voicemod
-            print("Voicemod connected!")
+            Serial.send_debug("Voicemod connected!")
             await getVoices()
-            print("Voices loaded")
+            Serial.send_debug("Voices loaded")
             await getSounds()
-            print("Soundboard loaded")
+            Serial.send_debug("Soundboard loaded")
             time.sleep(1)
             while True:
                 time.sleep(0.1)
@@ -163,7 +164,7 @@ async def connect():
                 except asyncio.TimeoutError:
                     pass
     except ConnectionRefusedError:
-        print("Voicemod not running")
+        Serial.send_debug("Voicemod not running")
 
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()

@@ -15,6 +15,7 @@ from cryptography.hazmat.backends import default_backend
 from Environment import livekit_url, livekit_api_key, livekit_api_secret, prompt_encryption_key, deepgram_api_key, openai_key, tavily_api_key, eleven_api_key
 import Waveform
 import EyeControl
+import Serial
 import time
 import threading
 import os
@@ -113,16 +114,16 @@ class Cookiebot(Agent):
                         prediction['probabilities'] = {emotion_mapping[key]: value for key, value in prediction['probabilities'].items()}
                         call_controlbot_command("dynamo/commands/set-expression", {'expression': str(emotion_mapping[prediction['emotion']]), 'silent': True, 'scores': prediction['probabilities']})
                     if manual_trigger:
-                        print("Assistant manual trigger activated - starting listening session")
+                        Serial.send_debug("Assistant manual trigger activated - starting listening session")
                         Waveform.play_audio_async("sfx/assistant_listening.wav")
                         manual_trigger = False
                         self.manual_listening_active = True
                         self.manual_session_buffer = []  # Clear previous manual session
                     if self.manual_listening_active:
                         self.manual_session_buffer.append(transcript)
-                        print(f"Manual session collecting: {transcript}")
+                        Serial.send_debug(f"Manual session collecting: {transcript}")
                         if len(self.manual_session_buffer) >= 1:  # Process after first complete sentence
-                            print("Processing manual session input")
+                            Serial.send_debug("Processing manual session input")
                             self.manual_listening_active = False
                             context_text = " ".join([item['text'] for item in self.transcript_buffer[-2:]])  # Last 2 context items
                             manual_text = " ".join(self.manual_session_buffer)
@@ -135,7 +136,7 @@ class Cookiebot(Agent):
                             self.manual_session_buffer = []
                         continue
                     elif hotword_detection_enabled and any(keyword.lower() in transcript.lower() for keyword in KEYWORDS):
-                        print(f"Assistant activation keyword detected")
+                        Serial.send_debug(f"Assistant activation keyword detected")
                         Waveform.play_audio("sfx/assistant_listening.wav")
                         combined_text = " ".join([item['text'] for item in self.transcript_buffer]).lower()
                         for keyword in KEYWORDS:

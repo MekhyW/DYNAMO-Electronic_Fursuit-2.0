@@ -1,3 +1,4 @@
+import Serial
 import socket
 import threading
 
@@ -16,14 +17,14 @@ def connect():
             client_socket.close()
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client_socket.connect((host, port))
-        print("Unity app connected!")
+        Serial.send_debug("Unity app connected!")
         connected = True
         return client_socket
     except ConnectionRefusedError:
-        print("Unity app connection refused. Is the app running?")
+        Serial.send_debug("Unity app connection refused. Is the app running?")
         connected = False
     except Exception as e:
-        print("Unexpected error on unity connection:", e)
+        Serial.send_debug("Unexpected error on unity connection:", e)
         connected = False
     return None
 

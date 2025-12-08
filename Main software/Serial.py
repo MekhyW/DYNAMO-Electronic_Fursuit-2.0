@@ -61,6 +61,8 @@ def send(expression_scores):
         return response
 
 def send_debug(message):
+    if not message.startswith("E,"):
+        print(message)
     if ser_debug is None:
         return None
     try:

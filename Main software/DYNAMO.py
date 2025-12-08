@@ -41,6 +41,10 @@ def serial_thread():
                 time.sleep(1)
             else:
                 Serial.send(EyeControl.emotion_scores)
+                if EyeControl.crossed_eyes:
+                    Serial.send_debug(f"E,-1,-1,1,1,{EyeControl.left_eye_closeness},{EyeControl.right_eye_closeness},{EyeControl.expression_manual_id}")
+                else:
+                    Serial.send_debug(f"E,{EyeControl.displacement_eye[0]},{EyeControl.displacement_eye[1]},{EyeControl.displacement_eye[0]},{EyeControl.displacement_eye[1]},{EyeControl.left_eye_closeness},{EyeControl.right_eye_closeness},{EyeControl.expression_manual_id}")
         except Exception as e:
             print(f"Serial thread error: {e}")
         time.sleep(0.1)

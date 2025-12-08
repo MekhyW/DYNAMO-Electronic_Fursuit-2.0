@@ -32,14 +32,14 @@ try:
     fursuitbot = telepot.Bot(fursuitbot_token)
 except Exception as e:
     fursuitbot = None
-    print(f"ControlBot constructor failed with error: {e}")
+    Serial.send_debug(f"ControlBot constructor failed with error: {e}")
 
 def on_mqtt_connect(client, userdata, flags, rc, properties=None):
     global last_mqtt_activity
     if rc != 0:
-        print(f"MQTT connection failed with code {rc}")
+        Serial.send_debug(f"MQTT connection failed with code {rc}")
         return
-    print("Connected to MQTT broker")
+    Serial.send_debug("Connected to MQTT broker")
     last_mqtt_activity = time.time()
     def setup_subscriptions():
         try:
@@ -86,7 +86,7 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
             heartbeat_thread = threading.Thread(target=mqtt_heartbeat_worker, daemon=True)
             heartbeat_thread.start()
             Waveform.play_audio("sfx/bot_online.wav")
-            print("MQTT Control bot online!")
+            Serial.send_debug("MQTT Control bot online!")
             if fursuitbot:
                 fursuitbot.sendMessage(fursuitbot_ownerID, '>>> CONTROL BOT READY! <<<')
         except Exception as e:
@@ -97,24 +97,24 @@ def on_mqtt_connect(client, userdata, flags, rc, properties=None):
 
 def on_mqtt_disconnect(client, userdata, rc, properties=None):
     if rc == 0:
-        print("MQTT: Disconnected cleanly")
+        Serial.send_debug("MQTT: Disconnected cleanly")
         return
-    print(f"MQTT: Unexpected disconnection (code: {rc})")
+    Serial.send_debug(f"MQTT: Unexpected disconnection (code: {rc})")
     if rc == 1:
-        print("MQTT: Incorrect protocol version - check broker compatibility")
+        Serial.send_debug("MQTT: Incorrect protocol version - check broker compatibility")
     elif rc == 2:
-        print("MQTT: Invalid client identifier")
+        Serial.send_debug("MQTT: Invalid client identifier")
     elif rc == 3:
-        print("MQTT: Server unavailable - broker may be down")
+        Serial.send_debug("MQTT: Server unavailable - broker may be down")
     elif rc == 4:
-        print("MQTT: Check username and password")
+        Serial.send_debug("MQTT: Check username and password")
     elif rc == 5:
-        print("MQTT: Authorization failed")
+        Serial.send_debug("MQTT: Authorization failed")
     elif rc == 7:
-        print("MQTT: Connection lost - network issue detected")
-        print("MQTT: This usually indicates unstable network or broker overload")
+        Serial.send_debug("MQTT: Connection lost - network issue detected")
+        Serial.send_debug("MQTT: This usually indicates unstable network or broker overload")
     else:
-        print(f"MQTT: Unknown disconnect reason: {rc}")
+        Serial.send_debug(f"MQTT: Unknown disconnect reason: {rc}")
 
 def send_telegram_log(command_description, user_info):
     """Send log message to both command issuer and owner via Telegram"""
@@ -174,21 +174,21 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 return
             Voicemod.sound_id = str(effect_id)
             Voicemod.play_sound_flag = True
-            print(f"Playing sound effect {effect_id} (requested by {user_name})")
+            Serial.send_debug(f"Playing sound effect {effect_id}")
             send_telegram_log(f"🔊 Playing sound effect #{effect_id}", user_info)
         elif topic == 'dynamo/commands/set-voice-effect':
             effect_id = payload.get('effectId')
             if effect_id is not None:
                 Voicemod.voice_id = str(effect_id)
                 Voicemod.load_voice_flag = True
-                print(f"Setting voice effect {effect_id} (requested by {user_name})")
+                Serial.send_debug(f"Setting voice effect {effect_id}")
                 send_telegram_log(f"🎤 Voice effect changed to #{effect_id}", user_info)   
         elif topic == 'dynamo/commands/set-output-volume':
             volume = payload.get('volume')
             if volume is not None:
                 Windows.set_system_volume(volume / 100.0)
                 Waveform.play_audio("sfx/volume_set.wav")
-                print(f"Setting output volume to {volume}% (requested by {user_name})")
+                Serial.send_debug(f"Setting output volume to {volume}%")
                 send_telegram_log(f"🔊 Output volume set to {volume}%", user_info)
         elif topic == 'dynamo/commands/microphone-toggle':
             enabled = payload.get('enabled')
@@ -196,7 +196,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 Voicemod.desired_status = enabled
                 Voicemod.toggle_hear_my_voice_flag = True
                 Waveform.play_audio("sfx/settings_toggle.wav")
-                print(f"Microphone {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"Microphone {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🎙️ Microphone {status}", user_info)
         elif topic == 'dynamo/commands/voice-changer-toggle':
@@ -205,7 +205,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 Voicemod.desired_status = enabled
                 Voicemod.toggle_voice_changer_flag = True
                 Waveform.play_audio("sfx/settings_toggle.wav")
-                print(f"Voice changer {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"Voice changer {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🎤 Voice changer {status}", user_info)
         elif topic == 'dynamo/commands/background-sound-toggle':
@@ -214,7 +214,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 Voicemod.desired_status = enabled
                 Voicemod.toggle_background_flag = True
                 Waveform.play_audio("sfx/settings_toggle.wav")
-                print(f"Background sound {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"Background sound {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🎵 Background sound {status}", user_info)
         elif topic == 'dynamo/commands/leds-toggle':
@@ -224,7 +224,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 EyeControl.eye_tracking_mode = False if enabled else True
                 EyeControl.expression_manual_mode = True if enabled else False
                 Waveform.play_audio("sfx/leds_state.wav")
-                print(f"LEDs {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"LEDs {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"💡 LEDs {status}", user_info)
         elif topic == 'dynamo/commands/leds-brightness':
@@ -233,13 +233,13 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 Serial.leds_brightness = brightness * (255 / 100)
                 EyeControl.eye_tracking_mode = False
                 EyeControl.expression_manual_mode = True
-                print(f"LEDs brightness set to {brightness}% (requested by {user_name})")
+                Serial.send_debug(f"LEDs brightness set to {brightness}%")
                 send_telegram_log(f"💡 LEDs brightness set to {brightness}%", user_info)
         elif topic == 'dynamo/commands/eyes-brightness':
             brightness = payload.get('brightness')
             if brightness is not None:
                 Unity.screen_brightness = brightness
-                print(f"Eyes brightness set to {brightness}% (requested by {user_name})")
+                Serial.send_debug(f"Eyes brightness set to {brightness}%")
                 send_telegram_log(f"👁️ Eyes brightness set to {brightness}%", user_info)
         elif topic == 'dynamo/commands/leds-color':
             color = payload.get('color')
@@ -253,10 +253,10 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                     EyeControl.eye_tracking_mode = False
                     EyeControl.expression_manual_mode = True
                     Waveform.play_audio("sfx/leds_color.wav")
-                    print(f"LEDs color set to {color} (requested by {user_name})")
+                    Serial.send_debug(f"LEDs color set to {color}")
                     send_telegram_log(f"🌈 LEDs color changed to ({Serial.leds_color_r}, {Serial.leds_color_g}, {Serial.leds_color_b})", user_info)
                 except ValueError:
-                    print(f"Unknown LED color: {color}")
+                    Serial.send_debug(f"Unknown LED color: {color}")
                     send_telegram_log(f"❌ Unknown LED color: {color}", user_info)
         elif topic == 'dynamo/commands/leds-effect':
             effect = payload.get('effect')
@@ -268,10 +268,10 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                     EyeControl.eye_tracking_mode = False
                     EyeControl.expression_manual_mode = True
                     Waveform.play_audio("sfx/leds_effect.wav")
-                    print(f"LEDs effect set to {effect} (requested by {user_name})")
+                    Serial.send_debug(f"LEDs effect set to {effect}")
                     send_telegram_log(f"✨ LEDs effect changed to {effect.title()}", user_info)
                 except ValueError:
-                    print(f"Unknown LED effect: {effect}")
+                    Serial.send_debug(f"Unknown LED effect: {effect}")
                     send_telegram_log(f"❌ Unknown LED effect: {effect}", user_info)  
         elif topic == 'dynamo/commands/hotword-detection-toggle':
             enabled = payload.get('enabled')
@@ -279,13 +279,13 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 with open("assistant_ipc.json", "w") as assistant_ipc:
                     json.dump({"command": "hotword_detection", "enabled": enabled}, assistant_ipc)
                 Waveform.play_audio("sfx/settings_toggle.wav")
-                print(f"Hotword detection {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"Hotword detection {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"🗣️ Hotword detection {status}", user_info)
         elif topic == 'dynamo/commands/hotword-trigger':
             with open("assistant_ipc.json", "w") as assistant_ipc:
                 json.dump({"command": "hotword_trigger"}, assistant_ipc)
-            print(f"Hotword triggered (requested by {user_name})")
+            Serial.send_debug(f"Hotword triggered")
             send_telegram_log(f"🗣️ Assistant hotword triggered", user_info)
         elif topic == 'dynamo/chat_logs':
             LogAIMessage(payload.get('query', None), payload.get('answer', None))
@@ -339,7 +339,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 Serial.leds_effect = led_eff[expr_id]
                 Serial.leds_on = 1
             if not silent:
-                print(f"Expression set to {expression} (ID: {expr_id}) (requested by {user_name})")
+                Serial.send_debug(f"Expression set to {expression} (ID: {expr_id})")
                 send_telegram_log(f"😊 Expression changed to {expression.title()}", user_info)
         elif topic == 'dynamo/commands/face-expression-tracking-toggle':
             enabled = payload.get('enabled')
@@ -351,7 +351,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                     Waveform.play_audio("sfx/settings_toggle.wav")
                 else:
                     Serial.leds_on = 1
-                print(f"Face expression tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"Face expression tracking {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"😊 Automatic face expression {status}", user_info)
         elif topic == 'dynamo/commands/eye-tracking-toggle':
@@ -364,21 +364,21 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 else:
                     Serial.leds_on = 1
                 Waveform.play_audio("sfx/settings_toggle.wav")
-                print(f"Eye tracking {'enabled' if enabled else 'disabled'} (requested by {user_name})")
+                Serial.send_debug(f"Eye tracking {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"👁️ Automatic eye movement {status}", user_info)
         elif topic == 'dynamo/commands/shutdown':
-            print(f"Shutdown requested by {user_name}")
+            Serial.send_debug(f"Shutdown requested by {user_name}")
             send_telegram_log(f"⚠️ System shutdown initiated", user_info)
             Waveform.play_audio("sfx/system_down.wav")
             Windows.shutdown()
         elif topic == 'dynamo/commands/reboot':
-            print(f"Reboot requested by {user_name}")
+            Serial.send_debug(f"Reboot requested by {user_name}")
             send_telegram_log(f"🔄 System reboot initiated", user_info)
             Waveform.play_audio("sfx/system_down.wav")
             Windows.restart()
         elif topic == 'dynamo/commands/kill-software':
-            print(f"Software kill requested by {user_name}")
+            Serial.send_debug(f"Software kill requested by {user_name}")
             send_telegram_log(f"💀 Software termination initiated", user_info)
             Windows.kill_process('Eye-Graphics.exe')
             Windows.kill_process('VoicemodDesktop.exe')
@@ -390,11 +390,11 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 try:
                     Windows.set_default_sound_device(device_name, device_type)
                     Waveform.play_audio("sfx/sounddevice_set.wav")
-                    print(f"Sound device set: {device_type} -> {device_name} (requested by {user_name})")
+                    Serial.send_debug(f"Sound device set: {device_type} -> {device_name}")
                     device_icon = "🎤" if device_type == "input" else "🔊"
                     send_telegram_log(f"{device_icon} {device_type.title()} device set to {device_name}", user_info)
                 except Exception as e:
-                    print(f"Error setting sound device: {e} (requested by {user_name})")
+                    Serial.send_debug(f"Error setting sound device: {e}")
                     send_telegram_log(f"❌ Error setting sound device", user_info)
         elif topic == 'dynamo/spotify':
             mqtt_client.publish('dynamo/spotify', json.dumps(payload), retain=True)
@@ -497,11 +497,11 @@ def TextToSpeech(text, user_name="Unknown"):
     def tts_worker():
         try:
             Waveform.play_audio("sfx/assistant_ok.wav")
-            print(f"Generating TTS for: {text} (requested by {user_name})")
+            Serial.send_debug(f"Generating TTS for: {text} (requested by {user_name})")
             with open("assistant_ipc.json", "w") as assistant_ipc:
                 json.dump({"command": "tts", "text": text}, assistant_ipc)
         except Exception as e:
-            print(f"Error in TTS: {e}")
+            Serial.send_debug(f"Error in TTS: {e}")
     tts_thread = threading.Thread(target=tts_worker, daemon=True)
     tts_thread.start()
 

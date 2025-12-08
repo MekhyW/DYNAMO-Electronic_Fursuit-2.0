@@ -1,6 +1,6 @@
 # DYNAMO (Main Repository)
 
-Improved modular computing platform for wearable costumes, with animatronic support, facial/eye tracking, sound processing and mobile network control application.
+Improved modular computing platform for wearable costumes, with dynamic expressions, sound processing and mobile network control application.
 
 ## Overview
 

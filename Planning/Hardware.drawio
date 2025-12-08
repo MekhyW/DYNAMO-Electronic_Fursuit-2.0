@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="Yu2Rz-5dotqBiI_etyf0" name="Page-1">
-        <mxGraphModel dx="1340" dy="984" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="599" dy="488" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -185,8 +185,8 @@
                 <mxCell id="119" value="USB port" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="310" y="668" width="60" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="8" value="ELP OV2710 camera w/ fisheye + IR lights" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-                    <mxGeometry x="290" y="324" width="120" height="40" as="geometry"/>
+                <mxCell id="8" value="ESP32-2432S028R" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="291" y="324" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="5" value="BY-MM1 Microphone with USB adapter" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="430" y="324" width="120" height="40" as="geometry"/>
@@ -215,22 +215,22 @@
                 <mxCell id="151" value="80mm cooler fan" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" parent="1" vertex="1">
                     <mxGeometry x="150" y="842" width="120" height="31" as="geometry"/>
                 </mxCell>
-                <mxCell id="156" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" vertex="1" parent="1">
+                <mxCell id="156" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;" parent="1" vertex="1">
                     <mxGeometry x="538" y="686.5" width="247" height="94" as="geometry"/>
                 </mxCell>
-                <mxCell id="157" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;SKY-9346 Handheld controller&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="157" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;SKY-9346 Handheld controller&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="581.5" y="713.5" width="160" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="158" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Head&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                <mxCell id="158" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Head&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="285" y="114" width="48" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="159" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Backpack&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                <mxCell id="159" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Backpack&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="29" y="480" width="80" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="160" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Neck&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                <mxCell id="160" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Neck&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="538" y="501" width="46.5" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="161" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Paw&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                <mxCell id="161" value="&lt;font style=&quot;font-size: 17px;&quot;&gt;Paw&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
                     <mxGeometry x="538" y="656.5" width="46.5" height="30" as="geometry"/>
                 </mxCell>
             </root>

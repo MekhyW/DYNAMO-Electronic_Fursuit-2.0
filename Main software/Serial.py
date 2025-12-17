@@ -11,7 +11,7 @@ leds_brightness_default = 150
 leds_effects_options = ['solid_color', 'fade', 'wipe', 'theater_chase', 'rainbow', 'strobe', 'moving substrips', 'none (off)']
 
 animatronics_on = 1
-leds_on = 0
+leds_on = 1
 leds_brightness = leds_brightness_default
 leds_color_r = 129
 leds_color_g = 0

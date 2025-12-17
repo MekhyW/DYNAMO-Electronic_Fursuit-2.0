@@ -4,6 +4,7 @@ import subprocess
 import json
 from ctypes import cast, POINTER
 from comtypes import CLSCTX_ALL
+import comtypes
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 
 input_audio_devices = []
@@ -40,6 +41,7 @@ def get_disk_info():
     }
 
 def get_system_volume():
+    comtypes.CoInitialize()
     devices = AudioUtilities.GetSpeakers()
     interface = devices.Activate(
         IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
@@ -47,6 +49,7 @@ def get_system_volume():
     return volume.GetMasterVolumeLevelScalar()
 
 def set_system_volume(volume_level):
+    comtypes.CoInitialize()
     devices = AudioUtilities.GetSpeakers()
     interface = devices.Activate(
         IAudioEndpointVolume._iid_, CLSCTX_ALL, None)

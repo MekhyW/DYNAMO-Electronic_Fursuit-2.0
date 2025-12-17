@@ -345,12 +345,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
             enabled = payload.get('enabled')
             if enabled is not None:
                 EyeControl.expression_manual_mode = not enabled
-                if enabled:
-                    EyeControl.crossed_eyes = False
-                    Serial.leds_on = 0
-                    Waveform.play_audio("sfx/settings_toggle.wav")
-                else:
-                    Serial.leds_on = 1
+                Waveform.play_audio("sfx/settings_toggle.wav")
                 Serial.send_debug(f"Face expression tracking {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
                 send_telegram_log(f"😊 Automatic face expression {status}", user_info)

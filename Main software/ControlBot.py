@@ -358,11 +358,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
             enabled = payload.get('enabled')
             if enabled is not None:
                 EyeControl.eye_tracking_mode = enabled
-                if enabled:
-                    EyeControl.force_crossed_eye = False
-                    Serial.leds_on = 0
-                else:
-                    Serial.leds_on = 1
                 Waveform.play_audio("sfx/settings_toggle.wav")
                 Serial.send_debug(f"Eye tracking {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"

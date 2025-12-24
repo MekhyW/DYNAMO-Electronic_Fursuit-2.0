@@ -132,13 +132,12 @@ def on_press(key):
                     (keyboard.Key.right,keyboard.Key.left): 'rainbow',
                 }
                 chosen = mapping.get((expr_keys[0], expr_keys[1]))
+                expression_manual_mode = True
                 if chosen:
                     if chosen in EMOTION_LABELS:
-                        expression_manual_mode = False
                         for i in range(len(emotion_scores)):
                             emotion_scores[i] = 1 if EMOTION_LABELS[i] == chosen else 0
                     elif chosen in EMOTION_LABELS_EXTRA:
-                        expression_manual_mode = True
                         expression_manual_id = EMOTION_LABELS_EXTRA.index(chosen) + 6
                     Serial.send_debug(f"Emotion {chosen} selected")
                 expr_select_mode = False

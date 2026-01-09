@@ -6,7 +6,11 @@ import ControlBot
 import threading
 import asyncio
 import time
+import sys
 import os
+
+sys.stdin.close()
+sys.stdin = open(os.devnull)
 
 def eyecontrol_thread():
     while True:

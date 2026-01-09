@@ -18,7 +18,10 @@ import EyeControl
 import Serial
 import time
 import threading
+import sys
 import os
+sys.stdin.close()
+sys.stdin = open(os.devnull)
 os.environ["LIVEKIT_URL"] = livekit_url
 os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret

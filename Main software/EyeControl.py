@@ -135,6 +135,7 @@ def on_press(key):
                 expression_manual_mode = True
                 if chosen:
                     if chosen in EMOTION_LABELS:
+                        expression_manual_id = 0
                         for i in range(len(emotion_scores)):
                             emotion_scores[i] = 1 if EMOTION_LABELS[i] == chosen else 0
                     elif chosen in EMOTION_LABELS_EXTRA:

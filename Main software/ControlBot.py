@@ -318,7 +318,7 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                 Serial.leds_effect = next(i for i, effect in enumerate(Serial.leds_effects_options) if 'rainbow' in effect)
             sound_files = {
                 0: "sfx/expr_angry.wav", 1: "sfx/expr_disgusted.wav", 2: "sfx/expr_happy.wav",
-                3: None, 4: "sfx/expr_sad.wav", 5: "sfx/expr_surprised.wav",
+                3: "sfx/expr_neutral.wav", 4: "sfx/expr_sad.wav", 5: "sfx/expr_surprised.wav",
                 6: "sfx/expr_hypnotic.wav", 7: "sfx/expr_heart.wav", 8: "sfx/expr_rainbow.wav",
                 9: "sfx/expr_nightmare.wav", 10: "sfx/expr_gears.wav", 11: "sfx/expr_sans.wav",
                 12: "sfx/expr_mischievous.wav"

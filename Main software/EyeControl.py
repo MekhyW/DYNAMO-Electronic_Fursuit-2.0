@@ -1,4 +1,5 @@
 import Serial
+import Waveform
 import threading
 import time
 import random
@@ -97,6 +98,7 @@ def update_eye_movement():
 def reset_expression_manual_mode():
     global expression_manual_mode
     expression_manual_mode = False
+    Serial.send_debug("Expression manual mode reset to auto")
 
 def on_press(key):
     global left_held, right_held, up_held, down_held, enter_held, left_press_time, right_press_time, expression_manual_mode, expression_manual_id, emotion_scores, manual_mode_timer
@@ -104,6 +106,7 @@ def on_press(key):
     t = time.time()
     def is_cancel_key(k):
         if (hasattr(k, 'vk') and k.vk == 166) or (hasattr(k, 'value') and hasattr(k.value, 'vk') and k.value.vk == 166):
+            Waveform.play_audio("sfx/cancel.wav")
             Serial.send_debug("Cancel key pressed")
             return True
         return False
@@ -152,6 +155,7 @@ def on_press(key):
                     elif chosen in EMOTION_LABELS_EXTRA:
                         expression_manual_id = EMOTION_LABELS_EXTRA.index(chosen) + 6
                     Serial.send_debug(f"Emotion {chosen} selected")
+                    Waveform.play_audio(f"sfx/expr_{chosen}.wav")
                 expr_select_mode = False
                 expr_keys = []
         return

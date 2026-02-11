@@ -1,4 +1,5 @@
 import Serial
+import threading
 import time
 import random
 import json
@@ -9,6 +10,7 @@ EMOTION_LABELS_EXTRA = ['hypnotic', 'heart', 'rainbow', 'nightmare', 'gears', 's
 EYELID_SETS = [(-0.2, -0.2), (-0.2, -0.2), (0.3, 0.3), (0.3, 0.3), (0.2, 0.6), (0.6, 0.2), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
 emotion_scores = [0] * len(EMOTION_LABELS)
 expression_manual_mode = False
+manual_mode_timer = None
 expression_manual_id = 0
 displacement_eye = (0,0)
 left_eye_closeness = 0
@@ -32,6 +34,7 @@ expr_keys = []
 
 TIMER_MOVE_RAND_MAX = 6
 TIMER_EYELID_RAND_MAX = 12
+TIMER_MANUALTOAUTO_EXPR = 600
 timer_xmove = 0
 timer_ymove = 0
 timer_eyelidmove = 0
@@ -91,8 +94,12 @@ def update_eye_movement():
     right_blink_prev = rb
     displacement_eye = (x_current, y_current)
 
+def reset_expression_manual_mode():
+    global expression_manual_mode
+    expression_manual_mode = False
+
 def on_press(key):
-    global left_held, right_held, up_held, down_held, enter_held, left_press_time, right_press_time, expression_manual_mode, expression_manual_id, emotion_scores
+    global left_held, right_held, up_held, down_held, enter_held, left_press_time, right_press_time, expression_manual_mode, expression_manual_id, emotion_scores, manual_mode_timer
     global expr_select_mode, expr_keys
     t = time.time()
     def is_cancel_key(k):
@@ -132,8 +139,12 @@ def on_press(key):
                     (keyboard.Key.right,keyboard.Key.left): 'rainbow',
                 }
                 chosen = mapping.get((expr_keys[0], expr_keys[1]))
-                expression_manual_mode = True
                 if chosen:
+                    if manual_mode_timer:
+                        manual_mode_timer.cancel()
+                    manual_mode_timer = threading.Timer(TIMER_MANUALTOAUTO_EXPR, reset_expression_manual_mode)
+                    manual_mode_timer.start()
+                    expression_manual_mode = True
                     if chosen in EMOTION_LABELS:
                         expression_manual_id = 0
                         for i in range(len(emotion_scores)):
@@ -183,3 +194,9 @@ def on_release(key):
 
 keyboard_listener = keyboard.Listener(on_press=on_press, on_release=on_release)
 keyboard_listener.start()
+
+
+if __name__ == "__main__":
+    while True:
+        update_eye_movement()
+        time.sleep(0.01)

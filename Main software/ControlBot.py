@@ -221,8 +221,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
             enabled = payload.get('enabled')
             if enabled is not None:
                 Serial.leds_on = 1 if enabled else 0
-                EyeControl.eye_tracking_mode = False if enabled else True
-                EyeControl.expression_manual_mode = True if enabled else False
                 Waveform.play_audio("sfx/leds_state.wav")
                 Serial.send_debug(f"LEDs {'enabled' if enabled else 'disabled'}")
                 status = "enabled" if enabled else "disabled"
@@ -231,8 +229,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
             brightness = payload.get('brightness')
             if brightness is not None:
                 Serial.leds_brightness = brightness * (255 / 100)
-                EyeControl.eye_tracking_mode = False
-                EyeControl.expression_manual_mode = True
                 Serial.send_debug(f"LEDs brightness set to {brightness}%")
                 send_telegram_log(f"💡 LEDs brightness set to {brightness}%", user_info)
         elif topic == 'dynamo/commands/eyes-brightness':
@@ -250,8 +246,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                     Serial.leds_color_r = int(color[0:2], 16)
                     Serial.leds_color_g = int(color[2:4], 16)
                     Serial.leds_color_b = int(color[4:6], 16)
-                    EyeControl.eye_tracking_mode = False
-                    EyeControl.expression_manual_mode = True
                     Waveform.play_audio("sfx/leds_color.wav")
                     Serial.send_debug(f"LEDs color set to {color}")
                     send_telegram_log(f"🌈 LEDs color changed to ({Serial.leds_color_r}, {Serial.leds_color_g}, {Serial.leds_color_b})", user_info)
@@ -265,8 +259,6 @@ def handle_mqtt_command(topic, payload, user_info, user_name):
                     effect_index = Serial.leds_effects_options.index(effect.lower())
                     Serial.leds_on = 1
                     Serial.leds_effect = effect_index
-                    EyeControl.eye_tracking_mode = False
-                    EyeControl.expression_manual_mode = True
                     Waveform.play_audio("sfx/leds_effect.wav")
                     Serial.send_debug(f"LEDs effect set to {effect}")
                     send_telegram_log(f"✨ LEDs effect changed to {effect.title()}", user_info)

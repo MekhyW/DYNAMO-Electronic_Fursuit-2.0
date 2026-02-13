@@ -8,6 +8,7 @@ import asyncio
 import time
 import sys
 import os
+import subprocess
 
 sys.stdin.close()
 sys.stdin = open(os.devnull)
@@ -20,7 +21,17 @@ def eyecontrol_thread():
 def assistant_thread():
     os.system("python Assistant.py download-files")
     while True:
-        os.system("python Assistant.py console")
+        print("Starting Assistant console...")
+        process = subprocess.Popen(["python", "Assistant.py", "console"], stdin=subprocess.PIPE, text=True, bufsize=0)
+        while process.poll() is None:
+            try:
+                if process.stdin:
+                    process.stdin.write("\n")
+                    process.stdin.flush()
+            except Exception as e:
+                print(f"Error sending keep-alive to assistant: {e}")
+                break
+            time.sleep(1)
         print("Assistant console process ended. Restarting...")
 
 def voicemod_thread():

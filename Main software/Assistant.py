@@ -14,14 +14,10 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
 from Environment import livekit_url, livekit_api_key, livekit_api_secret, prompt_encryption_key, deepgram_api_key, openai_key, tavily_api_key, eleven_api_key
 import Waveform
-import EyeControl
 import Serial
 import time
 import threading
-import sys
 import os
-sys.stdin.close()
-sys.stdin = open(os.devnull)
 os.environ["LIVEKIT_URL"] = livekit_url
 os.environ["LIVEKIT_API_KEY"] = livekit_api_key
 os.environ["LIVEKIT_API_SECRET"] = livekit_api_secret
@@ -111,11 +107,9 @@ class Cookiebot(Agent):
                     self.transcript_buffer = [item for item in self.transcript_buffer if current_time - item['timestamp'] <= self.context_window_seconds]
                     self.transcript_buffer = self.transcript_buffer[-self.buffer_max_size:]
                     print(f"Transcript: {transcript}")
-                    print(f"Expression manual mode: {EyeControl.expression_manual_mode}")
-                    if not EyeControl.expression_manual_mode:
-                        prediction = emotiny.classify_emotion_with_confidence(transcript)
-                        prediction['probabilities'] = {emotion_mapping[key]: value for key, value in prediction['probabilities'].items()}
-                        call_controlbot_command("dynamo/commands/set-expression", {'expression': str(emotion_mapping[prediction['emotion']]), 'silent': True, 'scores': prediction['probabilities']})
+                    prediction = emotiny.classify_emotion_with_confidence(transcript)
+                    prediction['probabilities'] = {emotion_mapping[key]: value for key, value in prediction['probabilities'].items()}
+                    call_controlbot_command("dynamo/commands/set-expression", {'expression': str(emotion_mapping[prediction['emotion']]), 'silent': True, 'scores': prediction['probabilities']})
                     if manual_trigger:
                         Serial.send_debug("Assistant manual trigger activated - starting listening session")
                         Waveform.play_audio_async("sfx/assistant_listening.wav")

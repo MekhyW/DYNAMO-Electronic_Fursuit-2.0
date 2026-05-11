@@ -2,7 +2,6 @@ import Windows
 import telepot
 from telepot.loop import MessageLoop
 import paho.mqtt.client as mqtt
-import ssl
 import threading
 import asyncio
 import time
@@ -17,6 +16,8 @@ import EyeControl
 import Voicemod
 import Unity
 import Serial
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 
 apppath = 'https://t.me/mekhybot?startapp'
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'

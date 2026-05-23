@@ -17,12 +17,9 @@ import Voicemod
 import Unity
 import Serial
 import ssl
-import requests
 import urllib3
 ssl._create_default_https_context = ssl._create_unverified_context
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-_session = requests.Session()
-_session.verify = False
 
 apppath = 'https://t.me/mekhybot?startapp'
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
@@ -35,8 +32,16 @@ mqtt_heartbeat_interval = 30
 mqtt_keepalive_interval = 15
 
 try:
+    import telepot.api as _telepot_api
+    _no_ssl_pool_params = dict(num_pools=3, maxsize=10, retries=3, timeout=30, cert_reqs='NONE', assert_hostname=False)
+    _no_ssl_onetime_params = dict(num_pools=1, maxsize=1, retries=3, timeout=30, cert_reqs='NONE', assert_hostname=False)
+    _telepot_api._pools['default'] = urllib3.PoolManager(**_no_ssl_pool_params)
+    _telepot_api._onetime_pool_spec = (urllib3.PoolManager, _no_ssl_onetime_params)
+except Exception as e:
+    Serial.send_debug(f"Failed to patch telepot SSL pools: {e}")
+
+try:
     fursuitbot = telepot.Bot(fursuitbot_token)
-    fursuitbot._session = _session
 except Exception as e:
     fursuitbot = None
     Serial.send_debug(f"ControlBot constructor failed with error: {e}")

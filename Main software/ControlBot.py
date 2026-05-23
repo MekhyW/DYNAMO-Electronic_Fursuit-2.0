@@ -17,7 +17,12 @@ import Voicemod
 import Unity
 import Serial
 import ssl
+import requests
+import urllib3
 ssl._create_default_https_context = ssl._create_unverified_context
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+_session = requests.Session()
+_session.verify = False
 
 apppath = 'https://t.me/mekhybot?startapp'
 refsheetpath = 'https://i.postimg.cc/Y25LSW-z2/refsheet.png'
@@ -31,6 +36,7 @@ mqtt_keepalive_interval = 15
 
 try:
     fursuitbot = telepot.Bot(fursuitbot_token)
+    fursuitbot._session = _session
 except Exception as e:
     fursuitbot = None
     Serial.send_debug(f"ControlBot constructor failed with error: {e}")
